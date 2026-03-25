@@ -9,9 +9,10 @@ namespace PBL3.Core
 
         public static void Log(string message)
         {
-            string log = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n";
+            string log = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n";   
             File.AppendAllText(logFile, log);
         }
+        //Nhan tam 123
 
         public static void Info(string message)
         {
