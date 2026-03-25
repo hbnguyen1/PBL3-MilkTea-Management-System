@@ -7,7 +7,7 @@ namespace PBL3.Models
 {
     public class ImportNote
     {
-        public int importNoteID { get; set; } = 0;
+        public int importID { get; set; } = 0;
         public required DateTime importDate { get; set; }
         public required int staffID { get; set; } = 0;
         public required int totalCost { get; set; } = 0;

@@ -43,13 +43,13 @@ namespace PBL3.Data
             modelBuilder.Entity<Users>().HasKey(u => u.userID);
             modelBuilder.Entity<Ingredient>().HasKey(i => i.igID);
             modelBuilder.Entity<Orders>().HasKey(o => o.orderID);
-            modelBuilder.Entity<ImportNote>().HasKey(i => i.importNoteID);
+            modelBuilder.Entity<ImportNote>().HasKey(i => i.importID);
 
             // Khóa chính kép
             modelBuilder.Entity<Item>().HasKey(i => new { i.itemID, i.size });
             modelBuilder.Entity<OrderDetails>().HasKey(od => new { od.orderID, od.itemID, od.size });
             modelBuilder.Entity<Recipe>().HasKey(r => new { r.itemID, r.size, r.ingredientID });
-            modelBuilder.Entity<ImportDetail>().HasKey(id => new { id.importId, id.igId });
+            modelBuilder.Entity<ImportDetail>().HasKey(id => new { id.importID, id.igId });
 
             // CẤU HÌNH KHÓA NGOẠI (FOREIGN KEYS)
 
@@ -66,7 +66,7 @@ namespace PBL3.Data
             modelBuilder.Entity<ImportDetail>()
                 .HasOne(d => d.ImportNote)
                 .WithMany(n => n.ImportDetails) // 1 phiếu nhập có nhiều chi tiết
-                .HasForeignKey(d => d.importId);
+                .HasForeignKey(d => d.importID);
 
 
             modelBuilder.Entity<ImportDetail>()

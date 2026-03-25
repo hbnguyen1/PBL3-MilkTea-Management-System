@@ -16,6 +16,8 @@ namespace PBL3
             IngredientManager ingredientManager = new IngredientManager();
             OrderManager orderManager = new OrderManager();
             CustomerManagers customerManagers = new CustomerManagers();
+            ImportManager importManager = new ImportManager();
+            OrderProcessingManager orderProcessingManager = new OrderProcessingManager();
             
             while (true)
             {
@@ -41,7 +43,7 @@ namespace PBL3
                             switch (choice2)
                             {
                                 case "1":
-                                    itemManager.ShowMenu();
+                                    itemManager.ShowMenu(true);
                                     break;
                                 case "2":
                                     orderManager.Order(UserSession.CurrentUser);
@@ -55,7 +57,17 @@ namespace PBL3
                         {
                             Console.WriteLine("Bảng chọn nhân viên:");
                             Console.WriteLine("1. Quản lý đơn hàng");
-                            Console.WriteLine("2. Quản lý sản phẩm");
+                            Console.WriteLine("2. Quản lý kho");
+                            string choice3 = Console.ReadLine();
+                            switch (choice3)
+                            {
+                                case "1":
+                                    orderProcessingManager.ShowAndApprovePendingOrders(UserSession.CurrentUser);
+                                    break;
+                                case "2":
+                                    importManager.Import(UserSession.CurrentUser.userID);
+                                    break;
+                            }
                         }
                         break;
                     case "3":

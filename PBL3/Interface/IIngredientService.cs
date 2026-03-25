@@ -13,5 +13,6 @@ namespace PBL3.Interface
         bool isAvailable(int igId, int requiredQuantity);
         bool DeductStock(int igId, int quantity);
         List<Ingredient> GetAllIngredients();
+        bool CheckIngredientEnough(int itemId, string size, int quantity);
     }
 }

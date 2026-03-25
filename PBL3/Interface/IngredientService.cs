@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using PBL3.Models;
 using System.Text.RegularExpressions;
+using PBL3.Core;
 
 namespace PBL3.Interface
 {
@@ -85,7 +86,36 @@ namespace PBL3.Interface
             public bool updateIngredient(int igId, string name, string unit, int price)
             {
                 throw new NotImplementedException();
-        }
+            }
+            public bool CheckIngredientEnough(int itemId, string size, int quantity)
+            {
+                using (var conn = new MilkTeaDBContext())
+                {
+                    var recipes = conn.Recipes
+                        .Where(r => r.itemID == itemId && r.size == size)
+                        .ToList();
+
+                    foreach (var r in recipes)
+                    {
+                        var ingredient = conn.Ingredients
+                            .FirstOrDefault(i => i.igID == r.ingredientID);
+
+                        if (ingredient == null)
+                            return false;
+
+                        int need = r.quantityNeeded * quantity;
+
+                        if (ingredient.igCount < need)
+                        {
+                            Console.WriteLine($"Không đủ {ingredient.igName}");
+                            Logger.Warning($"Ingredient low: {ingredient.igName} remain {ingredient.igCount}");
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
 
     }
 }

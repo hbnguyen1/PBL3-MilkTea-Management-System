@@ -21,7 +21,7 @@ namespace PBL3.Manangers
                 itemName = itemName,
                 itemType = itemType,
                 price = price,
-                isAvailable = false
+                isAvailable = true
             };
             ItemService itemService = new ItemService();
             if (itemService.AddItem(newItem))
@@ -68,26 +68,58 @@ namespace PBL3.Manangers
         {
             // throw Exception("Chưa hoàn thiện chức năng này, vui lòng quay lại sau!");
         }
-        public void ShowMenu()
+
+        public void ShowMenu(bool showDetail = false)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            //string category = "Milk Tea";
+
             ItemService itemService = new ItemService();
+
             var MenuMilkTea = itemService.GetMenuByCategory("Milk Tea");
             var MenuFruitTea = itemService.GetMenuByCategory("Fruit Tea");
             var MenuTopping = itemService.GetMenuByCategory("Topping");
+
+            Console.WriteLine("===== MENU =====");
+
             foreach (var it in MenuMilkTea)
             {
-                Console.WriteLine($"{it.itemID} : {it.itemName} : {it.isAvailable}");
+                Console.WriteLine($"{it.itemID} : {it.itemName} : {(it.isAvailable ? "Còn" : "Hết")}");
             }
-            Console.WriteLine("Nhập id sản phẩm muốn xem chi tiết: ");
-            int id = int.Parse(Console.ReadLine());
-            var itemDetails = itemService.GetItemSizeAndPrice(id);
-            foreach (var it in itemDetails)
+
+            foreach (var it in MenuFruitTea)
             {
-                Console.WriteLine($"{it.itemName} : {it.size} : {it.price} : {it.isAvailable}");
+                Console.WriteLine($"{it.itemID} : {it.itemName} : {(it.isAvailable ? "Còn" : "Hết")}");
+            }
+
+            foreach (var it in MenuTopping)
+            {
+                Console.WriteLine($"{it.itemID} : {it.itemName} : {(it.isAvailable ? "Còn" : "Hết")}");
+            }
+            if (showDetail)
+            {
+                Console.WriteLine("Nhập id sản phẩm muốn xem chi tiết:");
+                int id = int.Parse(Console.ReadLine());
+                ShowItemDetails(id);
             }
         }
+            //Console.OutputEncoding = System.Text.Encoding.UTF8;
+            ////string category = "Milk Tea";
+            //ItemService itemService = new ItemService();
+            //var MenuMilkTea = itemService.GetMenuByCategory("Milk Tea");
+            //var MenuFruitTea = itemService.GetMenuByCategory("Fruit Tea");
+            //var MenuTopping = itemService.GetMenuByCategory("Topping");
+            //foreach (var it in MenuMilkTea)
+            //{
+            //    Console.WriteLine($"{it.itemID} : {it.itemName} : {it.isAvailable}");
+            //}
+            //Console.WriteLine("Nhập id sản phẩm muốn xem chi tiết: ");
+            //int id = int.Parse(Console.ReadLine());
+            //var itemDetails = itemService.GetItemSizeAndPrice(id);
+            //foreach (var it in itemDetails)
+            //{
+            //    Console.WriteLine($"{it.itemName} : {it.size} : {it.price} : {it.isAvailable}");
+            //}
+        //}
         public void ShowItemDetails(int id)
         {
             ItemService itemService = new ItemService();

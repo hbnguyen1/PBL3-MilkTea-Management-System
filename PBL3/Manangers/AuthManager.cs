@@ -25,16 +25,19 @@ namespace PBL3.Manangers
                 {
                     Console.WriteLine("Chào mừng khách hàng đăng nhập thành công!");
                     Console.WriteLine($"Mã khách hàng KH{currenuser.userID}");
+                    Logger.Info($"Khách hàng {currenuser.userID} đăng nhập thành công");
                 }
                 else if (currenuser is Staff)
                 {
                     Console.WriteLine("Chào mừng nhân viên dăng nhập thành công!");
                     Console.WriteLine($"Mã nhân viên NV{currenuser.userID}");
+                    Logger.Info($"Nhân viên {currenuser.userID} đăng nhập thành công");
                 }
             }
             else
             {
                 Console.WriteLine("Đăng nhập thất bại: Tài khoản không tồn tại hoặc sai mật khẩu!");
+                Logger.Warning($"Đăng nhập thất bại {phoneNumber}");
             }
         }
     }
