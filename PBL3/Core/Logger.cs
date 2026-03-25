@@ -5,28 +5,36 @@ namespace PBL3.Core
 {
     internal class Logger
     {
-        private static string logFile = Path.Combine(Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName, "system_log.txt");
+        private static readonly string logDir = Path.Combine(
+            Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName,
+            "Logs"
+        );
 
-        public static void Log(string message)
+        private static string GetLogFile()
         {
-            string log = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n";   
-            File.AppendAllText(logFile, log);
-        }
-        //Nhan tam 123
-
-        public static void Info(string message)
-        {
-            Log("[INFO] " + message);
+            string fileName = $"log_{DateTime.Now:yyyy-MM-dd}.txt";
+            return Path.Combine(logDir, fileName);
         }
 
-        public static void Error(string message)
+        public static void Log(string level, string message)
         {
-            Log("[ERROR] " + message);
+            try
+            {
+                if (!Directory.Exists(logDir))
+                    Directory.CreateDirectory(logDir);
+
+                string log = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}\n";
+
+                File.AppendAllText(GetLogFile(), log);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi log: " + ex.Message);
+            }
         }
 
-        public static void Warning(string message)
-        {
-            Log("[WARNING] " + message);
-        }
+        public static void Info(string message) => Log("INFO", message);
+        public static void Error(string message) => Log("ERROR", message);
+        public static void Warning(string message) => Log("WARNING", message);
     }
 }
