@@ -9,5 +9,6 @@ namespace PBL3.Core
     public static class UserSession
     {
         public static Users? CurrentUser { get; set; }
+        //lalla
     }
 }
