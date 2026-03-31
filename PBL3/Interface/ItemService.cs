@@ -1,22 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using PBL3.Data;
+﻿using PBL3.Data;
 using PBL3.Models;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text;
+using PBL3.Core;
 
 namespace PBL3.Interface
 {
     internal class ItemService : IItemService
     {
-        public bool AddItem(Item item)
+        public bool AddItem(List<Item> items)
         {
             using (var conn = new MilkTeaDBContext())
             {
-                conn.Items.Add(item);
+                conn.Items.AddRange(items);
                 conn.SaveChanges();
+                Logger.Info($"Đã thêm sản phẩm: {items[0].itemName} - {items[0].size} - {items[0].itemType} - {items[0].price}");
+                Logger.Info($"Đã thêm sản phẩm: {items[1].itemName} - {items[1].size} - {items[1].itemType} - {items[1].price}");
                 return true;
             }
-            //return false;
+            Logger.Error($"Thất bại khi thêm sản phẩm: {items[0].itemName} - {items[0].size} - {items[0].itemType} - {items[0].price}");
+            Logger.Info($"Thất bại khi thêm sản phẩm: {items[1].itemName} - {items[1].size} - {items[1].itemType} - {items[1].price}");
+            return false;
+        }
+        public bool AddItemWithRecipe(List<Item> items, List<Recipe> recipes)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                using (var transaction = conn.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        conn.Items.AddRange(items);
+                        conn.SaveChanges();
+                        int itemId = items[0].itemID;
+                        foreach (var recipe in recipes)
+                        {
+                            recipe.itemID = itemId;
+                        }
+                        conn.Recipes.AddRange(recipes);
+                        conn.SaveChanges();
+                        transaction.Commit();
+                        Logger.Info($"Đã thêm sản phẩm với công thức: {items[0].itemName} - {items[0].size} - {items[0].itemType} - {items[0].price}");
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        Logger.Error("Lỗi khi thêm sản phẩm với công thức: " + ex.Message);
+                        if (ex.InnerException != null)
+                        {
+                            Logger.Error("Chi tiết SQL: " + ex.InnerException.Message);
+                        }
+                        return false;
+                    }
+                }
+            }
         }
         public bool DeleteItemByID(int itemId)
         {
@@ -31,6 +71,13 @@ namespace PBL3.Interface
                 }
             }
             return false;
+        }
+        public int GetNextItemID()
+        {
+            using (var db = new MilkTeaDBContext())
+            {
+                return (db.Items.Max(i => (int?)i.itemID) ?? 0) + 1;
+            }
         }
         public Item? GetItemById(int itemId)
         {

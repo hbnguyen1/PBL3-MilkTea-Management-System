@@ -4,18 +4,33 @@ using PBL3.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PBL3.Core;
 
 namespace PBL3.Interface
 {
     internal class RecipeService : IRecipeService
     {
-        public bool AddRecipe(Recipe recipe)
+        public bool AddRecipe(List<Recipe> lRecipe)
         {
-            using (var conn = new MilkTeaDBContext())
+            using (var db = new MilkTeaDBContext())
             {
-                conn.Recipes.Add(recipe);
-                conn.SaveChanges();
-                return true;
+                try
+                {
+                    db.Recipes.AddRange(lRecipe);
+                    db.SaveChanges();
+
+                    Logger.Info($"Đã thêm thành công {lRecipe.Count} dòng công thức mới.");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("Lỗi khi thêm công thức: " + ex.Message);
+                    if (ex.InnerException != null)
+                    {
+                        Logger.Error("Chi tiết SQL: " + ex.InnerException.Message);
+                    }
+                    return false;
+                }
             }
         }
         public bool DeleteRecipeByID(int id)

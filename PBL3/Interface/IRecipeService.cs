@@ -7,7 +7,7 @@ namespace PBL3.Interface
 {
     internal interface IRecipeService
     {
-        bool AddRecipe(Recipe recipe);
+        bool AddRecipe(List<Recipe> lRecipe);
         bool DeleteRecipeByID(int id);
         bool RemoveRecipeByObject(Recipe recipe);
         bool UpdateRecipe(Recipe recipe);

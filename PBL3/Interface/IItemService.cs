@@ -7,10 +7,12 @@ namespace PBL3.Interface
 {
     internal interface IItemService
     {
-        bool AddItem(Item item);
+        bool AddItem(List<Item> items);
+        bool AddItemWithRecipe(List<Item> items, List<Recipe> recipes);
         bool RemoveItem(Item item);
         bool UpdateItem(int itemId, Item item);
         bool DeleteItemByID(int itemId);
+        int GetNextItemID();
         Item? GetItemById(int itemId);
         Item? GetItemSize(int itemId, string size);
         bool isAvailable(int itemId, string size);

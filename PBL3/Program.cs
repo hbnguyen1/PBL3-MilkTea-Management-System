@@ -58,6 +58,7 @@ namespace PBL3
                             Console.WriteLine("Bảng chọn nhân viên:");
                             Console.WriteLine("1. Quản lý đơn hàng");
                             Console.WriteLine("2. Quản lý kho");
+                            Console.WriteLine("3. Quản lý món");
                             string choice3 = Console.ReadLine();
                             switch (choice3)
                             {
@@ -66,6 +67,20 @@ namespace PBL3
                                     break;
                                 case "2":
                                     importManager.Import(UserSession.CurrentUser.userID);
+                                    break;
+                                case "3":
+                                    Console.WriteLine("Bạn có muốn thêm món không ? (y/n)");
+                                    if (Console.ReadLine().ToLower() == "y")
+                                    {
+                                        itemManager.AddItem();
+                                    }
+                                    Console.WriteLine("Bạn có muốn xóa món không ? (y/n)");
+                                    if (Console.ReadLine().ToLower() == "y")
+                                    {   
+                                        itemManager.ShowMenu(false);
+                                        int id = int.Parse(Console.ReadLine());
+                                        itemManager.DeleteItemByID(id);
+                                    }
                                     break;
                             }
                         }
