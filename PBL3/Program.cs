@@ -18,7 +18,8 @@ namespace PBL3
             CustomerManagers customerManagers = new CustomerManagers();
             ImportManager importManager = new ImportManager();
             OrderProcessingManager orderProcessingManager = new OrderProcessingManager();
-            
+            StaffManager staffManager = new StaffManager();
+
             while (true)
             {
                 Console.WriteLine("Chào mừng đến với hệ thống quản lý trà sữa!");
@@ -59,6 +60,8 @@ namespace PBL3
                             Console.WriteLine("1. Quản lý đơn hàng");
                             Console.WriteLine("2. Quản lý kho");
                             Console.WriteLine("3. Quản lý món");
+                            Console.WriteLine("4. Check-in / Check-out");
+                            Console.WriteLine("5. Đăng ký ca làm tuần");
                             string choice3 = Console.ReadLine();
                             switch (choice3)
                             {
@@ -81,6 +84,12 @@ namespace PBL3
                                         int id = int.Parse(Console.ReadLine());
                                         itemManager.DeleteItemByID(id);
                                     }
+                                    break;
+                                case "4":
+                                    staffManager.ToggleShift(UserSession.CurrentUser.userID);
+                                    break;
+                                case "5":
+                                    staffManager.RegisterWeeklySchedule(UserSession.CurrentUser.userID);
                                     break;
                             }
                         }

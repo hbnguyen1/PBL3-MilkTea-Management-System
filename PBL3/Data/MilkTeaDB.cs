@@ -15,6 +15,8 @@ namespace PBL3.Data
         public DbSet<Recipe> Recipes { get; set; }
         public DbSet<ImportNote> ImportNotes { get; set; }
         public DbSet<ImportDetail> ImportDetails { get; set; }
+        public DbSet<WorkShiftLog> WorkShiftLogs { get; set; }
+        public DbSet<WorkSchedule> WorkSchedules { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
