@@ -6,7 +6,6 @@ namespace PBL3.Models
 {
     public class Staff : Users
     {
-        public required int salary { get; set; } = 0;
-        public required string workShift { get; set; } = string.Empty;
+        public required int salaryPerHour { get; set; } = 0;
     }
 }

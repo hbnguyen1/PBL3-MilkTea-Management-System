@@ -18,36 +18,139 @@ namespace PBL3.Manangers
         {
             using (var conn = new MilkTeaDBContext())
             {
-                var current = conn.WorkShiftLogs
-                    .FirstOrDefault(s => s.staffID == staffID && s.checkOutTime == null);
+                DateTime now = DateTime.Now;
+                DateTime today = now.Date;
 
-                if (current == null)
+                // 1. xác định ca hiện tại
+                string currentShift = GetCurrentShift(now);
+
+                if (currentShift == "")
                 {
-                    // CHECK-IN
-                    WorkShiftLog log = new WorkShiftLog
+                    Console.WriteLine("❌ Không nằm trong giờ ca!");
+                    return;
+                }
+
+                // 2. kiểm tra có đăng ký ca không
+                bool hasSchedule = conn.WorkSchedules
+                    .Any(s => s.staffID == staffID
+                           && s.workDate == today
+                           && s.shift == currentShift);
+
+                if (!hasSchedule)
+                {
+                    Console.WriteLine($"❌ Bạn không có ca {currentShift} hôm nay!");
+                    return;
+                }
+
+                // 3. tìm log
+                var log = conn.WorkShiftLogs.FirstOrDefault(l =>
+                    l.staffID == staffID &&
+                    l.workDate == today &&
+                    l.shift == currentShift);
+
+                if (log == null)
+                {
+                    // ===== CHECK-IN =====
+                    DateTime start = GetShiftStart(currentShift);
+
+                    int lateMinutes = (int)(now - start).TotalMinutes;
+                    int penalty = 0;
+
+                    if (lateMinutes > 10)
+                    {
+                        penalty = (lateMinutes / 10) * 5000;
+                    }
+
+                    log = new WorkShiftLog
                     {
                         staffID = staffID,
-                        checkInTime = DateTime.Now
+                        workDate = today,
+                        shift = currentShift,
+                        checkIn = now,
+                        penalty = penalty
                     };
 
                     conn.WorkShiftLogs.Add(log);
                     conn.SaveChanges();
 
-                    Console.WriteLine("Check-in thành công!");
-                }
-                else
-                {
-                    // CHECK-OUT
-                    current.checkOutTime = DateTime.Now;
+                    Console.WriteLine($"✔ Check-in {currentShift}");
 
-                    TimeSpan time = current.checkOutTime.Value - current.checkInTime;
-                    current.totalHours = time.TotalHours;
+                    if (penalty > 0)
+                        Console.WriteLine($"⚠ Trễ {lateMinutes} phút → phạt {penalty}đ");
+                }
+                else if (log.checkOut == null)
+                {
+                    // ===== CHECK-OUT =====
+                    DateTime end = GetShiftEnd(currentShift);
+
+                    int earlyMinutes = (int)(end - now).TotalMinutes;
+
+                    if (earlyMinutes > 15)
+                    {
+                        int penalty = (earlyMinutes / 10) * 5000;
+                        log.penalty += penalty;
+
+                        Console.WriteLine($"⚠ Về sớm {earlyMinutes} phút → phạt {penalty}đ");
+                    }
+
+                    log.checkOut = now;
+
+                    // tính giờ làm
+                    if (log.checkIn != null)
+                    {
+                        TimeSpan work = log.checkOut.Value - log.checkIn.Value;
+                        log.totalHours = work.TotalHours;
+                    }
 
                     conn.SaveChanges();
 
-                    Console.WriteLine($"Check-out thành công! Bạn đã làm {current.totalHours:F2} giờ");
+                    Console.WriteLine($"✔ Check-out {currentShift} - Làm {log.totalHours:F2} giờ");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Bạn đã hoàn thành ca này rồi!");
                 }
             }
+        }
+        private string GetCurrentShift(DateTime now)
+        {
+            var t = now.TimeOfDay;
+
+            if (t >= new TimeSpan(8, 0, 0) && t < new TimeSpan(13, 0, 0))
+                return "Morning";
+
+            if (t >= new TimeSpan(13, 0, 0) && t < new TimeSpan(18, 0, 0))
+                return "Afternoon";
+
+            if (t >= new TimeSpan(18, 0, 0) && t < new TimeSpan(22, 0, 0))
+                return "Evening";
+
+            return "";
+        }
+        private DateTime GetShiftStart(string shift)
+        {
+            var today = DateTime.Today;
+
+            return shift switch
+            {
+                "Morning" => today.AddHours(8),
+                "Afternoon" => today.AddHours(13),
+                "Evening" => today.AddHours(18),
+                _ => today
+            };
+        }
+
+        private DateTime GetShiftEnd(string shift)
+        {
+            var today = DateTime.Today;
+
+            return shift switch
+            {
+                "Morning" => today.AddHours(13),
+                "Afternoon" => today.AddHours(18),
+                "Evening" => today.AddHours(22),
+                _ => today
+            };
         }
         public void ShowWeeklySchedule(int staffID)
         {
@@ -103,7 +206,6 @@ namespace PBL3.Manangers
                             string datePart = "";
                             string shiftPart = "";
 
-                            // ===== 2. PARSE INPUT LINH HOẠT =====
                             if (entry.Contains("-"))
                             {
                                 var parts = entry.Split('-');
@@ -128,10 +230,8 @@ namespace PBL3.Manangers
 
                                 datePart = parts[0].Trim();
                                 shiftPart = string.Join("", parts.Skip(1)).ToUpper();
-                                // gộp lại thành AE
                             }
 
-                            // ===== 3. XỬ LÝ NGÀY =====
                             var dateSplit = datePart.Split('/');
                             if (dateSplit.Length != 2)
                             {
@@ -150,7 +250,6 @@ namespace PBL3.Manangers
                                 continue;
                             }
 
-                            // ===== 4. XỬ LÝ NHIỀU CA (CHẤP NHẬN A E, A,E, AE) =====
                             var shiftTokens = shiftPart
                                 .Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -184,7 +283,6 @@ namespace PBL3.Manangers
                                 continue;
                             }
 
-                            // ===== 5. LƯU DB =====
                             foreach (var shift in shifts)
                             {
                                 bool exists = conn.WorkSchedules.Any(s =>
@@ -219,6 +317,26 @@ namespace PBL3.Manangers
                     conn.SaveChanges();
                     Console.WriteLine("\n✔ Lưu thành công!\n");
                 }
+            }
+        }
+        public void CalculateSalary(int staffID)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                var staff = conn.Staffs.Find(staffID);
+
+                var logs = conn.WorkShiftLogs
+                    .Where(l => l.staffID == staffID && l.checkOut != null)
+                    .ToList();
+
+                double totalHours = logs.Sum(l => l.totalHours);
+                int totalPenalty = logs.Sum(l => l.penalty);
+
+                double salary = totalHours * staff.salaryPerHour - totalPenalty;
+
+                Console.WriteLine($"Tổng giờ: {totalHours:F2}");
+                Console.WriteLine($"Phạt: {totalPenalty}");
+                Console.WriteLine($"Lương: {salary}");
             }
         }
     }

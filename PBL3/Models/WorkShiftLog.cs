@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace PBL3.Models
 {
     public class WorkShiftLog
     {
-        public int id { get; set; }
+        
+        [Key] public int logID { get; set; }
         public int staffID { get; set; }
+        public DateTime workDate { get; set; }
+        public string shift { get; set; } = string.Empty;
 
-        public DateTime checkInTime { get; set; }
-        public DateTime? checkOutTime { get; set; }
+        public DateTime? checkIn { get; set; }
+        public DateTime? checkOut { get; set; }
 
         public double totalHours { get; set; } = 0;
+        public int penalty { get; set; } = 0;
     }
 }
