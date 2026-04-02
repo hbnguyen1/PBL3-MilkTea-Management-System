@@ -77,6 +77,7 @@ namespace PBL3.Data
                 .HasForeignKey(d => d.igId);
 
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<WorkShiftLog>().ToTable("WorkShiftLog");
         }
     }
 }
