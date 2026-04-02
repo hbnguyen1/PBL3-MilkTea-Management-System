@@ -319,14 +319,23 @@ namespace PBL3.Manangers
                 }
             }
         }
-        public void CalculateSalary(int staffID)
+        public double CalculateSalary(int staffID, int month, int year)
         {
             using (var conn = new MilkTeaDBContext())
             {
                 var staff = conn.Staffs.Find(staffID);
 
+                if (staff == null)
+                {
+                    Console.WriteLine("Không tìm thấy nhân viên!");
+                    return 0;
+                }
+
                 var logs = conn.WorkShiftLogs
-                    .Where(l => l.staffID == staffID && l.checkOut != null)
+                    .Where(l => l.staffID == staffID
+                             && l.checkOut != null
+                             && l.workDate.Month == month
+                             && l.workDate.Year == year)
                     .ToList();
 
                 double totalHours = logs.Sum(l => l.totalHours);
@@ -334,9 +343,52 @@ namespace PBL3.Manangers
 
                 double salary = totalHours * staff.salaryPerHour - totalPenalty;
 
+                Console.WriteLine($"===== LƯƠNG THÁNG {month}/{year} =====");
                 Console.WriteLine($"Tổng giờ: {totalHours:F2}");
                 Console.WriteLine($"Phạt: {totalPenalty}");
                 Console.WriteLine($"Lương: {salary}");
+
+                return salary;
+            }
+        }
+        public void SaveSalary(int staffID, int month, int year)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                var exist = conn.SalarySummaries
+                    .FirstOrDefault(x => x.staffID == staffID && x.month == month && x.year == year);
+
+                if (exist != null)
+                {
+                    Console.WriteLine("Đã có lương tháng này rồi!");
+                    return;
+                }
+
+                var logs = conn.WorkShiftLogs
+                    .Where(l => l.staffID == staffID
+                             && l.checkOut != null
+                             && l.workDate.Month == month
+                             && l.workDate.Year == year)
+                    .ToList();
+
+                double totalHours = logs.Sum(l => l.totalHours);
+                int totalPenalty = logs.Sum(l => l.penalty);
+
+                double salary = CalculateSalary(staffID, month, year);
+
+                conn.SalarySummaries.Add(new SalarySummary
+                {
+                    staffID = staffID,
+                    month = month,
+                    year = year,
+                    totalHours = totalHours,
+                    penalty = totalPenalty,
+                    totalSalary = salary
+                });
+
+                conn.SaveChanges();
+
+                Console.WriteLine("Đã lưu lương!");
             }
         }
     }

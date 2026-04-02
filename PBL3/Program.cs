@@ -62,6 +62,8 @@ namespace PBL3
                             Console.WriteLine("3. Quản lý món");
                             Console.WriteLine("4. Check-in / Check-out");
                             Console.WriteLine("5. Đăng ký ca làm tuần");
+                            Console.WriteLine("6. Xem lương");
+                            Console.WriteLine("7. Chốt lương tháng");
                             string choice3 = Console.ReadLine();
                             switch (choice3)
                             {
@@ -90,6 +92,26 @@ namespace PBL3
                                     break;
                                 case "5":
                                     staffManager.RegisterWeeklySchedule(UserSession.CurrentUser.userID);
+                                    break;
+                                case "6":
+                                    Console.Write("Nhập tháng: ");
+                                    int m = int.Parse(Console.ReadLine());
+
+                                    Console.Write("Nhập năm: ");
+                                    int y = int.Parse(Console.ReadLine());
+
+                                    double salary = staffManager.CalculateSalary(UserSession.CurrentUser.userID, m, y);
+
+                                    Console.WriteLine($"Lương tháng {m}/{y}: {salary}");
+                                    break;
+                                case "7":
+                                    Console.Write("Nhập tháng: ");
+                                    int m2 = int.Parse(Console.ReadLine());
+
+                                    Console.Write("Nhập năm: ");
+                                    int y2 = int.Parse(Console.ReadLine());
+
+                                    staffManager.SaveSalary(UserSession.CurrentUser.userID, m2, y2);
                                     break;
                             }
                         }
