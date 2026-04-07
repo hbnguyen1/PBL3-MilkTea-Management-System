@@ -1,7 +1,8 @@
-﻿using System;
+﻿using PBL3.Data;
+using PBL3.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using PBL3.Models;
 
 namespace PBL3.Interface
 {
@@ -30,6 +31,22 @@ namespace PBL3.Interface
                 conn.SaveChanges();
                 //Console.WriteLine("Đăng ký thành công!");
                 return true;
+            }
+        }
+        public List<string> GetTrendingItemNamesForCustomer()
+        {
+            using (var db = new MilkTeaDBContext())
+            {
+                // 1. Chỉ gom nhóm và đếm số lượng để tìm ra món Hot
+                // 2. Không hề đụng tới phép tính Doanh thu ở đây
+                var trendingNames = db.OrderDetails
+                    .GroupBy(od => od.itemID)
+                    .OrderByDescending(g => g.Sum(od => od.quantity)) // Vẫn lấy top bán chạy
+                    .Take(5)
+                    .Select(g => db.Items.FirstOrDefault(i => i.itemID == g.Key).itemName) // CHỈ SELECT ĐÚNG TÊN MÓN
+                    .ToList();
+
+                return trendingNames;
             }
         }
     }

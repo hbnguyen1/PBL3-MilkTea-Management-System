@@ -1,8 +1,10 @@
 ﻿using PBL3.Data;
+using PBL3.Interface;
 using PBL3.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using PBL3.Core;
 
 namespace PBL3.Manangers
 {
@@ -389,6 +391,42 @@ namespace PBL3.Manangers
                 conn.SaveChanges();
 
                 Console.WriteLine("Đã lưu lương!");
+            }
+        }
+
+        public void StaffCreateOrderForCustomer()
+        {
+            UserService userService = new UserService();
+            OrderManager orderManager = new OrderManager();
+            Console.WriteLine("Bạn đã có tài khoản chưa: ");
+            Console.WriteLine("1. Đã có tài khoản: ");
+            Console.WriteLine("2. Tạo tài khoản mới: ");
+            Console.WriteLine("3. Chị không có nhu cầu em ơi");
+            string choice = Console.ReadLine();
+            switch (choice)
+            {
+                case "1":
+                    Console.WriteLine("Nhập số điện thoại khách hàng: ");
+                    string phone = Console.ReadLine();
+                    Users customer = userService.GetUserByPhone(phone);
+                    orderManager.Order(customer);
+                    break;
+                case "2":
+                    string name = Console.ReadLine();
+                    string phoneNumber = Console.ReadLine();
+                    string password = Console.ReadLine();
+                    CustomerManagers.Register(name, phoneNumber, password);
+                    Users customerr = userService.GetUserByPhone(phoneNumber);
+                    orderManager.Order(customerr);
+                    break;
+                case "3":
+                    string phonenumber = "0000000000";
+                    Users guest = userService.GetUserByPhone(phonenumber);
+                    orderManager.Order(guest);
+                    break;
+                default:
+                    Console.WriteLine("Lựa chọn không hợp lệ!");
+                    break;
             }
         }
     }

@@ -126,7 +126,7 @@ namespace PBL3.Manangers
                 Orders order = new Orders()
                 {
                     customerID = currentUser.userID,
-                    staffID = 101,
+                    staffID = null,
                     orderDate = DateTime.Now,
                     orderStatus = "Pending",
                     totalPrice = totalprice

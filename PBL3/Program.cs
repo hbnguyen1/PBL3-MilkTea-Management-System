@@ -19,6 +19,7 @@ namespace PBL3
             ImportManager importManager = new ImportManager();
             OrderProcessingManager orderProcessingManager = new OrderProcessingManager();
             StaffManager staffManager = new StaffManager();
+            ReportManager reportManager = new ReportManager();
 
             while (true)
             {
@@ -31,7 +32,10 @@ namespace PBL3
                 switch (choice)
                 {
                     case "1":
-                        CustomerManagers.Register();
+                        string name = Console.ReadLine();
+                        string phoneNumber = Console.ReadLine();
+                        string password = Console.ReadLine();
+                        CustomerManagers.Register(name, phoneNumber, password);
                         break;
                     case "2":
                         AuthManager.Login();
@@ -40,6 +44,9 @@ namespace PBL3
                             Console.WriteLine("Bảng chọn khách hàng:");
                             Console.WriteLine("1. Xem menu");
                             Console.WriteLine("2. Đặt hàng");
+                            Console.WriteLine("3. Xem lịch sử đơn hàng");
+                            Console.WriteLine("4. Xem điểm thưởng");
+                            Console.WriteLine("5. Xem best seller");
                             string choice2 = Console.ReadLine();
                             switch (choice2)
                             {
@@ -48,6 +55,14 @@ namespace PBL3
                                     break;
                                 case "2":
                                     orderManager.Order(UserSession.CurrentUser);
+                                    break;
+                                case "3":
+                                    throw new NotImplementedException();
+                                    break;
+                                case "4":
+                                    throw new NotImplementedException();
+                                case "5":
+                                    customerManagers.ShowBestSeller();
                                     break;
                                 default:
                                     Console.WriteLine("Lựa chọn không hợp lệ. Vui lòng thử lại.");
@@ -64,6 +79,7 @@ namespace PBL3
                             Console.WriteLine("5. Đăng ký ca làm tuần");
                             Console.WriteLine("6. Xem lương");
                             Console.WriteLine("7. Chốt lương tháng");
+                            Console.WriteLine("8. Đặt cho khách hàng"); 
                             string choice3 = Console.ReadLine();
                             switch (choice3)
                             {
@@ -112,6 +128,9 @@ namespace PBL3
                                     int y2 = int.Parse(Console.ReadLine());
 
                                     staffManager.SaveSalary(UserSession.CurrentUser.userID, m2, y2);
+                                    break;
+                                case "8":
+                                    staffManager.StaffCreateOrderForCustomer();
                                     break;
                             }
                         }
