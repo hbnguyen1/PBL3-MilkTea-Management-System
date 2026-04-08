@@ -1,0 +1,243 @@
+﻿<Window x:Class="PBL3.GUI.wTrangChu"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Trang Chủ - TTN MilkTea" Height="768" Width="1366"
+        WindowStartupLocation="CenterScreen"
+        Background="#FAFAFA">
+
+    <Window.Resources>
+        <Style x:Key="CategoryBtnStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#7A7A7A"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Margin" Value="0,0,15,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="20" Padding="20,8" Cursor="Hand">
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background" Value="#F28500"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="BorderBrush" Value="#F28500"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernScrollThumb" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="#D0D0D0" CornerRadius="3" Margin="2,0"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ModernScrollThumb}"/>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" BorderBrush="#EFEFEF" BorderThickness="0,0,0,1">
+            <Grid Margin="40,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Cursor="Hand">
+                    <TextBlock Text="TTN Milk Tea" FontSize="20" FontWeight="Heavy" Foreground="#1A1A1A"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Background="#F5F5F5" CornerRadius="20" Height="40" Width="400" Padding="15,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="&#xE71E;" FontFamily="Segoe MDL2 Assets" Foreground="#A0A0A0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                            <TextBox x:Name="txtSearch" TextChanged="txtSearch_TextChanged" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Foreground="#1A1A1A"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Đăng xuất" Foreground="#F28500" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0" Cursor="Hand" MouseLeftButtonDown="lblDangXuat_Click"/>
+
+                    <Border Background="#FFF3E0" Width="40" Height="40" CornerRadius="20" Cursor="Hand">
+                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" Foreground="#F28500" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="7.5*"/>
+                <ColumnDefinition Width="2.5*"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="40,30,20,30">
+                    <TextBlock Text="Trang chủ > Trà sữa" Foreground="#7A7A7A" FontSize="13" Margin="0,0,0,20"/>
+                    <TextBlock Text="Danh Mục Trà Sữa" FontSize="36" FontWeight="Heavy" Foreground="#1A1A1A" Margin="0,0,0,10"/>
+                    <TextBlock Text="Khám phá thế giới trà sữa đa dạng tại TTN." Foreground="#7A7A7A" FontSize="14" Margin="0,0,0,30"/>
+
+                    <Grid Margin="0,0,0,30">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Content="Tất cả" Style="{StaticResource CategoryBtnStyle}" IsChecked="True" Checked="Category_Checked"/>
+                            <RadioButton Content="Milk Tea" Style="{StaticResource CategoryBtnStyle}" Checked="Category_Checked"/>
+                            <RadioButton Content="Fruit Tea" Style="{StaticResource CategoryBtnStyle}" Checked="Category_Checked"/>
+                            <RadioButton Content="Món khác" Style="{StaticResource CategoryBtnStyle}" Checked="Category_Checked"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock Text="Sắp xếp:" Foreground="#7A7A7A" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <Border x:Name="btnSort" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="20" Padding="15,8" Cursor="Hand" MouseLeftButtonDown="btnSort_Click">
+                                <TextBlock x:Name="txtSortMode" Text="Giá: Thấp đến cao   &#xE70D;" FontFamily="Segoe UI, Segoe MDL2 Assets" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                    <ItemsControl x:Name="icProducts">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="240" Background="White" CornerRadius="12" Margin="0,0,30,30" Cursor="Hand" MouseLeftButtonDown="ProductCard_Click">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
+                                    </Border.Effect>
+                                    <StackPanel>
+                                        <Border Height="220" CornerRadius="12,12,0,0" Background="#F5F5F5">
+                                            <Grid>
+                                                <Border CornerRadius="12,12,0,0">
+                                                    <Border.Background>
+                                                        <ImageBrush ImageSource="{Binding ImagePath}" Stretch="UniformToFill"/>
+                                                    </Border.Background>
+                                                </Border>
+                                                <Border Background="#F28500" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,15,0,0" Padding="10,4" CornerRadius="4">
+                                                    <TextBlock Text="{Binding Badge}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                        <StackPanel Margin="15">
+                                            <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold" Foreground="#1A1A1A" Margin="0,0,0,5"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#7A7A7A" TextWrapping="Wrap" Height="35" Margin="0,0,0,10"/>
+                                            <Grid>
+                                                <TextBlock Text="{Binding Price}" FontSize="16" FontWeight="Bold" Foreground="#F28500" VerticalAlignment="Center"/>
+                                                <Border Background="#FFF3E0" Width="30" Height="30" CornerRadius="15" HorizontalAlignment="Right">
+                                                    <TextBlock Text="&#xE7BF;" FontFamily="Segoe MDL2 Assets" Foreground="#F28500" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Column="1" Background="White" BorderBrush="#EFEFEF" BorderThickness="1,0,0,0">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                        <TextBlock Text="Giỏ Hàng" FontSize="20" FontWeight="Bold" Foreground="#1A1A1A"/>
+                        <TextBlock x:Name="lblCartCount" Text="0 Món" Foreground="#7A7A7A" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="icGioHang">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#FAFAFA" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0" Margin="0,0,10,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TenMon}" FontWeight="Bold" FontSize="15" Foreground="#1A1A1A"/>
+                                                <TextBlock Text="{Binding MoTa}" Foreground="#7A7A7A" FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding ThanhTienStr}" Foreground="#F28500" FontWeight="Bold" Margin="0,5,0,0"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <TextBlock Text="&#xE107;" FontFamily="Segoe MDL2 Assets" Foreground="#FF4D4D" HorizontalAlignment="Right" Cursor="Hand" FontSize="16" MouseLeftButtonDown="btnXoaMon_Click" Margin="0,0,0,12"/>
+                                                <StackPanel Orientation="Horizontal" Background="White">
+                                                    <Border Width="24" Height="24" CornerRadius="4" Background="#F5F5F5" Cursor="Hand" MouseLeftButtonDown="btnGiamSoLuong_Click">
+                                                        <TextBlock Text="-" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding SoLuong}" Width="24" TextAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Margin="5,0"/>
+                                                    <Border Width="24" Height="24" CornerRadius="4" Background="#FFF3E0" Cursor="Hand" MouseLeftButtonDown="btnTangSoLuong_Click">
+                                                        <TextBlock Text="+" Foreground="#F28500" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
+                                                    </Border>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <StackPanel Grid.Row="2" Margin="0,15,0,0">
+                        <Border BorderBrush="#EFEFEF" BorderThickness="0,1,0,0" Margin="0,0,0,15"/>
+                        <Grid Margin="0,0,0,15">
+                            <TextBlock Text="Tổng cộng:" FontSize="16" FontWeight="SemiBold" Foreground="#4A4A4A"/>
+                            <TextBlock x:Name="lblTongTien" Text="0đ" FontSize="20" FontWeight="Heavy" Foreground="#F28500" HorizontalAlignment="Right"/>
+                        </Grid>
+
+                        <Button x:Name="btnThanhToan" Click="btnThanhToan_Click" Height="50" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="#F28500" CornerRadius="10">
+                                        <TextBlock Text="Thanh Toán" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
