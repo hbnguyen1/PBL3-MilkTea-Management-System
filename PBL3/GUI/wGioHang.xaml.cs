@@ -27,13 +27,11 @@ namespace PBL3.GUI
             set
             {
                 _soLuong = value;
-                // Báo cho giao diện WPF biết để tự động nhảy số
                 OnPropertyChanged(nameof(SoLuong));
                 OnPropertyChanged(nameof(ThanhTienStr));
             }
         }
 
-        // Tự động nhân tiền khi Số lượng thay đổi
         public int ThanhTien => GiaGoc * SoLuong;
         public string ThanhTienStr => $"{ThanhTien:N0}đ";
 

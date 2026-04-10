@@ -45,14 +45,12 @@ namespace PBL3.GUI
 
             if (currentUser != null)
             {
-                // 1. Kiểm tra NHÂN VIÊN trước
                 if (currentUser is Staff currentStaff)
                 {
                     wTrangChu_NhanVien staffWindow = new wTrangChu_NhanVien();
                     staffWindow.Show();
                     this.Close();
                 }
-                // 2. Nếu không phải Nhân viên, thì mới xét KHÁCH HÀNG
                 else if (currentUser is Users currentCustomer)
                 {
                     wTrangChu customerWindow = new wTrangChu();

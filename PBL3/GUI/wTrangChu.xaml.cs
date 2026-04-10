@@ -11,7 +11,6 @@ namespace PBL3.GUI
 {
     public partial class wTrangChu : Window
     {
-        // Thêm dấu ? để sửa cảnh báo vàng CS8618
         public ObservableCollection<ProductViewModel>? ProductList { get; set; }
         private List<ProductViewModel>? allProducts;
 
@@ -63,7 +62,6 @@ namespace PBL3.GUI
             // Mặc định gọi hàm lọc để hiển thị "Tất cả" lên màn hình
             FilterProducts("Tất cả");
 
-            // Gắn danh sách vào màn hình XAML
             icProducts.ItemsSource = ProductList;
         }
 

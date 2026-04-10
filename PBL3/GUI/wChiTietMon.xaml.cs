@@ -55,7 +55,6 @@ namespace PBL3.GUI
 
             if (size == "L") giaGoc += 8000;
 
-            // 1. CHUẨN XÁC: So sánh bằng Mã món (ItemID) và Mô tả (Đá, Đường...) thay vì Tên
             var existingItem = CartManager.GioHang.FirstOrDefault(x => x.ItemID == _currentItemId && x.MoTa == moTa);
 
             if (existingItem != null)
@@ -63,7 +62,6 @@ namespace PBL3.GUI
                 // Đã có -> Tăng số lượng
                 existingItem.SoLuong += 1;
 
-                // 2. MẸO WPF: Ép giao diện Giỏ hàng vẽ lại dòng này để cập nhật con số hiển thị
                 int index = CartManager.GioHang.IndexOf(existingItem);
                 CartManager.GioHang.RemoveAt(index);
                 CartManager.GioHang.Insert(index, existingItem);
