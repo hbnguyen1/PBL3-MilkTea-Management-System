@@ -39,6 +39,27 @@ namespace PBL3
                         break;
                     case "2":
                         AuthManager.Login();
+                        if (UserSession.CurrentUser is Admin)
+                        {
+                        Console.WriteLine("Bảng chọn quản trị viên:");
+                        Console.WriteLine("1. Quản lý nhân viên");
+                        Console.WriteLine("2. Xem báo cáo");
+                        string choice4 = Console.ReadLine();
+                        switch (choice4)
+                            {
+                            case "1":
+                                //staffManager.ManageStaff();
+                                //throw Exceptions.NotImplementedException();
+                                Console.WriteLine("Chua xong shop oi");
+                                break;
+                            case "2":
+                                reportManager.ShowTopSellingReport();
+                                break;
+                            default:
+                                Console.WriteLine("Lựa chọn không hợp lệ. Vui lòng thử lại.");
+                            break;
+                            }
+                        }
                         if (UserSession.CurrentUser is Customer)
                         {
                             Console.WriteLine("Bảng chọn khách hàng:");

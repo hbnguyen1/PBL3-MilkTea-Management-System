@@ -7,6 +7,7 @@ namespace PBL3.Data
     {
         public DbSet<Users> Users { get; set; }
         public DbSet<Staff> Staffs { get; set; }
+        public DbSet<Admin> Admins { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<Orders> Orders { get; set; }
