@@ -154,20 +154,16 @@ namespace PBL3.Manangers
                 _ => today
             };
         }
-        public void ShowWeeklySchedule(int staffID)
+        public void ShowWeeklySchedule(int staffID, DateTime start, DateTime end)
         {
             using (var conn = new MilkTeaDBContext())
             {
-                DateTime start = GetStartOfWeek();
-
                 Console.WriteLine("\n===== LỊCH LÀM VIỆC TUẦN =====");
 
-                for (int i = 0; i < 7; i++)
+                for (DateTime day = start; day <= end; day = day.AddDays(1))
                 {
-                    DateTime day = start.AddDays(i);
-
                     var schedules = conn.WorkSchedules
-                        .Where(s => s.staffID == staffID && s.workDate == day)
+                        .Where(s => s.staffID == staffID && s.workDate.Date == day.Date)
                         .Select(s => s.shift)
                         .ToList();
 
@@ -185,13 +181,22 @@ namespace PBL3.Manangers
         {
             using (var conn = new MilkTeaDBContext())
             {
-                DateTime start = GetStartOfWeek();
+                Console.WriteLine("Chọn tuần:");
+                Console.WriteLine("0. Tuần này");
+                Console.WriteLine("1. Tuần sau");
+                Console.Write("Nhập (0/1/...): ");
+
+                int offset = 0;
+                int.TryParse(Console.ReadLine(), out offset);
+
+                DateTime start = GetStartOfWeek().AddDays(offset * 7);
                 DateTime end = start.AddDays(6);
 
                 while (true)
                 {
-                    // ===== 1. HIỂN THỊ BẢNG =====
-                    ShowWeeklySchedule(staffID);
+                    int addedCount = 0; 
+
+                    ShowWeeklySchedule(staffID, start, end);
 
                     Console.WriteLine("\nNhập lịch (vd: 2/4 - AE, 3/4 A E) hoặc 0 để thoát:");
                     Console.WriteLine("M = Morning | A = Afternoon | E = Evening");
@@ -213,7 +218,7 @@ namespace PBL3.Manangers
                                 var parts = entry.Split('-');
                                 if (parts.Length != 2)
                                 {
-                                    Console.WriteLine($"Sai format: {entry}");
+                                    Console.WriteLine($"❌ Sai format: {entry}");
                                     continue;
                                 }
 
@@ -223,10 +228,9 @@ namespace PBL3.Manangers
                             else
                             {
                                 var parts = entry.Trim().Split(' ');
-
                                 if (parts.Length < 2)
                                 {
-                                    Console.WriteLine($"Sai format: {entry}");
+                                    Console.WriteLine($"❌ Sai format: {entry}");
                                     continue;
                                 }
 
@@ -237,7 +241,7 @@ namespace PBL3.Manangers
                             var dateSplit = datePart.Split('/');
                             if (dateSplit.Length != 2)
                             {
-                                Console.WriteLine($"Sai ngày: {datePart}");
+                                Console.WriteLine($"❌ Sai ngày: {datePart}");
                                 continue;
                             }
 
@@ -248,40 +252,28 @@ namespace PBL3.Manangers
 
                             if (chosenDay < start || chosenDay > end)
                             {
-                                Console.WriteLine($"Ngày {datePart} không thuộc tuần này!");
+                                Console.WriteLine($"❌ Ngày {datePart} không thuộc tuần đã chọn!");
                                 continue;
                             }
 
-                            var shiftTokens = shiftPart
-                                .Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-
                             List<string> shifts = new List<string>();
 
-                            foreach (var token in shiftTokens)
+                            foreach (char c in shiftPart)
                             {
-                                foreach (char c in token)
+                                switch (c)
                                 {
-                                    switch (c)
-                                    {
-                                        case 'M':
-                                            shifts.Add("Morning");
-                                            break;
-                                        case 'A':
-                                            shifts.Add("Afternoon");
-                                            break;
-                                        case 'E':
-                                            shifts.Add("Evening");
-                                            break;
-                                        default:
-                                            Console.WriteLine($"Ca không hợp lệ: {c}");
-                                            break;
-                                    }
+                                    case 'M': shifts.Add("Morning"); break;
+                                    case 'A': shifts.Add("Afternoon"); break;
+                                    case 'E': shifts.Add("Evening"); break;
+                                    default:
+                                        Console.WriteLine($"❌ Ca không hợp lệ: {c}");
+                                        break;
                                 }
                             }
 
                             if (shifts.Count == 0)
                             {
-                                Console.WriteLine($"Không có ca hợp lệ: {entry}");
+                                Console.WriteLine($"❌ Không có ca hợp lệ: {entry}");
                                 continue;
                             }
 
@@ -289,12 +281,22 @@ namespace PBL3.Manangers
                             {
                                 bool exists = conn.WorkSchedules.Any(s =>
                                     s.staffID == staffID &&
-                                    s.workDate == chosenDay &&
+                                    s.workDate.Date == chosenDay.Date &&
                                     s.shift == shift);
 
                                 if (exists)
                                 {
-                                    Console.WriteLine($"Đã tồn tại: {datePart} - {shift}");
+                                    Console.WriteLine($"⚠ Bạn đã đăng ký: {datePart} - {shift}");
+                                    continue;
+                                }
+
+                                int count = conn.WorkSchedules.Count(s =>
+                                    s.workDate.Date == chosenDay.Date &&
+                                    s.shift == shift);
+
+                                if (count >= 5)
+                                {
+                                    Console.WriteLine($"❌ Ca {shift} ngày {datePart} đã đủ 5 người!");
                                     continue;
                                 }
 
@@ -306,18 +308,26 @@ namespace PBL3.Manangers
                                 };
 
                                 conn.WorkSchedules.Add(ws);
+                                addedCount++;
 
-                                Console.WriteLine($"✔ Đã thêm: {datePart} - {shift}");
+                                Console.WriteLine($"✔ Đã thêm: {datePart} - {shift} (còn {5 - count - 1} chỗ)");
                             }
                         }
                         catch
                         {
-                            Console.WriteLine($"Sai format: {entry}");
+                            Console.WriteLine($"❌ Sai format: {entry}");
                         }
                     }
 
-                    conn.SaveChanges();
-                    Console.WriteLine("\n✔ Lưu thành công!\n");
+                    if (addedCount > 0)
+                    {
+                        conn.SaveChanges();
+                        Console.WriteLine($"\n✔ Lưu thành công {addedCount} ca!\n");
+                    }
+                    else
+                    {
+                        Console.WriteLine("\n⚠ Không có ca nào được thêm!\n");
+                    }
                 }
             }
         }
