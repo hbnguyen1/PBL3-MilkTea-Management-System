@@ -1,0 +1,102 @@
+﻿<UserControl x:Class="PBL3.GUI.ucQuanLyDonHang"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="White">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <StackPanel>
+                <TextBlock Text="Danh Sách Đơn Hàng" FontSize="24" FontWeight="Bold" Foreground="#1A1A1A"/>
+                <TextBlock Text="Quản lý và cập nhật trạng thái đơn hàng từ khách hàng." Foreground="#7A7A7A" Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Border Background="#F5F5F5" CornerRadius="15" Padding="15,5" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Lọc trạng thái:" VerticalAlignment="Center" Foreground="#7A7A7A" Margin="0,0,10,0"/>
+                        <ComboBox x:Name="cbFilterStatus" Width="120" SelectedIndex="0" SelectionChanged="cbFilterStatus_SelectionChanged">
+                            <ComboBoxItem Content="Tất cả"/>
+                            <ComboBoxItem Content="Completed"/>
+                            <ComboBoxItem Content="Pending"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+                <Button x:Name="btnLamMoi" Click="btnLamMoi_Click" Content="Làm mới" Background="#F28500" Foreground="White" Padding="20,8" BorderThickness="0" Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
+
+        <DataGrid Grid.Row="1" x:Name="dgOrders" AutoGenerateColumns="False" IsReadOnly="True" 
+                  Background="Transparent" BorderThickness="0" GridLinesVisibility="None"
+                  RowHeight="45" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Mã Đơn" Binding="{Binding orderID, StringFormat='#\{0\}'}" Width="100"/>
+                <DataGridTextColumn Header="Khách Hàng" Binding="{Binding customerID}" Width="120"/>
+                <DataGridTextColumn Header="Thời Gian" Binding="{Binding orderDate, StringFormat='dd/MM HH:mm'}" Width="150"/>
+                <DataGridTextColumn Header="Tổng Tiền" Binding="{Binding totalPrice, StringFormat='\{0:N0\}đ'}" Width="120"/>
+
+                <DataGridTemplateColumn Header="Trạng Thái" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border HorizontalAlignment="Left" CornerRadius="4" Padding="8,4">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#FFF3E0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding orderStatus}" Value="Completed">
+                                                <Setter Property="Background" Value="#E8F5E9"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <TextBlock Text="{Binding orderStatus}" FontWeight="Bold" FontSize="11">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#F28500"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding orderStatus}" Value="Completed">
+                                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Thao tác" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Click="btnXemChiTiet_Click" Tag="{Binding orderID}" Cursor="Hand" Background="Transparent" BorderThickness="0">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="#1A1A1A" CornerRadius="4" Padding="10,5">
+                                            <TextBlock Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="Xem / Duyệt"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding orderStatus}" Value="Completed">
+                                                                <Setter Property="Text" Value="Xem"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

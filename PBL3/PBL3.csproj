@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="Images\bg_login.png" />
+		<None Remove="Images\bg_signup.png" />
+		<None Remove="Images\default.png" />
+		<None Remove="Images\hongtrasua.png" />
+		<None Remove="Images\luctrasua.png" />
+		<None Remove="Images\qrcode.png" />
+		<None Remove="Images\trachanh.png" />
+		<None Remove="Images\tradao.png" />
+		<None Remove="Images\tradaocamsa.png" />
+		<None Remove="Images\tradau.png" />
+		<None Remove="Images\trasuakhoaimon.png" />
+		<None Remove="Images\trasuamatcha.png" />
+		<None Remove="Images\trasuasocola.png" />
+		<None Remove="Images\trasuatranchau.png" />
+		<None Remove="Images\trasuatruyenthong.png" />
+		<None Remove="Images\tratac.png" />
+		<None Remove="Images\tratao.png" />
+		<None Remove="Images\travai.png" />
+		<None Remove="Images\traxoai.png" />
+		<None Remove="Interface\UserAuthenticator.cs~RF7d5cc21.TMP" />
+		<None Remove="Manangers\pheu0qsw.h1s~" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="Images\bg_login.png" />
+	  <Resource Include="Images\bg_signup.png" />
+	  <Resource Include="Images\default.png" />
+	  <Resource Include="Images\hongtrasua.png" />
+	  <Resource Include="Images\luctrasua.png" />
+	  <Resource Include="Images\qrcode.png" />
+	  <Resource Include="Images\trachanh.png" />
+	  <Resource Include="Images\tradao.png" />
+	  <Resource Include="Images\tradaocamsa.png" />
+	  <Resource Include="Images\tradau.png" />
+	  <Resource Include="Images\trasuakhoaimon.png" />
+	  <Resource Include="Images\trasuamatcha.png" />
+	  <Resource Include="Images\trasuasocola.png" />
+	  <Resource Include="Images\trasuatranchau.png" />
+	  <Resource Include="Images\trasuatruyenthong.png" />
+	  <Resource Include="Images\tratac.png" />
+	  <Resource Include="Images\tratao.png" />
+	  <Resource Include="Images\travai.png" />
+	  <Resource Include="Images\traxoai.png" />
+	</ItemGroup>
+
+</Project>

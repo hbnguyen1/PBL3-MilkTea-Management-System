@@ -1,0 +1,76 @@
+﻿<Window x:Class="PBL3.GUI.wChiTietMon"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Chi Tiết Món" Height="700" Width="900"
+        WindowStartupLocation="CenterScreen" Background="White">
+    <Grid Margin="30">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="6*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" x:Name="imgMonAnBorder" CornerRadius="15" Margin="0,0,30,0">
+            <Border.Background>
+                <ImageBrush x:Name="imgBrush" Stretch="UniformToFill"/>
+            </Border.Background>
+        </Border>
+
+        <StackPanel Grid.Column="1">
+            <TextBlock x:Name="lblTenMon" Text="Tên Món Nước" FontSize="28" FontWeight="Heavy" Foreground="#1A1A1A" Margin="0,0,0,10"/>
+            <TextBlock x:Name="lblGia" Text="0đ" FontSize="22" FontWeight="Bold" Foreground="#F28500" Margin="0,0,0,25"/>
+
+            <TextBlock Text="Chọn Kích Thước" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A1A" Margin="0,0,0,10"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <RadioButton x:Name="radSizeM" Content="Size M" IsChecked="True" Style="{DynamicResource OptionRadioStyle}" Margin="0,0,15,0"/>
+                <RadioButton x:Name="radSizeL" Content="Size L (+8.000đ)" Style="{DynamicResource OptionRadioStyle}"/>
+            </StackPanel>
+
+            <TextBlock Text="Mức Đường" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A1A" Margin="0,0,0,10"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <RadioButton x:Name="radDuong50" Content="50%" IsChecked="True" Style="{DynamicResource OptionRadioStyle}" Margin="0,0,10,0"/>
+                <RadioButton x:Name="radDuong70" Content="70%" Style="{DynamicResource OptionRadioStyle}" Margin="0,0,10,0"/>
+                <RadioButton x:Name="radDuong100" Content="100%" Style="{DynamicResource OptionRadioStyle}"/>
+            </StackPanel>
+
+            <TextBlock Text="Mức Đá" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A1A" Margin="0,0,0,10"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,30">
+                <RadioButton x:Name="radDa50" Content="50% Đá" IsChecked="True" Style="{DynamicResource OptionRadioStyle}" Margin="0,0,10,0"/>
+                <RadioButton x:Name="radDa100" Content="100% Đá" Style="{DynamicResource OptionRadioStyle}"/>
+            </StackPanel>
+            <TextBlock Text="Ghi chú (Tùy chọn)" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A1A" Margin="0,0,0,10"/>
+            <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,30">
+                <TextBox x:Name="txtGhiChu" Background="Transparent" BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" Height="50" VerticalScrollBarVisibility="Auto" FontSize="14" Foreground="#4A4A4A"/>
+            </Border>
+            <Button x:Name="btnThemVaoGio" Click="btnThemVaoGio_Click" Height="50" Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="#F28500" CornerRadius="25">
+                            <TextBlock Text="Thêm vào giỏ hàng" Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </Grid>
+
+    <Window.Resources>
+        <Style x:Key="OptionRadioStyle" TargetType="RadioButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="20" Padding="20,10" Cursor="Hand">
+                            <TextBlock x:Name="txt" Text="{TemplateBinding Content}" Foreground="#4A4A4A" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#F28500"/>
+                                <Setter TargetName="border" Property="Background" Value="#FFF3E0"/>
+                                <Setter TargetName="txt" Property="Foreground" Value="#F28500"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+</Window>
