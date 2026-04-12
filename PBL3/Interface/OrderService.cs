@@ -81,7 +81,7 @@ namespace PBL3.Interface
                         if (order.orderStatus == "Pending")
                         {
                             order.staffID = staffID;
-                            order.orderStatus = "Approved"; 
+                            order.orderStatus = "Approved";
                             conn.SaveChanges();
                             Logger.Info($"Nhân viên {staffID} đã duyệt đơn hàng số {orderID}");
                             return true;
@@ -140,6 +140,41 @@ namespace PBL3.Interface
 
                     Logger.Error($"Lỗi khi lấy chi tiết đơn {orderId}: " + ex.Message);
                     return new List<OrderDetails>();
+                }
+            }
+        }
+
+        public List<Orders> GetOrderHistoryForCustomer(int customerId)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                try
+                {
+                    var orderHistory = conn.Orders
+                                            .Where(o => o.customerID == customerId)
+                                            .OrderByDescending(o => o.orderDate)
+                                            .ToList();
+                    return orderHistory;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Lỗi khi lấy lịch sử đơn hàng cho khách {customerId}: " + ex.Message);
+                    return new List<Orders>();
+                }
+            }
+        }
+        public Orders GetOrdersById(int orderId)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                try
+                {
+                    return conn.Orders.Find(orderId);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Lỗi khi lấy đơn hàng ID {orderId}: " + ex.Message);
+                    return null;
                 }
             }
         }

@@ -20,6 +20,7 @@ namespace PBL3
             OrderProcessingManager orderProcessingManager = new OrderProcessingManager();
             StaffManager staffManager = new StaffManager();
             ReportManager reportManager = new ReportManager();
+            CustomerPointService customerPointService = new CustomerPointService();
 
             while (true)
             {
@@ -78,10 +79,11 @@ namespace PBL3
                                     orderManager.Order(UserSession.CurrentUser);
                                     break;
                                 case "3":
-                                    throw new NotImplementedException();
+                                    customerManagers.ShowHistoryOrder(UserSession.CurrentUser);
                                     break;
                                 case "4":
-                                    throw new NotImplementedException();
+                                    customerManagers.CheckRank(UserSession.CurrentUser);
+                                    break;
                                 case "5":
                                     customerManagers.ShowBestSeller();
                                     break;

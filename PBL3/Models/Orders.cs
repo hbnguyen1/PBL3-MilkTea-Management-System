@@ -11,6 +11,6 @@ namespace PBL3.Models
         public int? staffID { get; set; } = 0;
         public required DateTime orderDate { get; set; }
         public required string orderStatus { get; set; } = string.Empty;
-        public required int totalPrice { get; set; } = 0;
+        public required double totalPrice { get; set; } = 0;
     }
 }

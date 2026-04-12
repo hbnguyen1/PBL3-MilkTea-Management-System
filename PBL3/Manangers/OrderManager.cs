@@ -19,6 +19,7 @@ namespace PBL3.Manangers
             ItemService itemService = new ItemService();
             OrderService orderService = new OrderService();
             IngredientService ingredientService = new IngredientService();
+            CustomerPointService customerPointService = new CustomerPointService();
 
             itemManager.ShowMenu();
 
@@ -111,12 +112,15 @@ namespace PBL3.Manangers
                 return;
             }
 
-            int totalprice = 0;
+            double totalprice = 0;
 
             foreach (var item in listorder)
             {
                 totalprice += item.priceAtOrder * item.quantity;
             }
+
+            double percent = customerPointService.GetDiscountPercentage(currentUser.userID);
+            totalprice = totalprice * (1 - percent);
 
             Console.WriteLine($"Tổng tiền của quý khách là {totalprice} VND, xác nhận đơn hàng? (y/n)");
             string yn = Console.ReadLine().ToLower();
@@ -153,15 +157,16 @@ namespace PBL3.Manangers
 
         void PrintBill(Orders order, List<OrderDetails> list)
         {
+            CustomerPointService customerPointService = new CustomerPointService();
             Logger.Info($"Đang in hóa đơn cho khách {order.customerID}");
 
             Console.WriteLine("\n======= HOA DON =======");
 
-            int total = 0;
+            double total = 0;
 
             foreach (var item in list)
             {
-                int money = item.priceAtOrder * item.quantity;
+                double money = item.priceAtOrder * item.quantity;
 
                 Console.WriteLine(
                     $"Mon ID: {item.itemID} | Size: {item.size} | SL: {item.quantity} | Gia: {money}"
@@ -170,8 +175,14 @@ namespace PBL3.Manangers
                 total += money;
             }
 
+            double percent = customerPointService.GetDiscountPercentage(order.customerID);
+            double discountAmount = total * (percent);
+            double finalTotal = total - discountAmount;
+
             Console.WriteLine("------------------------");
             Console.WriteLine($"Tong tien: {total} VND");
+            Console.WriteLine($"Giam gia: {discountAmount} VND");
+            Console.WriteLine($"Thanh tien: {finalTotal} VND");
             Console.WriteLine($"Ngay: {order.orderDate}");
             Console.WriteLine("========================");
         }

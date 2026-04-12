@@ -1,4 +1,5 @@
 ﻿using PBL3.Interface;
+using PBL3.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -32,6 +33,26 @@ namespace PBL3.Manangers
             for (int i = 0; i < trendingNames.Count; i++)
             {
                 Console.WriteLine($"{i + 1}. {trendingNames[i]}");
+            }
+        }
+        public void CheckRank(Users customer)
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            CustomerPointService customerpointService = new CustomerPointService();
+            string rank = customerpointService.GetCustomerRank(customer.userID);
+            int points = customerpointService.GetCurrentPoints(customer.userID);
+            Console.WriteLine($"Hạng của khách hàng: {rank}");
+            Console.WriteLine($"Số điểm hiện tại: {points}");
+        }
+        public void ShowHistoryOrder(Users customer)
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            OrderService orderService = new OrderService();
+            var orderHistory = orderService.GetOrderHistoryForCustomer(customer.userID);
+            Console.WriteLine("Lịch sử đơn hàng:");
+            foreach (var order in orderHistory)
+            {
+                Console.WriteLine($"- Đơn hàng ID: {order.orderID}, Ngày: {order.orderDate}, Tổng tiền: {order.totalPrice}");
             }
         }
     }
