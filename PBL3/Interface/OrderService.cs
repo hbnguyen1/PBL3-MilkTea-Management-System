@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using PBL3.Data;
 using PBL3.Models;
@@ -10,6 +11,15 @@ namespace PBL3.Interface
 {
     internal class OrderService : IOrderService
     {
+        // Khai báo Service điểm thưởng để dùng khi Duyệt đơn
+        private readonly CustomerPointService _pointService;
+
+        public OrderService()
+        {
+            // Trong Console App, khởi tạo trực tiếp ở đây cho tiện
+            _pointService = new CustomerPointService();
+        }
+
         public bool CreateOrder(Orders order, List<OrderDetails> listorders)
         {
             using (var conn = new MilkTeaDBContext())
@@ -18,32 +28,41 @@ namespace PBL3.Interface
                 {
                     try
                     {
+                        // 1. Lưu Order trước để tự sinh ra order.orderID
                         conn.Orders.Add(order);
                         conn.SaveChanges();
-                        Logger.Info($"Order created ID:{order.orderID} Total:{order.totalPrice}");
+                        Logger.Info($"Order tạo ID:{order.orderID} Tổng tiền:{order.totalPrice}");
 
+                        // 2. Xử lý từng chi tiết hóa đơn
                         foreach (var item in listorders)
                         {
                             item.orderID = order.orderID;
-                            conn.OrderDetails.Add(item);
 
+                            // Tìm công thức của ly nước này
                             var recipe = conn.Recipes
                                              .Where(r => r.itemID == item.itemID && r.size == item.size)
                                              .ToList();
+
+                            double costForOneCup = 0; // Biến tính tổng giá vốn cho 1 ly
 
                             foreach (var rep in recipe)
                             {
                                 var ig = conn.Ingredients.Find(rep.ingredientID);
 
                                 if (ig != null)
-                                {
+                                {                       
                                     ig.igCount -= (rep.quantityNeeded * item.quantity);
-
-                                    Logger.Info($"Ingredient {ig.igName} -{rep.quantityNeeded * item.quantity}");
+                                    Logger.Info($"Ingredient {ig.igName} - {rep.quantityNeeded * item.quantity}");
+                                    // Giá vốn 1 ly = Tổng (Định lượng * Đơn giá nhập)
+                                    costForOneCup += rep.quantityNeeded * ig.price;
                                 }
                             }
+                            // Ghi nhận giá vốn 1 ly vào chi tiết đơn hàng để tính lợi nhuận
+                            item.costAtOrder = costForOneCup;
+                            conn.OrderDetails.Add(item);
                         }
 
+                        //Save và kết thúc transaction
                         conn.SaveChanges();
                         transaction.Commit();
 
@@ -51,7 +70,7 @@ namespace PBL3.Interface
                     }
                     catch (Exception ex)
                     {
-                        transaction.Rollback();
+                        transaction.Rollback(); //run it back
 
                         Console.WriteLine("\n--- PHÁT HIỆN LỖI NGHIÊM TRỌNG ---");
                         Console.WriteLine("Lỗi chung: " + ex.Message);
@@ -68,6 +87,7 @@ namespace PBL3.Interface
                 }
             }
         }
+
         public bool ApproveOrder(int orderID, int staffID)
         {
             using (var conn = new MilkTeaDBContext())
@@ -84,6 +104,12 @@ namespace PBL3.Interface
                             order.orderStatus = "Approved";
                             conn.SaveChanges();
                             Logger.Info($"Nhân viên {staffID} đã duyệt đơn hàng số {orderID}");
+
+                            if (order.customerID != null)
+                            {
+                                _pointService.AddPoints(order.customerID, order.totalPrice);
+                            }
+
                             return true;
                         }
                         else
@@ -101,6 +127,7 @@ namespace PBL3.Interface
                 }
             }
         }
+
         public List<Orders> GetPendingOrders()
         {
             using (var conn = new MilkTeaDBContext())
@@ -108,9 +135,13 @@ namespace PBL3.Interface
                 try
                 {
                     var pendingOrders = conn.Orders
-                                            .Where(o => o.orderStatus == "Pending")
-                                            .OrderBy(o => o.orderDate)
-                                            .ToList();
+                        // [ĐÃ SỬA]: Ép cắt khoảng trắng và đưa về chữ thường để so sánh bất chấp lỗi
+                        .Where(o => o.orderStatus != null && o.orderStatus.Trim().ToLower() == "pending")
+                        .OrderBy(o => o.orderDate)
+                        .ToList();
+
+                    // IN RA LOG ĐỂ KIỂM TRA CHÉO
+                    Console.WriteLine($"[TEST DEBUG]: EF Core vừa móc lên được {pendingOrders.Count} đơn Pending!");
 
                     return pendingOrders;
                 }
@@ -121,6 +152,7 @@ namespace PBL3.Interface
                 }
             }
         }
+
         public List<OrderDetails> GetOrderDetails(int orderId)
         {
             using (var conn = new MilkTeaDBContext())
@@ -131,7 +163,6 @@ namespace PBL3.Interface
                 }
                 catch (Exception ex)
                 {
-                    // IN THẲNG LỖI RA MÀN HÌNH ĐỂ BẮT MA
                     Console.WriteLine("\n[BẮT ĐƯỢC MA EF CORE]: " + ex.Message);
                     if (ex.InnerException != null)
                     {
@@ -150,11 +181,10 @@ namespace PBL3.Interface
             {
                 try
                 {
-                    var orderHistory = conn.Orders
-                                            .Where(o => o.customerID == customerId)
-                                            .OrderByDescending(o => o.orderDate)
-                                            .ToList();
-                    return orderHistory;
+                    return conn.Orders
+                               .Where(o => o.customerID == customerId)
+                               .OrderByDescending(o => o.orderDate)
+                               .ToList();
                 }
                 catch (Exception ex)
                 {
@@ -163,6 +193,7 @@ namespace PBL3.Interface
                 }
             }
         }
+
         public Orders GetOrdersById(int orderId)
         {
             using (var conn = new MilkTeaDBContext())

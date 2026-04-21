@@ -1,6 +1,7 @@
 ﻿using PBL3.Data;
 using PBL3.Interface;
 using System;
+using System.Globalization;
 
 namespace PBL3.Manangers
 {
@@ -22,10 +23,14 @@ namespace PBL3.Manangers
             {
                 case "1":
                     Console.Write("Nhập ngày (dd/MM/yyyy): ");
-                    DateTime day = DateTime.Parse(Console.ReadLine());
+                    DateTime day;
+                    while (!DateTime.TryParseExact(Console.ReadLine(), "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out day))
+                    {
+                        Console.WriteLine("Lỗi: Ngày không hợp lệ hoặc sai định dạng!");
+                        Console.Write("Vui lòng nhập lại (dd/MM/yyyy): ");
+                    }
 
                     double daily = revenueService.GetDailyRevenue(day);
-
                     Console.WriteLine($"Doanh thu ngày {day:dd/MM/yyyy}: {daily:N0} VNĐ");
                     break;
 

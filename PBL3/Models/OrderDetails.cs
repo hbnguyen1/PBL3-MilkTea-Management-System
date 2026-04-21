@@ -12,5 +12,6 @@ namespace PBL3.Models
         public required int quantity { get; set; } = 0;
         public required double priceAtOrder { get; set; } = 0;
         public required string note { get; set; } = string.Empty;
+        public double? costAtOrder { get; set; }
     }
 }

@@ -6,7 +6,7 @@ namespace PBL3.Interface
 {
     internal interface ICustomerPointService
     {
-        bool AddPoints(int customerId, int totalbill);
+        bool AddPoints(int customerId, double totalbill);
         int GetCurrentPoints(int customerId);
         string GetCustomerRank(int customerId);
         double GetDiscountPercentage(int customerId);

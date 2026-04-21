@@ -11,7 +11,6 @@ namespace PBL3.Manangers
         {
             OrderService orderService = new OrderService();
             ItemService itemService = new ItemService();
-            CustomerPointService customerPointService = new CustomerPointService();
 
             while (true)
             {
@@ -68,8 +67,6 @@ namespace PBL3.Manangers
                             if (isSuccess)
                             {
                                 Console.WriteLine($"\nĐã duyệt đơn #{orderIdToApprove} thành công! Mời bắt tay vào pha chế.");
-                                var or = orderService.GetOrdersById(orderIdToApprove);
-                                customerPointService.AddPoints(or.customerID, (int)or.totalPrice);
                             }
                                 
                             else

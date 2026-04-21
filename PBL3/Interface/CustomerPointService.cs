@@ -11,14 +11,14 @@ namespace PBL3.Interface
     internal class CustomerPointService : ICustomerPointService
     {
         private const int MONEY_PER_POINT = 1000; //1000vnd = 1d
-        public bool AddPoints(int customerId, int totalbill)
+        public bool AddPoints(int customerId, double totalbill)
         {
             if (customerId == 1)
             {
                 Logger.Info($"Khách hàng có ID: {customerId} là khách vãng lai, không được cộng điểm.");
                 return true;
             }
-            int points = totalbill / MONEY_PER_POINT;
+            int points = (int)totalbill / MONEY_PER_POINT;
             if (points > 0)
             {
                 using (var conn = new MilkTeaDBContext())

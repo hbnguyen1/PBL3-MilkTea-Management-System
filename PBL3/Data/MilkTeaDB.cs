@@ -24,7 +24,7 @@ namespace PBL3.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = "Server=localhost;Database=PBL3_MilkTea;Trusted_Connection=True;TrustServerCertificate=True;";
+                string connectionString = "Server=localhost;Database=PBL3;Trusted_Connection=True;TrustServerCertificate=True;";
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }

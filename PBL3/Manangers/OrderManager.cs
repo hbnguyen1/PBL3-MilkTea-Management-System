@@ -12,7 +12,6 @@ namespace PBL3.Manangers
         public void Order(Users currentUser)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-
             Logger.Info($"Người dùng {currentUser.userID} mở menu đặt món");
 
             ItemManager itemManager = new ItemManager();
@@ -22,7 +21,6 @@ namespace PBL3.Manangers
             CustomerPointService customerPointService = new CustomerPointService();
 
             itemManager.ShowMenu();
-
             List<OrderDetails> listorder = new List<OrderDetails>();
 
             while (true)
@@ -39,13 +37,12 @@ namespace PBL3.Manangers
                 if (int.TryParse(id, out int itemId))
                 {
                     Logger.Info($"Người dùng {currentUser.userID} chọn món ID {itemId}");
-
                     itemManager.ShowItemDetails(itemId);
 
                     Console.WriteLine("Nhập size bạn muốn đặt:");
                     string size = Console.ReadLine().ToUpper();
 
-                    Item? item = itemService.GetItemSize(itemId, size);
+                    Item item = itemService.GetItemSize(itemId, size);
 
                     if (item != null)
                     {
@@ -64,25 +61,26 @@ namespace PBL3.Manangers
 
                             if (ingredientService.CheckIngredientEnough(itemId, size, quantity))
                             {
+                                // ĐÃ XÓA PHẦN TÍNH costAtOrder BẰNG DATABASE Ở ĐÂY
+                                // Việc tính toán này đã giao cho OrderService.CreateOrder() xử lý ngầm.
+
                                 OrderDetails orderDetails = new OrderDetails
                                 {
                                     itemID = itemId,
                                     size = size,
                                     quantity = quantity,
                                     priceAtOrder = item.price,
+                                    //costAtOrder = 0, // Sẽ được tính trong OrderService.CreateOrder()
                                     note = note
                                 };
 
                                 listorder.Add(orderDetails);
-
                                 Logger.Info($"Đã thêm món {itemId} vào danh sách đặt");
-
                                 Console.WriteLine("Đặt món thành công!");
                             }
                             else
                             {
                                 Logger.Warning($"Không đủ nguyên liệu để làm món {itemId}");
-
                                 Console.WriteLine("Không đủ nguyên liệu để làm món này!");
                             }
                         }
@@ -112,17 +110,17 @@ namespace PBL3.Manangers
                 return;
             }
 
-            double totalprice = 0;
-
+            double originalTotal = 0;
             foreach (var item in listorder)
             {
-                totalprice += item.priceAtOrder * item.quantity;
+                originalTotal += item.priceAtOrder * item.quantity;
             }
 
             double percent = customerPointService.GetDiscountPercentage(currentUser.userID);
-            totalprice = totalprice * (1 - percent);
+            double discountAmount = originalTotal * percent;
+            double finalPriceToPay = originalTotal - discountAmount;
 
-            Console.WriteLine($"Tổng tiền của quý khách là {totalprice} VND, xác nhận đơn hàng? (y/n)");
+            Console.WriteLine($"Tổng tiền của quý khách là {finalPriceToPay:N0} VND (Đã giảm {discountAmount:N0} VND). Xác nhận đơn hàng? (y/n)");
             string yn = Console.ReadLine().ToLower();
 
             if (yn == "y")
@@ -133,59 +131,45 @@ namespace PBL3.Manangers
                     staffID = null,
                     orderDate = DateTime.Now,
                     orderStatus = "Pending",
-                    totalPrice = totalprice
+                    totalPrice = finalPriceToPay
                 };
 
-                Logger.Info($"Đang tạo đơn hàng cho khách {currentUser.userID} với tổng tiền {totalprice}");
+                Logger.Info($"Đang tạo đơn hàng cho khách {currentUser.userID} với tổng tiền {finalPriceToPay}");
 
+                // GỌI XUỐNG TẦNG LÕI: Nó sẽ tự lưu, tự trừ kho, tự tính giá vốn!
                 bool isSuccess = orderService.CreateOrder(order, listorder);
 
                 if (isSuccess)
                 {
                     Logger.Info($"Tạo đơn hàng thành công cho khách {currentUser.userID}");
-
-                    PrintBill(order, listorder);
+                    PrintBill(order, listorder, discountAmount, originalTotal);
                 }
                 else
                 {
                     Logger.Error($"Lỗi khi tạo đơn hàng cho khách {currentUser.userID}");
-
                     Console.WriteLine("Hệ thống gặp lỗi trong lúc thanh toán. Đơn hàng đã bị hủy!");
                 }
             }
         }
 
-        void PrintBill(Orders order, List<OrderDetails> list)
+        void PrintBill(Orders order, List<OrderDetails> list, double discountAmount, double originalTotal)
         {
-            CustomerPointService customerPointService = new CustomerPointService();
             Logger.Info($"Đang in hóa đơn cho khách {order.customerID}");
 
             Console.WriteLine("\n======= HOA DON =======");
 
-            double total = 0;
-
             foreach (var item in list)
             {
                 double money = item.priceAtOrder * item.quantity;
-
-                Console.WriteLine(
-                    $"Mon ID: {item.itemID} | Size: {item.size} | SL: {item.quantity} | Gia: {money}"
-                );
-
-                total += money;
+                Console.WriteLine($"Mon ID: {item.itemID} | Size: {item.size} | SL: {item.quantity} | Gia: {money:N0} VND");
             }
 
-            double percent = customerPointService.GetDiscountPercentage(order.customerID);
-            double discountAmount = total * (percent);
-            double finalTotal = total - discountAmount;
-
             Console.WriteLine("------------------------");
-            Console.WriteLine($"Tong tien: {total} VND");
-            Console.WriteLine($"Giam gia: {discountAmount} VND");
-            Console.WriteLine($"Thanh tien: {finalTotal} VND");
-            Console.WriteLine($"Ngay: {order.orderDate}");
+            Console.WriteLine($"Tổng tiền {originalTotal:N0} VND");
+            Console.WriteLine($"Giảm giá:  {discountAmount:N0} VND");
+            Console.WriteLine($"Thành tiền:{order.totalPrice:N0} VND");
+            Console.WriteLine($"Ngày:      {order.orderDate:dd/MM/yyyy HH:mm:ss}");
             Console.WriteLine("========================");
         }
     }
 }
-
