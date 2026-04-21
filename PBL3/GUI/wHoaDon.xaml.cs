@@ -18,7 +18,7 @@ namespace PBL3.GUI
             lblTamTinh.Text = tongTien;
             lblTongTienHoaDon.Text = tongTien;
         }
-
+        //ko co gi
         private void btnDong_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
