@@ -21,6 +21,7 @@ namespace PBL3
             StaffManager staffManager = new StaffManager();
             ReportManager reportManager = new ReportManager();
             CustomerPointService customerPointService = new CustomerPointService();
+            RevenueManager revenueManager = new RevenueManager();
 
             while (true)
             {
@@ -45,6 +46,7 @@ namespace PBL3
                         Console.WriteLine("Bảng chọn quản trị viên:");
                         Console.WriteLine("1. Quản lý nhân viên");
                         Console.WriteLine("2. Xem báo cáo");
+                        Console.WriteLine("3. Xem doanh thu");
                         string choice4 = Console.ReadLine();
                         switch (choice4)
                             {
@@ -55,6 +57,9 @@ namespace PBL3
                                 break;
                             case "2":
                                 reportManager.ShowTopSellingReport();
+                                break;
+                            case "3":
+                                revenueManager.ShowRevenueMenu();
                                 break;
                             default:
                                 Console.WriteLine("Lựa chọn không hợp lệ. Vui lòng thử lại.");
