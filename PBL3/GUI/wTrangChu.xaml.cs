@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using PBL3.Interface;
 using PBL3.Manangers;
 using PBL3.Models;
+using PBL3.Data;
 
 namespace PBL3.GUI
 {
@@ -17,14 +18,41 @@ namespace PBL3.GUI
         private string currentCategory = "Tất cả";
         private bool isSortAscending = true;
 
-        public wTrangChu()
+        private int _currentCustomerId;
+        private double _currentDiscount = 0;
+        private CustomerPointService _pointService = new CustomerPointService();
+
+        public wTrangChu(int loggedInCustomerId)
         {
             InitializeComponent();
+            _currentCustomerId = loggedInCustomerId;
+
             LoadDataFromDatabase();
 
             icGioHang.ItemsSource = CartManager.GioHang;
 
+            LoadThongTinKhachHang();
             CapNhatSoLuongGioHang();
+        }
+
+        private void LoadThongTinKhachHang()
+        {
+            using (var db = new MilkTeaDBContext())
+            {
+                var customer = db.Customers.Find(_currentCustomerId);
+                if (customer != null)
+                {
+                    string rank = _pointService.GetCustomerRank(customer.userID);
+                    _currentDiscount = _pointService.GetDiscountPercentage(customer.userID);
+
+                    lblThongTinKhach.Text = $"Xin chào {customer.Name} | Hạng: {rank} (Giảm {_currentDiscount * 100}%) | Điểm: {customer.point}";
+                }
+                else
+                {
+                    lblThongTinKhach.Text = "Khách vãng lai";
+                    _currentDiscount = 0;
+                }
+            }
             TinhTongTien();
         }
 
@@ -59,7 +87,6 @@ namespace PBL3.GUI
             }
 
             FilterProducts("Tất cả");
-
             icProducts.ItemsSource = ProductList;
         }
 
@@ -70,7 +97,6 @@ namespace PBL3.GUI
 
         private void Category_Checked(object sender, RoutedEventArgs e)
         {
-            // Kiểm tra xem nút nào vừa được bấm
             if (sender is System.Windows.Controls.RadioButton rb && rb.IsChecked == true && allProducts != null)
             {
                 string categoryName = rb.Content.ToString() ?? "Tất cả";
@@ -103,7 +129,7 @@ namespace PBL3.GUI
 
             if (txtSearch != null)
             {
-                string keyword = txtSearch.Text.Trim().ToLower(); 
+                string keyword = txtSearch.Text.Trim().ToLower();
                 if (!string.IsNullOrEmpty(keyword))
                 {
                     filtered = filtered.Where(p => p.Name != null && p.Name.ToLower().Contains(keyword));
@@ -136,11 +162,18 @@ namespace PBL3.GUI
 
         private void TinhTongTien()
         {
-            if (lblTongTien != null)
+            if (lblTongTien != null && lblTamTinh != null)
             {
-                int tongTien = 0;
-                foreach (var item in CartManager.GioHang) tongTien += item.ThanhTien;
-                lblTongTien.Text = $"{tongTien:N0}đ";
+                int tongTienGoc = 0;
+                foreach (var item in CartManager.GioHang) tongTienGoc += item.ThanhTien;
+
+                lblTamTinh.Text = $"{tongTienGoc:N0}đ";
+
+                int tienGiam = (int)(tongTienGoc * _currentDiscount);
+                if (lblGiamGia != null) lblGiamGia.Text = $"-{tienGiam:N0}đ";
+
+                int tienThanhToan = tongTienGoc - tienGiam;
+                lblTongTien.Text = $"{tienThanhToan:N0}đ";
             }
         }
 
@@ -191,6 +224,7 @@ namespace PBL3.GUI
                 CapNhatSoLuongGioHang();
             }
         }
+
         private void btnSuaMon_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.DataContext is CartItem itemToEdit)
@@ -205,7 +239,6 @@ namespace PBL3.GUI
                     if (sp != null)
                     {
                         imagePath = sp.ImagePath ?? "/Images/default.png";
-
                         basePrice = sp.Price ?? $"{itemToEdit.GiaGoc}đ";
                     }
                 }
@@ -213,7 +246,6 @@ namespace PBL3.GUI
                 wChiTietMon detailWindow = new wChiTietMon(itemToEdit.ItemID, itemToEdit.TenMon ?? "", basePrice, imagePath);
 
                 detailWindow.LoadEditData(itemToEdit);
-
                 detailWindow.ShowDialog();
 
                 TinhTongTien();
@@ -243,46 +275,64 @@ namespace PBL3.GUI
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show("Xác nhận tạo đơn hàng và in hóa đơn?", "Thanh Toán", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = System.Windows.MessageBox.Show("Xác nhận tạo đơn hàng và thanh toán?", "Thanh Toán", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                int tongTien = 0;
+                int tongTienGoc = 0;
                 List<OrderDetails> listOrderDetails = new List<OrderDetails>();
 
                 foreach (var cartItem in CartManager.GioHang)
                 {
-                    tongTien += cartItem.ThanhTien;
+                    tongTienGoc += cartItem.ThanhTien;
+
+                    int giaThucBan = (int)(cartItem.GiaGoc * (1 - _currentDiscount));
+
                     listOrderDetails.Add(new OrderDetails
                     {
                         itemID = cartItem.ItemID,
                         size = cartItem.Size ?? "M",
                         quantity = cartItem.SoLuong,
-                        priceAtOrder = cartItem.GiaGoc,
+                        priceAtOrder = giaThucBan,
                         note = cartItem.MoTa
                     });
                 }
 
+                int tienGiam = (int)(tongTienGoc * _currentDiscount);
+                int finalPrice = tongTienGoc - tienGiam;
+
                 Orders newOrder = new Orders()
                 {
-                    customerID = 1,
-                    staffID = 101,
+                    customerID = _currentCustomerId,
+                    staffID = null,
                     orderDate = System.DateTime.Now,
                     orderStatus = "Pending",
-                    totalPrice = tongTien
+                    totalPrice = finalPrice
                 };
 
                 OrderService orderService = new OrderService();
                 bool isSuccess = orderService.CreateOrder(newOrder, listOrderDetails);
 
-                if (isSuccess) 
+                if (isSuccess)
                 {
-                    int savedOrderId = newOrder.orderID; 
+                    int oldPoints = _pointService.GetCurrentPoints(_currentCustomerId);
+                    _pointService.AddPoints(_currentCustomerId, finalPrice);
+                    int newPoints = _pointService.GetCurrentPoints(_currentCustomerId);
 
-                    wHoaDon hoaDonWindow = new wHoaDon(savedOrderId, lblTongTien.Text);
+                    string msg = $"Đặt hàng thành công! Tổng thanh toán: {finalPrice:N0}đ\nĐơn hàng đang chờ xử lý.";
+
+                    if (oldPoints < 100 && newPoints >= 100) msg += "\n\n🎉 CHÚC MỪNG! Bạn đã thăng hạng ĐỒNG!";
+                    else if (oldPoints < 200 && newPoints >= 200) msg += "\n\n🎉 CHÚC MỪNG! Bạn đã thăng hạng BẠC!";
+                    else if (oldPoints < 300 && newPoints >= 300) msg += "\n\n🎉 CHÚC MỪNG! Bạn đã thăng hạng VÀNG!";
+
+                    System.Windows.MessageBox.Show(msg, "Hoàn tất", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    int diemDuocCongThem = newPoints - oldPoints;
+
+                    wHoaDon hoaDonWindow = new wHoaDon(newOrder.orderID, lblTongTien.Text, diemDuocCongThem, newPoints);
                     hoaDonWindow.ShowDialog();
 
                     CartManager.GioHang.Clear();
-                    TinhTongTien();
+                    LoadThongTinKhachHang();
                     CapNhatSoLuongGioHang();
                 }
                 else
@@ -328,6 +378,7 @@ namespace PBL3.GUI
             if (int.TryParse(cleanString, out int result)) return result;
             return 0;
         }
+
         private void lblDangXuat_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var result = System.Windows.MessageBox.Show("Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -338,6 +389,17 @@ namespace PBL3.GUI
 
                 this.Close();
             }
+        }
+        private void lblLichSu_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (_currentCustomerId == 1)
+            {
+                System.Windows.MessageBox.Show("Khách vãng lai không có lịch sử đơn hàng. Vui lòng đăng nhập tài khoản thành viên!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            wLichSuDonHang lichSuWindow = new wLichSuDonHang(_currentCustomerId);
+            lichSuWindow.ShowDialog();
         }
     }
 

@@ -1,0 +1,57 @@
+﻿<Window x:Class="PBL3.GUI.wLichSuDonHang"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Lịch Sử Đơn Hàng" Height="550" Width="700"
+        WindowStartupLocation="CenterScreen" Background="#F5F6F8">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Lịch Sử Mua Hàng Của Bạn" FontSize="24" FontWeight="Heavy" Foreground="#1A1A1A" Margin="0,0,0,20"/>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="15">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="Black"/>
+            </Border.Effect>
+
+            <DataGrid x:Name="dgLichSu" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" 
+                      Background="White" BorderThickness="0" RowHeight="40" FontSize="14" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EFEFEF">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#FAFAFA"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="Padding" Value="10,10,10,10"/>
+                    </Style>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Padding" Value="10,0"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Mã Đơn" Binding="{Binding orderID, StringFormat='#0000'}" Width="100"/>
+                    <DataGridTextColumn Header="Ngày Đặt" Binding="{Binding orderDate, StringFormat='dd/MM/yyyy HH:mm'}" Width="*"/>
+                    <DataGridTextColumn Header="Tổng Tiền" Binding="{Binding totalPrice, StringFormat='{}{0:N0}đ'}" Width="150">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#F28500"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Trạng Thái" Binding="{Binding orderStatus}" Width="120"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</Window>

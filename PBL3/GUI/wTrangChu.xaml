@@ -91,6 +91,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Lịch sử đơn hàng" Foreground="#4CAF50" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,20,0" Cursor="Hand" MouseLeftButtonDown="lblLichSu_Click"/>
                     <TextBlock Text="Đăng xuất" Foreground="#F28500" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0" Cursor="Hand" MouseLeftButtonDown="lblDangXuat_Click"/>
 
                     <Border Background="#FFF3E0" Width="40" Height="40" CornerRadius="20" Cursor="Hand">
@@ -226,9 +227,20 @@
 
                     <StackPanel Grid.Row="2" Margin="0,15,0,0">
                         <Border BorderBrush="#EFEFEF" BorderThickness="0,1,0,0" Margin="0,0,0,15"/>
+
+                        <TextBlock x:Name="lblThongTinKhach" Text="Đang tải thông tin..." FontWeight="SemiBold" Foreground="#F28500" Margin="0,0,0,15" TextWrapping="Wrap"/>
+
+                        <Grid Margin="0,0,0,5">
+                            <TextBlock Text="Tạm tính:" FontSize="14" Foreground="#7A7A7A"/>
+                            <TextBlock x:Name="lblTamTinh" Text="0đ" FontSize="14" Foreground="#1A1A1A" HorizontalAlignment="Right"/>
+                        </Grid>
                         <Grid Margin="0,0,0,15">
-                            <TextBlock Text="Tổng cộng:" FontSize="16" FontWeight="SemiBold" Foreground="#4A4A4A"/>
-                            <TextBlock x:Name="lblTongTien" Text="0đ" FontSize="20" FontWeight="Heavy" Foreground="#F28500" HorizontalAlignment="Right"/>
+                            <TextBlock Text="Chiết khấu:" FontSize="14" Foreground="#4CAF50"/>
+                            <TextBlock x:Name="lblGiamGia" Text="-0đ" FontSize="14" FontWeight="Bold" Foreground="#4CAF50" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,15">
+                            <TextBlock Text="Thành tiền:" FontSize="18" FontWeight="Bold" Foreground="#1A1A1A"/>
+                            <TextBlock x:Name="lblTongTien" Text="0đ" FontSize="22" FontWeight="Heavy" Foreground="#F28500" HorizontalAlignment="Right"/>
                         </Grid>
 
                         <Button x:Name="btnThanhToan" Click="btnThanhToan_Click" Height="50" Cursor="Hand">
@@ -241,6 +253,7 @@
                             </Button.Template>
                         </Button>
                     </StackPanel>
+
                 </Grid>
             </Border>
         </Grid>

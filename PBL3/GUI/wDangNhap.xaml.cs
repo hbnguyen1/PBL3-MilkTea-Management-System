@@ -52,10 +52,14 @@ namespace PBL3.GUI
                 }
                 else if (currentUser is Users currentCustomer)
                 {
-                    wTrangChu customerWindow = new wTrangChu();
+                    wTrangChu customerWindow = new wTrangChu(currentCustomer.userID);
                     customerWindow.Show();
                     this.Close();
                 }
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Số điện thoại hoặc mật khẩu không chính xác!", "Lỗi đăng nhập", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
