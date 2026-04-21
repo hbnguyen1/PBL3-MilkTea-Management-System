@@ -14,7 +14,6 @@ namespace PBL3.GUI
             InitializeComponent();
         }
 
-        // Xử lý nút ẩn/hiện mật khẩu
         private void btnTogglePassword_Click(object sender, MouseButtonEventArgs e)
         {
             isPasswordVisible = !isPasswordVisible;
@@ -35,7 +34,6 @@ namespace PBL3.GUI
             }
         }
 
-        // Xử lý nút quay lại Đăng nhập
         private void lblDangNhap_Click(object sender, MouseButtonEventArgs e)
         {
             wDangNhap loginWindow = new wDangNhap();
@@ -43,30 +41,24 @@ namespace PBL3.GUI
             this.Close();
         }
 
-        // Xử lý nút Đăng ký
         private void btnDangKy_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Lấy dữ liệu từ giao diện
             string fullName = txtFullName.Text;
             string phoneNumber = txtPhoneNumber.Text;
             string password = isPasswordVisible ? txtPasswordVisible.Text : txtPassword.Password;
 
-            // 2. Kiểm tra dữ liệu rỗng
             if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(phoneNumber) || string.IsNullOrWhiteSpace(password))
             {
                 System.Windows.MessageBox.Show("Vui lòng nhập đầy đủ thông tin (Họ tên, Số điện thoại, Mật khẩu)!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // 3. Gọi hàm xử lý logic bên CustomerManagers
             bool isSuccess = CustomerManagers.Register(fullName, phoneNumber, password);
 
-            // 4. Hiển thị thông báo và điều hướng
             if (isSuccess)
             {
                 System.Windows.MessageBox.Show("Đăng ký tài khoản thành công! Vui lòng đăng nhập để tiếp tục.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Đăng ký xong tự động mở lại trang Đăng nhập
                 wDangNhap loginWindow = new wDangNhap();
                 loginWindow.Show();
                 this.Close();

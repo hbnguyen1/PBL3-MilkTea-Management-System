@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
-using System.ComponentModel; // Thêm thư viện này
+using System.ComponentModel; 
 
 namespace PBL3.GUI
 {
@@ -18,7 +18,7 @@ namespace PBL3.GUI
         public string? Size { get; set; }
         public string? TenMon { get; set; }
         public string? MoTa { get; set; }
-        public int GiaGoc { get; set; } // Lưu giá gốc của 1 ly
+        public int GiaGoc { get; set; } 
 
         private int _soLuong = 1;
         public int SoLuong
@@ -27,13 +27,11 @@ namespace PBL3.GUI
             set
             {
                 _soLuong = value;
-                // Báo cho giao diện WPF biết để tự động nhảy số
                 OnPropertyChanged(nameof(SoLuong));
                 OnPropertyChanged(nameof(ThanhTienStr));
             }
         }
 
-        // Tự động nhân tiền khi Số lượng thay đổi
         public int ThanhTien => GiaGoc * SoLuong;
         public string ThanhTienStr => $"{ThanhTien:N0}đ";
 

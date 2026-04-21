@@ -12,7 +12,6 @@ namespace PBL3.GUI
 
         private void lblDangXuat_Click(object sender, MouseButtonEventArgs e)
         {
-            // Trở về màn hình Đăng nhập
             wDangNhap loginWindow = new wDangNhap();
             loginWindow.Show();
             this.Close();
@@ -22,7 +21,6 @@ namespace PBL3.GUI
         {
             if (MainContent != null)
             {
-                // Nhúng bảng Quản lý đơn hàng vào khung chính
                 MainContent.Content = new ucQuanLyDonHang();
             }
         }

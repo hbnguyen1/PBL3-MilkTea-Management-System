@@ -40,19 +40,16 @@ namespace PBL3.GUI
             string phoneNumber = txtPhoneNumber.Text;
             string password = isPasswordVisible ? txtPasswordVisible.Text : txtPassword.Password;
 
-            // Gọi logic kiểm tra đăng nhập
             var currentUser = AuthManager.Login(phoneNumber, password);
 
             if (currentUser != null)
             {
-                // 1. Kiểm tra NHÂN VIÊN trước
                 if (currentUser is Staff currentStaff)
                 {
                     wTrangChu_NhanVien staffWindow = new wTrangChu_NhanVien();
                     staffWindow.Show();
                     this.Close();
                 }
-                // 2. Nếu không phải Nhân viên, thì mới xét KHÁCH HÀNG
                 else if (currentUser is Users currentCustomer)
                 {
                     wTrangChu customerWindow = new wTrangChu();

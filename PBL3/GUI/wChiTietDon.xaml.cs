@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using PBL3.Data; // Dùng thư viện Data trực tiếp
+using PBL3.Data; 
 using PBL3.Models;
 
 namespace PBL3.GUI
@@ -22,7 +22,6 @@ namespace PBL3.GUI
         {
             using (var db = new MilkTeaDBContext())
             {
-                // Lấy chi tiết đơn hàng
                 var details = db.OrderDetails.Where(d => d.orderID == _orderId).ToList();
                 List<OrderDetailViewModel> viewList = new List<OrderDetailViewModel>();
 
@@ -46,7 +45,7 @@ namespace PBL3.GUI
                 var order = db.Orders.FirstOrDefault(o => o.orderID == _orderId);
                 if (order != null && order.orderStatus == "Completed")
                 {
-                    btnDuyet.Visibility = Visibility.Collapsed; // Ẩn nút đi
+                    btnDuyet.Visibility = Visibility.Collapsed;
                 }
             }
         }
@@ -61,9 +60,8 @@ namespace PBL3.GUI
                     var order = db.Orders.FirstOrDefault(o => o.orderID == _orderId);
                     if (order != null)
                     {
-                        // Đổi trạng thái sang Hoàn thành
                         order.orderStatus = "Completed";
-                        db.SaveChanges(); // Lưu xuống SQL
+                        db.SaveChanges(); 
 
                         System.Windows.MessageBox.Show("Đã duyệt đơn thành công!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                         this.Close();

@@ -11,11 +11,9 @@ namespace PBL3.GUI
 {
     public partial class wTrangChu : Window
     {
-        // Thêm dấu ? để sửa cảnh báo vàng CS8618
         public ObservableCollection<ProductViewModel>? ProductList { get; set; }
         private List<ProductViewModel>? allProducts;
 
-        // Trạng thái bộ lọc và sắp xếp hiện tại
         private string currentCategory = "Tất cả";
         private bool isSortAscending = true;
 
@@ -60,16 +58,13 @@ namespace PBL3.GUI
                 }
             }
 
-            // Mặc định gọi hàm lọc để hiển thị "Tất cả" lên màn hình
             FilterProducts("Tất cả");
 
-            // Gắn danh sách vào màn hình XAML
             icProducts.ItemsSource = ProductList;
         }
 
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // Mỗi khi khách gõ phím, gọi lại hàm lọc
             FilterProducts(currentCategory);
         }
 
@@ -91,7 +86,6 @@ namespace PBL3.GUI
 
             ProductList.Clear();
 
-            // 1. Lọc theo danh mục
             IEnumerable<ProductViewModel> filtered;
 
             if (category == "Tất cả")
@@ -109,21 +103,18 @@ namespace PBL3.GUI
 
             if (txtSearch != null)
             {
-                string keyword = txtSearch.Text.Trim().ToLower(); // Lấy chữ người dùng gõ
+                string keyword = txtSearch.Text.Trim().ToLower(); 
                 if (!string.IsNullOrEmpty(keyword))
                 {
-                    // Lọc ra các món có tên chứa từ khóa (không phân biệt hoa/thường)
                     filtered = filtered.Where(p => p.Name != null && p.Name.ToLower().Contains(keyword));
                 }
             }
 
-            // 3. Kết hợp Sắp xếp hiện tại vào kết quả vừa lọc
             if (isSortAscending)
                 filtered = filtered.OrderBy(p => ParsePrice(p.Price));
             else
                 filtered = filtered.OrderByDescending(p => ParsePrice(p.Price));
 
-            // 4. Đổ dữ liệu ra màn hình
             if (!filtered.Any())
             {
                 ProductList.Add(new ProductViewModel
@@ -200,6 +191,35 @@ namespace PBL3.GUI
                 CapNhatSoLuongGioHang();
             }
         }
+        private void btnSuaMon_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is CartItem itemToEdit)
+            {
+                string imagePath = "/Images/default.png";
+
+                string basePrice = $"{itemToEdit.GiaGoc}đ";
+
+                if (allProducts != null)
+                {
+                    var sp = allProducts.FirstOrDefault(p => p.ItemID == itemToEdit.ItemID);
+                    if (sp != null)
+                    {
+                        imagePath = sp.ImagePath ?? "/Images/default.png";
+
+                        basePrice = sp.Price ?? $"{itemToEdit.GiaGoc}đ";
+                    }
+                }
+
+                wChiTietMon detailWindow = new wChiTietMon(itemToEdit.ItemID, itemToEdit.TenMon ?? "", basePrice, imagePath);
+
+                detailWindow.LoadEditData(itemToEdit);
+
+                detailWindow.ShowDialog();
+
+                TinhTongTien();
+                CapNhatSoLuongGioHang();
+            }
+        }
 
         private void btnXoaMon_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
@@ -226,7 +246,6 @@ namespace PBL3.GUI
             var result = System.Windows.MessageBox.Show("Xác nhận tạo đơn hàng và in hóa đơn?", "Thanh Toán", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                // 1. Chuyển đổi giỏ hàng sang Model
                 int tongTien = 0;
                 List<OrderDetails> listOrderDetails = new List<OrderDetails>();
 
@@ -243,7 +262,6 @@ namespace PBL3.GUI
                     });
                 }
 
-                // 2. Tạo đối tượng Order (Sửa lại customerID và staffID thực tế của bạn nếu cần)
                 Orders newOrder = new Orders()
                 {
                     customerID = 1,
@@ -253,18 +271,16 @@ namespace PBL3.GUI
                     totalPrice = tongTien
                 };
 
-                // 3. Lưu vào Database và LẤY ID THỰC TẾ
                 OrderService orderService = new OrderService();
                 bool isSuccess = orderService.CreateOrder(newOrder, listOrderDetails);
 
-                if (isSuccess) // Lưu thành công
+                if (isSuccess) 
                 {
-                    int savedOrderId = newOrder.orderID; // Entity Framework tự gán ID vào object newOrder sau khi lưu
+                    int savedOrderId = newOrder.orderID; 
 
                     wHoaDon hoaDonWindow = new wHoaDon(savedOrderId, lblTongTien.Text);
                     hoaDonWindow.ShowDialog();
 
-                    // Làm sạch giao diện đón khách mới
                     CartManager.GioHang.Clear();
                     TinhTongTien();
                     CapNhatSoLuongGioHang();
@@ -286,7 +302,6 @@ namespace PBL3.GUI
                 wChiTietMon detailWindow = new wChiTietMon(selectedProduct.ItemID, selectedProduct.Name ?? "", selectedProduct.Price ?? "", selectedProduct.ImagePath ?? "");
                 detailWindow.ShowDialog();
 
-                // Cập nhật sau khi Popup đóng
                 CapNhatSoLuongGioHang();
                 TinhTongTien();
             }
@@ -318,11 +333,9 @@ namespace PBL3.GUI
             var result = System.Windows.MessageBox.Show("Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                // Mở lại trang đăng nhập
                 wDangNhap loginWindow = new wDangNhap();
                 loginWindow.Show();
 
-                // Đóng trang chủ hiện tại
                 this.Close();
             }
         }
