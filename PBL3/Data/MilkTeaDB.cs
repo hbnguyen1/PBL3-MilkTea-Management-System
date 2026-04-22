@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 using PBL3.Models;
 
 namespace PBL3.Data
@@ -24,7 +26,11 @@ namespace PBL3.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = "Server=localhost;Database=PBL3;Trusted_Connection=True;TrustServerCertificate=True;";
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+                string connectionString = configuration.GetConnectionString("DefaultConnection");
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }

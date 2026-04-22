@@ -1,0 +1,16 @@
+version: '3.8' # Phiên bản của Docker Compose
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest # Sử dụng image Microsoft SQL Server 2022
+    container_name: pbl3_sqldb # Tên container hiện ở Docker Destop
+    environment: # Biến môi trường
+      ACCEPT_EULA: "Y" # Chấp nhận điều khoản của Microsoft
+      MSSQL_SA_PASSWORD: "PBL3_MilkTea@2026" # Mật khẩu và tài khoản
+    ports:
+      - "14333:1433" # Map cổng SQL Server. Để đi từ ngoài Window vào Container
+    volumes:
+      - pbl3_data:/var/opt/mssql # Docker Volumes: Ánh xạ dữ liệu trong container ra máy
+
+volumes:
+  pbl3_data: # Khai báo một ổ đĩa ảo bền vững
