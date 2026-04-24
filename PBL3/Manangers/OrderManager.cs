@@ -33,7 +33,7 @@ namespace PBL3.Manangers
                     Logger.Info($"Người dùng {currentUser.userID} thoát khỏi chức năng đặt món");
                     break;
                 }
-
+                
                 if (int.TryParse(id, out int itemId))
                 {
                     Logger.Info($"Người dùng {currentUser.userID} chọn món ID {itemId}");
@@ -47,7 +47,11 @@ namespace PBL3.Manangers
                     if (item != null)
                     {
                         Console.WriteLine("Nhập số lượng bạn muốn đặt:");
-                        int quantity = int.Parse(Console.ReadLine());
+                        int quantity;
+                        while (!int.TryParse(Console.ReadLine(), out quantity) || quantity <= 0)
+                        {
+                            Console.WriteLine("Lỗi: Số lượng phải là số nguyên dương. Vui lòng nhập lại:");
+                        }
 
                         Console.WriteLine("Bạn có ghi chú gì không:");
                         string note = Console.ReadLine();
@@ -61,16 +65,12 @@ namespace PBL3.Manangers
 
                             if (ingredientService.CheckIngredientEnough(itemId, size, quantity))
                             {
-                                // ĐÃ XÓA PHẦN TÍNH costAtOrder BẰNG DATABASE Ở ĐÂY
-                                // Việc tính toán này đã giao cho OrderService.CreateOrder() xử lý ngầm.
-
                                 OrderDetails orderDetails = new OrderDetails
                                 {
                                     itemID = itemId,
                                     size = size,
                                     quantity = quantity,
                                     priceAtOrder = item.price,
-                                    //costAtOrder = 0, // Sẽ được tính trong OrderService.CreateOrder()
                                     note = note
                                 };
 
