@@ -1,7 +1,8 @@
-﻿using System.Linq;
+﻿using PBL3.Data;
+using PBL3.Manangers;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using PBL3.Data;
 
 namespace PBL3.GUI
 {
@@ -15,11 +16,8 @@ namespace PBL3.GUI
 
         private void LoadOrders()
         {
-            using (var db = new MilkTeaDBContext())
-            {
-                var list = db.Orders.OrderByDescending(o => o.orderID).ToList();
-                dgOrders.ItemsSource = list;
-            }
+            OrderManager manager = new OrderManager();
+            dgOrders.ItemsSource = manager.GetAllOrders();
         }
 
         private void btnLamMoi_Click(object sender, RoutedEventArgs e)

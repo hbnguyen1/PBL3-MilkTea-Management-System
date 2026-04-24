@@ -81,7 +81,7 @@ namespace PBL3.Interface
                         if (order.orderStatus == "Pending")
                         {
                             order.staffID = staffID;
-                            order.orderStatus = "Approved"; 
+                            order.orderStatus = "Approved";
                             conn.SaveChanges();
                             Logger.Info($"Nhân viên {staffID} đã duyệt đơn hàng số {orderID}");
                             return true;
@@ -99,6 +99,21 @@ namespace PBL3.Interface
                     Logger.Error($"Lỗi khi duyệt đơn {orderID}: {ex.Message}");
                     return false;
                 }
+            }
+        }
+        public List<Orders> GetAllOrders()
+        {
+            using (var db = new MilkTeaDBContext())
+            {
+                return db.Orders.OrderByDescending(o => o.orderID).ToList();
+            }
+        }
+
+        public List<Orders> GetOrdersByStatus(string status)
+        {
+            using (var db = new MilkTeaDBContext())
+            {
+                return db.Orders.Where(o => o.orderStatus == status).OrderByDescending(o => o.orderID).ToList();
             }
         }
         public List<Orders> GetPendingOrders()

@@ -2,6 +2,7 @@
 using PBL3.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Text;
 using PBL3.Core;
@@ -16,14 +17,15 @@ namespace PBL3.Interface
             {
                 conn.Items.AddRange(items);
                 conn.SaveChanges();
-                Logger.Info($"Đã thêm sản phẩm: {items[0].itemName} - {items[0].size} - {items[0].itemType} - {items[0].price}");
-                Logger.Info($"Đã thêm sản phẩm: {items[1].itemName} - {items[1].size} - {items[1].itemType} - {items[1].price}");
+
+                foreach (var item in items)
+                {
+                    Logger.Info($"Đã thêm sản phẩm: {item.itemName} - {item.size} - {item.itemType} - {item.price}");
+                }
                 return true;
             }
-            Logger.Error($"Thất bại khi thêm sản phẩm: {items[0].itemName} - {items[0].size} - {items[0].itemType} - {items[0].price}");
-            Logger.Info($"Thất bại khi thêm sản phẩm: {items[1].itemName} - {items[1].size} - {items[1].itemType} - {items[1].price}");
-            return false;
         }
+
         public bool AddItemWithRecipe(List<Item> items, List<Recipe> recipes)
         {
             using (var conn = new MilkTeaDBContext())
@@ -58,20 +60,22 @@ namespace PBL3.Interface
                 }
             }
         }
+
         public bool DeleteItemByID(int itemId)
         {
             using (var conn = new MilkTeaDBContext())
             {
-                var item = conn.Items.Find(itemId);
-                if (item != null)
+                var itemsToDelete = conn.Items.Where(i => i.itemID == itemId).ToList();
+                if (itemsToDelete.Count > 0)
                 {
-                    conn.Items.Remove(item);
+                    conn.Items.RemoveRange(itemsToDelete);
                     conn.SaveChanges();
                     return true;
                 }
             }
             return false;
         }
+
         public int GetNextItemID()
         {
             using (var db = new MilkTeaDBContext())
@@ -79,13 +83,15 @@ namespace PBL3.Interface
                 return (db.Items.Max(i => (int?)i.itemID) ?? 0) + 1;
             }
         }
+
         public Item? GetItemById(int itemId)
         {
             using (var conn = new MilkTeaDBContext())
             {
-                return conn.Items.Find(itemId);
+                return conn.Items.FirstOrDefault(i => i.itemID == itemId);
             }
         }
+
         public Item? GetItemSize(int itemId, string size)
         {
             using (var conn = new MilkTeaDBContext())
@@ -94,11 +100,12 @@ namespace PBL3.Interface
                 return item;
             }
         }
+
         public bool RemoveItem(Item item)
         {
             using (var conn = new MilkTeaDBContext())
             {
-                var revItem = conn.Items.Find(item.itemID);
+                var revItem = conn.Items.SingleOrDefault(i => i.itemID == item.itemID && i.size == item.size);
                 if (revItem != null)
                 {
                     conn.Items.Remove(revItem);
@@ -108,14 +115,19 @@ namespace PBL3.Interface
             }
             return false;
         }
+
         public bool UpdateItem(int itemId, Item item)
         {
             using (var conn = new MilkTeaDBContext())
             {
-                var updateItem = conn.Items.Find(itemId);
+                var updateItem = conn.Items.SingleOrDefault(i => i.itemID == itemId && i.size == item.size);
                 if (updateItem != null)
                 {
-                    updateItem = item;
+                    updateItem.itemName = item.itemName;
+                    updateItem.itemType = item.itemType;
+                    updateItem.price = item.price;
+                    updateItem.isAvailable = item.isAvailable;
+
                     conn.SaveChanges();
                     return true;
                 }
@@ -143,6 +155,7 @@ namespace PBL3.Interface
                 return true;
             }
         }
+
         public bool isAvailableWithCount(int itemId, string size, int quantity)
         {
             using (var conn = new MilkTeaDBContext())
@@ -163,6 +176,7 @@ namespace PBL3.Interface
                 return true;
             }
         }
+
         public List<Item> GetMenuByCategory(string category)
         {
             using (var conn = new MilkTeaDBContext())
@@ -179,6 +193,7 @@ namespace PBL3.Interface
                 return menu;
             }
         }
+
         public List<Item> GetItemSizeAndPrice(int itemId)
         {
             using (var conn = new MilkTeaDBContext())
@@ -191,6 +206,7 @@ namespace PBL3.Interface
                 return itemList;
             }
         }
+
         public bool DeductStock(int itemId, string size, int quantity)
         {
             using (var conn = new MilkTeaDBContext())

@@ -19,10 +19,15 @@ namespace PBL3.GUI
 
         private void btnQuanLyDonHang_Checked(object sender, RoutedEventArgs e)
         {
-            if (MainContent != null)
-            {
-                MainContent.Content = new ucQuanLyDonHang();
-            }
+            MainContent.Content = new ucQuanLyDonHang();
+        }
+        private void btnMenuKho_Checked(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new ucQuanLyKho();
+        }
+        private void btnQuanLyMon_Checked(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new ucQuanLyMon();
         }
     }
 }

@@ -10,6 +10,8 @@ namespace PBL3.Interface
     {
         bool CreateOrder(Orders order, List<OrderDetails> listorders);
         bool ApproveOrder(int orderID, int staffID);
+        List<Orders> GetAllOrders();
+        List<Orders> GetOrdersByStatus(string status);
         List<Orders> GetPendingOrders();
         List<OrderDetails> GetOrderDetails(int orderID);
     }

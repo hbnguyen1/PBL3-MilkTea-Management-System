@@ -11,5 +11,16 @@ namespace PBL3.Manangers
         {
             OrderService orderService = new OrderService();
         }
+        public List<Orders> GetAllOrders()
+        {
+            OrderService orderService = new OrderService();
+            return orderService.GetAllOrders();
+        }
+
+        public List<Orders> GetOrdersByStatus(string status)
+        {
+            OrderService orderService = new OrderService();
+            return orderService.GetOrdersByStatus(status);
+        }
     }
 }

@@ -23,9 +23,9 @@
 
                     <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Quản lý Đơn hàng" Tag="&#xE7BF;" Checked="btnQuanLyDonHang_Checked"/>
 
-                    <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Quản lý Sản phẩm" Tag="&#xE74C;"/>
+                    <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Quản lý Sản phẩm" Tag="&#xE74C;" Checked="btnQuanLyMon_Checked"/>
 
-                    <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Kho nguyên liệu" Tag="&#xE7B8;"/>
+                    <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Kho nguyên liệu" Tag="&#xE7B8;" Checked="btnMenuKho_Checked"/>
                 </StackPanel>
             </StackPanel>
         </Border>

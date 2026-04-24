@@ -82,7 +82,14 @@ namespace PBL3.Interface
                     return false;
                 }
             }
-    
+            public List<Ingredient> GetLowStockIngredients()
+            {
+                using (var db = new MilkTeaDBContext())
+                {
+                    return db.Ingredients.Where(ig => ig.igCount < 500).ToList();
+                }
+            }
+
             public bool updateIngredient(int igId, string name, string unit, int price)
             {
                 throw new NotImplementedException();
