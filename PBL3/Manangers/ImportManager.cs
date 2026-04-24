@@ -25,28 +25,63 @@ namespace PBL3.Manangers
             }
 
             List<ImportDetail> details = new List<ImportDetail>();
-
             while (true)
             {
-                Console.WriteLine("Nhập ID nguyên liệu (0 để kết thúc):");
-                int id = int.Parse(Console.ReadLine());
+                Console.WriteLine("\nNhập ID nguyên liệu (0 để kết thúc):");
+                if (!int.TryParse(Console.ReadLine(), out int id))
+                {
+                    Console.WriteLine("Lỗi: ID phải là số. Vui lòng nhập lại!");
+                    continue; 
+                }
 
                 if (id == 0) break;
 
-                Console.WriteLine("Nhập số lượng:");
-                int quantity = int.Parse(Console.ReadLine());
-
-                Console.WriteLine("Nhập giá nhập:");
-                int price = int.Parse(Console.ReadLine());
-
-                details.Add(new ImportDetail
+                //Kiểm tra ID có tồn tại hay không
+                var existIg = ingredients.FirstOrDefault(i => i.igID == id);
+                if (existIg == null)
                 {
-                    igId = id,
-                    quantityAdded = quantity,
-                    importPrice = price
-                });
+                    Console.WriteLine($"Lỗi: Không tìm thấy nguyên liệu nào có ID = {id}!");
+                    continue;
+                }
 
-                Logger.Info($"Thêm nguyên liệu {id} SL {quantity} giá {price} vào phiếu nhập");
+                Console.WriteLine($"-> Đang nhập kho cho: [{existIg.igName}]");
+
+                //Nhập số lượng
+                Console.WriteLine("Nhập số lượng:");
+                int quantity;
+                while (!int.TryParse(Console.ReadLine(), out quantity) || quantity <= 0)
+                {
+                    Console.WriteLine("Lỗi: Số lượng phải là số nguyên lớn hơn 0. Nhập lại:");
+                }
+
+                //Nhập giá
+                Console.WriteLine("Nhập giá nhập (1 đơn vị):");
+                int price;
+                while (!int.TryParse(Console.ReadLine(), out price) || price < 0)
+                {
+                    Console.WriteLine("Lỗi: Giá nhập không hợp lệ. Nhập lại:");
+                }
+
+                //Xử lý logic cộng dồn nếu nguyên liệu đã tồn tại trong danh sách tạm
+                var existingDetail = details.FirstOrDefault(d => d.igId == id);
+                if (existingDetail != null)
+                {
+                    existingDetail.quantityAdded += quantity;
+                    existingDetail.importPrice = price; // Cập nhật lại giá mới nhất (hoặc bạn có thể tính trung bình cộng tùy logic)
+                    Console.WriteLine($"Đã cộng dồn thêm số lượng cho [{existIg.igName}].");
+                }
+                else
+                {
+                    details.Add(new ImportDetail
+                    {
+                        igId = id,
+                        quantityAdded = quantity,
+                        importPrice = price
+                    });
+                    Console.WriteLine($"Đã thêm [{existIg.igName}] vào phiếu nhập.");
+                }
+
+                Logger.Info($"Đã thêm/cập nhật nguyên liệu {id} SL {quantity} giá {price} vào danh sách tạm");
             }
 
             if (details.Count == 0)
