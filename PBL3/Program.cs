@@ -23,6 +23,7 @@ namespace PBL3
             ReportManager reportManager = new ReportManager();
             CustomerPointService customerPointService = new CustomerPointService();
             RevenueManager revenueManager = new RevenueManager();
+            ProfitManager profitManager = new ProfitManager();
 
             while (true)
             {
@@ -48,21 +49,38 @@ namespace PBL3
                         Console.WriteLine("1. Quản lý nhân viên");
                         Console.WriteLine("2. Xem báo cáo");
                         Console.WriteLine("3. Xem doanh thu");
-                        string choice4 = Console.ReadLine();
+                        Console.WriteLine("4. Xem lợi nhuận");
+                            string choice4 = Console.ReadLine();
                         switch (choice4)
                             {
                             case "1":
-                                //staffManager.ManageStaff();
-                                //throw Exceptions.NotImplementedException();
-                                Console.WriteLine("Chua xong shop oi");
-                                break;
+                            Console.WriteLine("Bạn có muốn thêm nhân viên không ? (y/n)");
+                            if (Console.ReadLine().ToLower() == "y")
+                            {
+                                    staffManager.AddStaff();
+                            }
+                            Console.WriteLine("Bạn có muốn xem nhân viên không ? (y/n)");
+                            if (Console.ReadLine().ToLower() == "y")
+                            {
+                                staffManager.ShowAllStaff();
+                            }
+                            Console.WriteLine("Bạn có muốn xóa nhân viên không ? (y/n)");
+                            if (Console.ReadLine().ToLower() == "y")
+                            {
+                                staffManager.ShowAllStaff();
+                                staffManager.DecreaseStaff();
+                            }
+                            break;
                             case "2":
                                 reportManager.ShowTopSellingReport();
                                 break;
                             case "3":
                                 revenueManager.ShowRevenueMenu();
                                 break;
-                            default:
+                            case "4":
+                                profitManager.ShowProfitMenu();
+                                break;
+                                default:
                                 Console.WriteLine("Lựa chọn không hợp lệ. Vui lòng thử lại.");
                             break;
                             }

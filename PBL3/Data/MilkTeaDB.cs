@@ -32,6 +32,7 @@ namespace PBL3.Data
                 .AddJsonFile("appsettings.json")
                 .Build();
                 string connectionString = configuration.GetConnectionString("DefaultConnection");
+                optionsBuilder.UseSqlServer(connectionString);
             }
         }
 
