@@ -22,12 +22,16 @@ namespace PBL3.Data
         public DbSet<WorkSchedule> WorkSchedules { get; set; }
         public DbSet<SalarySummary> SalarySummaries { get; set; }
 
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = "Server=localhost;Database=PBL3;Trusted_Connection=True;TrustServerCertificate=True;";
-                optionsBuilder.UseSqlServer(connectionString);
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json")
+                .Build();
+                string connectionString = configuration.GetConnectionString("DefaultConnection");
             }
         }
 
