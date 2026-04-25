@@ -194,7 +194,7 @@ namespace PBL3.Manangers
 
                 while (true)
                 {
-                    int addedCount = 0; 
+                    int addedCount = 0;
 
                     ShowWeeklySchedule(staffID, start, end);
 
@@ -354,7 +354,6 @@ namespace PBL3.Manangers
                 int totalPenalty = logs.Sum(l => l.penalty);
 
                 double salary = totalHours * staff.salaryPerHour - totalPenalty;
-
                 Console.WriteLine($"===== LƯƠNG THÁNG {month}/{year} =====");
                 Console.WriteLine($"Tổng giờ: {totalHours:F2}");
                 Console.WriteLine($"Phạt: {totalPenalty}");
@@ -439,5 +438,43 @@ namespace PBL3.Manangers
                     break;
             }
         }
-    }
+        public void AddStaff()
+        {
+            UserService userService = new UserService();
+            Console.WriteLine("Nhập tên nhân viên: ");
+            string name = Console.ReadLine();
+            Console.WriteLine("Nhập số điện thoại: ");
+            string phone = Console.ReadLine();
+            Console.WriteLine("Nhập mật khẩu: ");
+            string password = Console.ReadLine();
+            Console.WriteLine("Nhập lương theo giờ: ");
+            int salaryPerHour = int.Parse(Console.ReadLine());
+            bool success = userService.AddNewStaff(name, phone, password, salaryPerHour, true);
+            if (success)
+                Console.WriteLine("Đã thêm nhân viên mới!");
+            else
+                Console.WriteLine("Số điện thoại đã tồn tại. Thêm thất bại!");
+        }
+        public void ShowAllStaff()
+        {
+            UserService userService = new UserService();
+            var staffs = userService.GetAllStaffs();
+            Console.WriteLine("===== DANH SÁCH NHÂN VIÊN =====");
+            foreach (var staff in staffs)
+            {
+                Console.WriteLine($"ID: {staff.userID} | Tên: {staff.name} | SĐT: {staff.phoneNumber} | Lương/giờ: {staff.salaryPerHour}");
+            }
+        }
+        public void DecreaseStaff()
+        {
+            Console.WriteLine("Nhập id nhân viên cần xóa: ");
+            int staffId = int.Parse(Console.ReadLine());
+            UserService userService = new UserService();
+            bool success = userService.UpdateStaffisntAvailable(staffId);
+            if (success)
+                Console.WriteLine("Đã xóa nhân viên!");
+            else
+                Console.WriteLine("Nhân viên không tồn tại. Xóa thất bại!");
+        }
+    }  
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace PBL3.Models
@@ -13,5 +14,7 @@ namespace PBL3.Models
         public required double priceAtOrder { get; set; } = 0;
         public required string note { get; set; } = string.Empty;
         public double? costAtOrder { get; set; }
+        [ForeignKey("orderID")]
+        public virtual Orders Order { get; set; }
     }
 }

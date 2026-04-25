@@ -12,5 +12,6 @@ namespace PBL3.Models
         public required DateTime orderDate { get; set; }
         public required string orderStatus { get; set; } = string.Empty;
         public required double totalPrice { get; set; } = 0;
+        public virtual ICollection<OrderDetails> OrderDetails { get; set; }
     }
 }
