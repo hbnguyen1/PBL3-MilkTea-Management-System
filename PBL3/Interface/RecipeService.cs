@@ -73,22 +73,22 @@ namespace PBL3.Interface
                 return recipe;
             }
         }
-        public List<RecipeDTO>? GetAllRecipe() {
+        public List<RecipeDTO>? GetAllRecipe()
+        {
             using (var conn = new MilkTeaDBContext())
             {
                 var listrecipe = conn.Recipes
-                    .Include(r => r.Item)
-                    .Include(r => r.Ingredient)
                     .Select(r => new RecipeDTO
                     {
                         itemID = r.itemID,
-                        itemName = r.Item.itemName,       
+                        itemName = r.Item.itemName,
                         size = r.size,
-                        igName = r.Ingredient.igName, 
-                        quantityNeeded = r.quantityNeeded,         
-                        unitUsed = r.unitUsed                  
+                        igName = r.Ingredient.igName,
+                        quantityNeeded = r.quantityNeeded,
+                        unitUsed = r.unitUsed
                     })
                     .ToList();
+
                 return listrecipe;
             }
         }
