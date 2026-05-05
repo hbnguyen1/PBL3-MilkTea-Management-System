@@ -37,57 +37,78 @@ namespace PBL3.GUI
 
         private void LoadThongTinKhachHang()
         {
-            using (var db = new MilkTeaDBContext())
+            try
             {
-                var customer = db.Customers.Find(_currentCustomerId);
-                if (customer != null)
+                using (var db = new MilkTeaDBContext())
                 {
-                    string rank = _pointService.GetCustomerRank(customer.userID);
-                    _currentDiscount = _pointService.GetDiscountPercentage(customer.userID);
+                    var customer = db.Customers.FirstOrDefault(c => c.userID == _currentCustomerId);
+                    if (customer != null)
+                    {
+                        string rank = _pointService.GetCustomerRank(customer.userID);
+                        _currentDiscount = _pointService.GetDiscountPercentage(customer.userID);
 
-                    lblThongTinKhach.Text = $"Xin chào {customer.Name} | Hạng: {rank} (Giảm {_currentDiscount * 100}%) | Điểm: {customer.point}";
+                        lblThongTinKhach.Text = $"Xin chào {customer.Name} | Hạng: {rank} (Giảm {_currentDiscount * 100}%) | Điểm: {customer.point}";
+                    }
+                    else
+                    {
+                        lblThongTinKhach.Text = "Khách vãng lai";
+                        _currentDiscount = 0;
+                    }
                 }
-                else
-                {
-                    lblThongTinKhach.Text = "Khách vãng lai";
-                    _currentDiscount = 0;
-                }
+                TinhTongTien();
             }
-            TinhTongTien();
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("Lỗi khi tải thông tin khách hàng: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                lblThongTinKhach.Text = "Khách vãng lai";
+                _currentDiscount = 0;
+            }
         }
 
         private void LoadDataFromDatabase()
         {
-            ProductList = new ObservableCollection<ProductViewModel>();
-            allProducts = new List<ProductViewModel>();
-
-            ItemManager itemManager = new ItemManager();
-            var dbItems = itemManager.GetAllMenuItems();
-
-            if (dbItems != null && dbItems.Count > 0)
+            try
             {
-                foreach (var item in dbItems)
+                ProductList = new ObservableCollection<ProductViewModel>();
+                allProducts = new List<ProductViewModel>();
+
+                ItemManager itemManager = new ItemManager();
+                var dbItems = itemManager.GetAllMenuItems();
+
+                if (dbItems != null && dbItems.Count > 0)
                 {
-                    string dbPath = string.IsNullOrEmpty(item.ImagePath) ? "/Images/default.jpg" : item.ImagePath;
-                    string fullImagePath = $"pack://application:,,,{dbPath}";
-
-                    var product = new ProductViewModel
+                    foreach (var item in dbItems)
                     {
-                        ItemID = item.itemID,
-                        Name = item.itemName,
-                        Description = $"Size: {item.size} | Loại: {item.itemType}",
-                        Price = $"{item.price:N0}đ",
-                        Badge = item.isAvailable ? "SẴN SÀNG" : "TẠM HẾT",
-                        ImagePath = fullImagePath,
-                        Category = item.itemType
-                    };
+                        string dbPath = string.IsNullOrEmpty(item.ImagePath) ? "/Images/default.jpg" : item.ImagePath;
+                        string fullImagePath = $"pack://application:,,,{dbPath}";
 
-                    allProducts.Add(product);
+                        var product = new ProductViewModel
+                        {
+                            ItemID = item.itemID,
+                            Name = item.itemName,
+                            Description = $"Size: {item.size} | Loại: {item.itemType}",
+                            Price = $"{item.price:N0}đ",
+                            Badge = item.isAvailable ? "SẴN SÀNG" : "TẠM HẾT",
+                            ImagePath = fullImagePath,
+                            Category = item.itemType
+                        };
+
+                        allProducts.Add(product);
+                    }
+                }
+
+                FilterProducts("Tất cả");
+                if (icProducts != null)
+                {
+                    icProducts.ItemsSource = ProductList;
                 }
             }
-
-            FilterProducts("Tất cả");
-            icProducts.ItemsSource = ProductList;
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("Lỗi khi tải dữ liệu sản phẩm: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ProductList = new ObservableCollection<ProductViewModel>();
+                allProducts = new List<ProductViewModel>();
+            }
         }
 
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -179,12 +200,17 @@ namespace PBL3.GUI
 
         private void CapNhatSoLuongGioHang()
         {
-            if (lblCartCount != null)
+            if (lblCartCount == null)
             {
-                int totalCount = 0;
-                foreach (var item in CartManager.GioHang) totalCount += item.SoLuong;
-                lblCartCount.Text = $"{totalCount} Món";
+                return;
             }
+
+            int totalCount = 0;
+            foreach (var item in CartManager.GioHang) 
+            {
+                totalCount += item.SoLuong;
+            }
+            lblCartCount.Text = $"{totalCount} Món";
         }
 
         private void btnTangSoLuong_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -328,7 +354,7 @@ namespace PBL3.GUI
 
                     int diemDuocCongThem = newPoints - oldPoints;
 
-                    wHoaDon hoaDonWindow = new wHoaDon(newOrder.orderID, lblTongTien.Text, diemDuocCongThem, newPoints);
+                    wHoaDon hoaDonWindow = new wHoaDon(newOrder.orderID, lblTongTien.Text, diemDuocCongThem, newPoints, null);
                     hoaDonWindow.ShowDialog();
 
                     CartManager.GioHang.Clear();

@@ -64,16 +64,40 @@ namespace PBL3.GUI
 
             if (item.MoTa != null)
             {
-                var matchDuong = Regex.Match(item.MoTa, @"(\d+)%\s*Đường");
-                if (matchDuong.Success) sldDuong.Value = double.Parse(matchDuong.Groups[1].Value);
-
-                var matchDa = Regex.Match(item.MoTa, @"(\d+)%\s*Đá");
-                if (matchDa.Success) sldDa.Value = double.Parse(matchDa.Groups[1].Value);
-
-                if (item.MoTa.Contains("Ghi chú: "))
+                try
                 {
-                    int noteIndex = item.MoTa.IndexOf("Ghi chú: ") + 9;
-                    txtGhiChu.Text = item.MoTa.Substring(noteIndex);
+                    var matchDuong = Regex.Match(item.MoTa, @"(\d+)%\s*Đường");
+                    if (matchDuong.Success && double.TryParse(matchDuong.Groups[1].Value, out double duongValue))
+                    {
+                        sldDuong.Value = duongValue;
+                    }
+                    else
+                    {
+                        sldDuong.Value = 100;  // Default value
+                    }
+
+                    var matchDa = Regex.Match(item.MoTa, @"(\d+)%\s*Đá");
+                    if (matchDa.Success && double.TryParse(matchDa.Groups[1].Value, out double daValue))
+                    {
+                        sldDa.Value = daValue;
+                    }
+                    else
+                    {
+                        sldDa.Value = 50;  // Default value
+                    }
+
+                    if (item.MoTa.Contains("Ghi chú: "))
+                    {
+                        int noteIndex = item.MoTa.IndexOf("Ghi chú: ") + 9;
+                        if (noteIndex < item.MoTa.Length)
+                        {
+                            txtGhiChu.Text = item.MoTa.Substring(noteIndex);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show("Lỗi khi phân tích dữ liệu: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

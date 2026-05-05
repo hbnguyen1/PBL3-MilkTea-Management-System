@@ -3,6 +3,7 @@ using PBL3.Interface;
 using PBL3.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq; // Bổ sung thư viện này để dùng các hàm Where, Any, FirstOrDefault
 using System.Text;
 using PBL3.Core;
 
@@ -16,7 +17,53 @@ namespace PBL3.Manangers
             int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
             return today.AddDays(-diff).Date;
         }
-        public void ToggleShift(int staffID)
+
+        public List<WorkSchedule> GetMyWeeklySchedule(int staffID)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                DateTime start = GetStartOfWeek();
+                DateTime end = start.AddDays(7);
+
+                return conn.WorkSchedules
+                    .Where(s => s.staffID == staffID && s.workDate >= start && s.workDate < end)
+                    .OrderBy(s => s.workDate)
+                    .ToList();
+            }
+        }
+
+        public string QuickRegisterShift(int staffID, DateTime date, string shift)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                DateTime start = GetStartOfWeek();
+                DateTime end = start.AddDays(6);
+
+                if (date.Date < start || date.Date > end)
+                {
+                    return "❌ Chỉ được đăng ký ca trong phạm vi tuần hiện tại!";
+                }
+
+                bool exists = conn.WorkSchedules.Any(s => s.staffID == staffID && s.workDate == date.Date && s.shift == shift);
+                if (exists)
+                {
+                    return "⚠ Bạn đã đăng ký ca này rồi!";
+                }
+
+                conn.WorkSchedules.Add(new WorkSchedule
+                {
+                    staffID = staffID,
+                    workDate = date.Date,
+                    shift = shift
+                });
+
+                conn.SaveChanges();
+                return "✔ Đăng ký ca làm thành công!";
+            }
+        }
+
+
+        public string ToggleShift(int staffID)
         {
             using (var conn = new MilkTeaDBContext())
             {
@@ -28,8 +75,7 @@ namespace PBL3.Manangers
 
                 if (currentShift == "")
                 {
-                    Console.WriteLine("❌ Không nằm trong giờ ca!");
-                    return;
+                    return "❌ Hiện tại không nằm trong khung giờ của bất kỳ ca làm việc nào!";
                 }
 
                 // 2. kiểm tra có đăng ký ca không
@@ -40,11 +86,10 @@ namespace PBL3.Manangers
 
                 if (!hasSchedule)
                 {
-                    Console.WriteLine($"❌ Bạn không có ca {currentShift} hôm nay!");
-                    return;
+                    return $"❌ Bạn chưa đăng ký lịch làm việc cho ca [{currentShift}] ngày hôm nay!";
                 }
 
-                // 3. tìm log
+                // 3. tìm log chấm công
                 var log = conn.WorkShiftLogs.FirstOrDefault(l =>
                     l.staffID == staffID &&
                     l.workDate == today &&
@@ -75,10 +120,12 @@ namespace PBL3.Manangers
                     conn.WorkShiftLogs.Add(log);
                     conn.SaveChanges();
 
-                    Console.WriteLine($"✔ Check-in {currentShift}");
-
+                    string resultMsg = $"✔ Check-in ca [{currentShift}] thành công lúc {now:HH:mm}!";
                     if (penalty > 0)
-                        Console.WriteLine($"⚠ Trễ {lateMinutes} phút → phạt {penalty}đ");
+                    {
+                        resultMsg += $"\n⚠ Lưu ý: Bạn đi trễ {lateMinutes} phút. Hệ thống ghi nhận mức phạt {penalty:N0}đ.";
+                    }
+                    return resultMsg;
                 }
                 else if (log.checkOut == null)
                 {
@@ -86,13 +133,12 @@ namespace PBL3.Manangers
                     DateTime end = GetShiftEnd(currentShift);
 
                     int earlyMinutes = (int)(end - now).TotalMinutes;
+                    int extraPenalty = 0;
 
                     if (earlyMinutes > 15)
                     {
-                        int penalty = (earlyMinutes / 10) * 5000;
-                        log.penalty += penalty;
-
-                        Console.WriteLine($"⚠ Về sớm {earlyMinutes} phút → phạt {penalty}đ");
+                        extraPenalty = (earlyMinutes / 10) * 5000;
+                        log.penalty += extraPenalty;
                     }
 
                     log.checkOut = now;
@@ -106,11 +152,18 @@ namespace PBL3.Manangers
 
                     conn.SaveChanges();
 
-                    Console.WriteLine($"✔ Check-out {currentShift} - Làm {log.totalHours:F2} giờ");
+                    string resultMsg = $"✔ Check-out ca [{currentShift}] thành công lúc {now:HH:mm}!";
+                    resultMsg += $"\n⏳ Tổng thời gian làm việc: {log.totalHours:F2} giờ.";
+
+                    if (extraPenalty > 0)
+                    {
+                        resultMsg += $"\n⚠ Lưu ý: Bạn về sớm {earlyMinutes} phút. Hệ thống ghi nhận thêm mức phạt {extraPenalty:N0}đ.";
+                    }
+                    return resultMsg;
                 }
                 else
                 {
-                    Console.WriteLine("❌ Bạn đã hoàn thành ca này rồi!");
+                    return $"✔ Bạn đã hoàn thành xuất sắc ca [{currentShift}] rồi. Hãy nghỉ ngơi nhé!";
                 }
             }
         }
@@ -394,40 +447,5 @@ namespace PBL3.Manangers
             }
         }
 
-        public void StaffCreateOrderForCustomer()
-        {
-            UserService userService = new UserService();
-            OrderManager orderManager = new OrderManager();
-            Console.WriteLine("Bạn đã có tài khoản chưa: ");
-            Console.WriteLine("1. Đã có tài khoản: ");
-            Console.WriteLine("2. Tạo tài khoản mới: ");
-            Console.WriteLine("3. Chị không có nhu cầu em ơi");
-            string choice = Console.ReadLine();
-            switch (choice)
-            {
-                case "1":
-                    Console.WriteLine("Nhập số điện thoại khách hàng: ");
-                    string phone = Console.ReadLine();
-                    Users customer = userService.GetUserByPhone(phone);
-                    orderManager.Order(customer);
-                    break;
-                case "2":
-                    string name = Console.ReadLine();
-                    string phoneNumber = Console.ReadLine();
-                    string password = Console.ReadLine();
-                    CustomerManagers.Register(name, phoneNumber, password);
-                    Users customerr = userService.GetUserByPhone(phoneNumber);
-                    orderManager.Order(customerr);
-                    break;
-                case "3":
-                    string phonenumber = "0000000000";
-                    Users guest = userService.GetUserByPhone(phonenumber);
-                    orderManager.Order(guest);
-                    break;
-                default:
-                    Console.WriteLine("Lựa chọn không hợp lệ!");
-                    break;
-            }
-        }
     }
 }

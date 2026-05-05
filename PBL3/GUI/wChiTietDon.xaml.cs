@@ -55,21 +55,28 @@ namespace PBL3.GUI
             var result = System.Windows.MessageBox.Show($"Xác nhận đã pha chế xong đơn #{_orderId}?", "Xác nhận", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
             if (result == System.Windows.MessageBoxResult.Yes)
             {
-                using (var db = new MilkTeaDBContext())
+                try
                 {
-                    var order = db.Orders.FirstOrDefault(o => o.orderID == _orderId);
-                    if (order != null)
+                    using (var db = new MilkTeaDBContext())
                     {
-                        order.orderStatus = "Completed";
-                        db.SaveChanges(); 
+                        var order = db.Orders.FirstOrDefault(o => o.orderID == _orderId);
+                        if (order != null)
+                        {
+                            order.orderStatus = "Completed";
+                            db.SaveChanges();
 
-                        System.Windows.MessageBox.Show("Đã duyệt đơn thành công!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                        this.Close();
+                            System.Windows.MessageBox.Show("Đã duyệt đơn thành công!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                            this.Close();
+                        }
+                        else
+                        {
+                            System.Windows.MessageBox.Show("Duyệt đơn thất bại. Không tìm thấy đơn hàng.", "Lỗi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        }
                     }
-                    else
-                    {
-                        System.Windows.MessageBox.Show("Duyệt đơn thất bại. Không tìm thấy đơn hàng.", "Lỗi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show("Lỗi khi duyệt đơn: " + ex.Message, "Lỗi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
         }

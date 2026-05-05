@@ -1,0 +1,164 @@
+﻿<UserControl x:Class="PBL3.GUI.ucPOS"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             UseLayoutRounding="True" SnapsToDevicePixels="True" TextOptions.TextFormattingMode="Display"
+             Background="#Eef2f6" FontFamily="Segoe UI">
+
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="6.5*"/>
+            <!-- Cột trái: Menu món -->
+            <ColumnDefinition Width="3.5*"/>
+            <!-- Cột phải: Hóa đơn & Thanh toán -->
+        </Grid.ColumnDefinitions>
+
+        <!-- ================= CỘT TRÁI: MENU CHỌN MÓN ================= -->
+        <Border Grid.Column="0" Background="White" CornerRadius="12" Margin="0,0,15,0" Padding="15">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Thanh tìm kiếm & Danh mục -->
+                    <RowDefinition Height="*"/>
+                    <!-- Danh sách món -->
+                </Grid.RowDefinitions>
+
+                <!-- Header: Tìm kiếm & Phân loại -->
+                <Grid Grid.Row="0" Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Ô tìm kiếm -->
+                    <Border Grid.Column="0" Background="#F3F4F6" CornerRadius="8" Padding="10,5" Margin="0,0,15,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="#9CA3AF" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBox x:Name="txtTimKiem" Width="300" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Tag="Tìm kiếm món ăn..." TextChanged="txtTimKiem_TextChanged"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Nút Danh Mục -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Content="Tất cả" Margin="0,0,8,0" Background="#1A1A1A" Foreground="White" Padding="15,8" Cursor="Hand"  Click="btnLocMenu_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button Content="Trà Sữa" Margin="0,0,8,0" Background="#F3F4F6" Foreground="#4A4A4A" Padding="15,8" Cursor="Hand" Click="btnLocMenu_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button Content="Trà Trái Cây" Background="#F3F4F6" Foreground="#4A4A4A" Padding="15,8" Cursor="Hand" Click="btnLocMenu_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Vùng hiển thị các món ăn (Sẽ đổ dữ liệu bằng ItemsControl sau) -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <!-- Tạm thời dùng WrapPanel để test giao diện, sau này sẽ bind dữ liệu thật -->
+                    <WrapPanel x:Name="wpMenu" ItemWidth="180" ItemHeight="120">
+                        <!-- Nút Món Ăn Mẫu (Sẽ tạo động bằng C#) -->
+                    </WrapPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- ================= CỘT PHẢI: HÓA ĐƠN & THANH TOÁN ================= -->
+        <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="15">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Chọn Khách hàng -->
+                    <RowDefinition Height="*"/>
+                    <!-- Chi tiết giỏ hàng -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Tổng tiền & Nút chốt đơn -->
+                </Grid.RowDefinitions>
+
+                <!-- 1. THÔNG TIN KHÁCH HÀNG -->
+                <Border Grid.Row="0" Background="#F9FAFB" CornerRadius="8" Padding="12" Margin="0,0,0,15" BorderBrush="#E5E7EB" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Thông tin Khách hàng" FontWeight="Bold" Foreground="#1A1A1A" Margin="0,0,0,10"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <RadioButton x:Name="rdoKhachLe" Content="Khách vãng lai" IsChecked="True" Margin="0,0,15,0" Checked="rdoLoaiKhach_Checked"/>
+                            <RadioButton x:Name="rdoKhachThanhVien" Content="Thành viên" Checked="rdoLoaiKhach_Checked"/>
+                        </StackPanel>
+
+                        <!-- Khung nhập SĐT (Chỉ hiện khi chọn Thành viên) -->
+                        <Grid x:Name="gridKhachHang" IsEnabled="False" Opacity="0.5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Background="White" CornerRadius="6" BorderThickness="1" BorderBrush="#D1D5DB" Padding="8,5">
+                                <TextBox x:Name="txtSdtKhach" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" ToolTip="Nhập SĐT khách hàng..."/>
+                            </Border>
+                            <Button Grid.Column="1" Click="btnTimKhach_Click" Content="Kiểm tra" Background="#2196F3" Foreground="White" Padding="10,5" Margin="5,0,0,0" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                        </Grid>
+                        <TextBlock x:Name="txtTenKhachHang" Text="Khách lẻ (Không tích điểm)" Foreground="#6B7280" FontStyle="Italic" Margin="0,8,0,0" FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 2. CHI TIẾT GIỎ HÀNG -->
+                <DataGrid x:Name="dgGioHang" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" 
+                          Background="Transparent" BorderThickness="0" RowHeight="45" Margin="0,0,0,15">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Tên món" Binding="{Binding itemName}" Width="*"/>
+                        <DataGridTextColumn Header="SL" Binding="{Binding quantity}" Width="40"/>
+                        <DataGridTextColumn Header="Thành tiền" Binding="{Binding total, StringFormat='{}{0:N0} đ'}" Width="90" Foreground="#F28500" FontWeight="Bold"/>
+                        <DataGridTemplateColumn Width="40">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="X" Tag="{Binding itemID}" Click="btnXoaMon_Click" Foreground="Red" Background="Transparent" BorderThickness="0" Cursor="Hand" FontWeight="Bold"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 3. TỔNG TIỀN & THANH TOÁN -->
+                <Border Grid.Row="2" Background="#FFF8E1" CornerRadius="8" Padding="15">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="Tổng cộng:" FontSize="16" Foreground="#4A4A4A" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtTongTien" Text="0 đ" FontSize="24" FontWeight="Heavy" Foreground="#E65100" HorizontalAlignment="Right"/>
+                        </Grid>
+
+                        <Button Click="btnThanhToan_Click" Cursor="Hand" Height="50">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="#4CAF50" CornerRadius="8">
+                                        <TextBlock Text="THANH TOÁN" Foreground="White" FontWeight="Heavy" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

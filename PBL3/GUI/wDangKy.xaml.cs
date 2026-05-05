@@ -43,13 +43,37 @@ namespace PBL3.GUI
 
         private void btnDangKy_Click(object sender, RoutedEventArgs e)
         {
-            string fullName = txtFullName.Text;
-            string phoneNumber = txtPhoneNumber.Text;
-            string password = isPasswordVisible ? txtPasswordVisible.Text : txtPassword.Password;
+            string fullName = txtFullName.Text?.Trim() ?? "";
+            string phoneNumber = txtPhoneNumber.Text?.Trim() ?? "";
+            string password = isPasswordVisible ? txtPasswordVisible.Text?.Trim() ?? "" : txtPassword.Password?.Trim() ?? "";
 
-            if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(phoneNumber) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(fullName))
             {
-                System.Windows.MessageBox.Show("Vui lòng nhập đầy đủ thông tin (Họ tên, Số điện thoại, Mật khẩu)!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Vui lòng nhập họ tên!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                System.Windows.MessageBox.Show("Vui lòng nhập số điện thoại!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (phoneNumber.Length < 10)
+            {
+                System.Windows.MessageBox.Show("Số điện thoại phải có ít nhất 10 ký tự!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                System.Windows.MessageBox.Show("Vui lòng nhập mật khẩu!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (password.Length < 6)
+            {
+                System.Windows.MessageBox.Show("Mật khẩu phải có ít nhất 6 ký tự!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 

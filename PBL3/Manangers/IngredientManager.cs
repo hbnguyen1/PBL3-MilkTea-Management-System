@@ -23,6 +23,13 @@ namespace PBL3.Manangers
 
             return ingredientService.AddIngredient(ig);
         }
+        public bool UpdateIngredientInfo(int id, string name, int price, string unit)
+        {
+            if (string.IsNullOrEmpty(name)) return false;
+
+            IngredientService ingredientService = new IngredientService();
+            return ingredientService.updateIngredient(id, name, unit, price);
+        }
 
         public List<Ingredient> GetAllIngredients()
         {

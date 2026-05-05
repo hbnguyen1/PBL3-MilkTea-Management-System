@@ -46,12 +46,22 @@ namespace PBL3.GUI
             {
                 if (currentUser is Staff currentStaff)
                 {
+                    if (currentStaff.userID <= 0)
+                    {
+                        System.Windows.MessageBox.Show("Lỗi: ID nhân viên không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                     wTrangChu_NhanVien staffWindow = new wTrangChu_NhanVien();
                     staffWindow.Show();
                     this.Close();
                 }
                 else if (currentUser is Users currentCustomer)
                 {
+                    if (currentCustomer.userID <= 0)
+                    {
+                        System.Windows.MessageBox.Show("Lỗi: ID khách hàng không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                     wTrangChu customerWindow = new wTrangChu(currentCustomer.userID);
                     customerWindow.Show();
                     this.Close();

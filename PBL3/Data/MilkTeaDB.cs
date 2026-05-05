@@ -53,7 +53,7 @@ namespace PBL3.Data
             modelBuilder.Entity<Users>().HasKey(u => u.userID);
             modelBuilder.Entity<Ingredient>().HasKey(i => i.igID);
             modelBuilder.Entity<Orders>().HasKey(o => o.orderID);
-            modelBuilder.Entity<ImportNote>().HasKey(i => i.importNoteID);
+            modelBuilder.Entity<ImportNote>().HasKey(i => i.importID);
 
             // Khóa chính kép
             modelBuilder.Entity<Item>().HasKey(i => new { i.itemID, i.size });

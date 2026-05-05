@@ -1,0 +1,113 @@
+﻿<UserControl x:Class="PBL3.GUI.ucTrangChuNhanVien"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PBL3.GUI"
+             UseLayoutRounding="True" SnapsToDevicePixels="True" TextOptions.TextFormattingMode="Display"
+             Background="#Eef2f6" FontFamily="Segoe UI">
+
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="6.5*"/>
+            <!-- Khu vực POS (Rộng hơn chút để dễ bấm) -->
+            <ColumnDefinition Width="3.5*"/>
+           
+        </Grid.ColumnDefinitions>
+
+        <local:ucPOS Grid.Column="0" />
+
+        <Grid Grid.Column="1" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Chấm công -->
+                <RowDefinition Height="*"/>
+                <!-- Lịch làm việc -->
+            </Grid.RowDefinitions>
+
+            
+            <Border Grid.Row="0" Background="White" CornerRadius="16" Margin="0,0,0,15" Padding="20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="3" Opacity="0.04"/>
+                </Border.Effect>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="CHẤM CÔNG HỆ THỐNG" FontSize="14" Foreground="#6B7280" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock x:Name="txtTime" Text="00:00:00" FontSize="45" FontWeight="Heavy" Foreground="#1A1A1A" HorizontalAlignment="Center" Margin="0,5"/>
+                    <TextBlock x:Name="txtDate" Text="Thứ Hai, 01/01/2026" FontSize="16" Foreground="#4A4A4A" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                    <Button Click="btnChamCong_Click" Cursor="Hand" Width="180" Height="45">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="#4CAF50" CornerRadius="8">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="BẤM GIỜ" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- KHU VỰC 3: LỊCH LÀM VIỆC & ĐĂNG KÝ -->
+            <Border Grid.Row="1" Background="White" CornerRadius="16" Padding="20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="3" Opacity="0.04"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Lịch Làm Việc Tuần Này" FontSize="18" FontWeight="Heavy" Foreground="#1A1A1A" Margin="0,0,0,15"/>
+
+                    <!-- Danh sách ca đã đăng ký -->
+                    <DataGrid x:Name="dgLich" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" 
+                              Background="Transparent" BorderThickness="0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F3F4F6" RowHeight="40" Margin="0,0,0,15">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Ngày" Binding="{Binding workDate, StringFormat='dd/MM/yyyy'}" Width="*"/>
+                            <DataGridTextColumn Header="Ca Làm" Binding="{Binding shift}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="Foreground" Value="#F28500"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Khung Đăng ký nhanh -->
+                    <Border Grid.Row="2" Background="#F9FAFB" CornerRadius="8" Padding="10" BorderBrush="#E5E7EB" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <DatePicker x:Name="dpNgayDangKy" Grid.Column="0" Height="35"/>
+
+                            <ComboBox x:Name="cmbCaLam" Grid.Column="2" Height="35" VerticalContentAlignment="Center">
+                                <ComboBoxItem Content="Morning" IsSelected="True"/>
+                                <ComboBoxItem Content="Afternoon"/>
+                                <ComboBoxItem Content="Evening"/>
+                            </ComboBox>
+
+                            <Button Grid.Column="4" Click="btnDangKyCa_Click" Content="ĐĂNG KÝ" Height="35" Width="80" Background="#1A1A1A" Foreground="White" FontWeight="Bold" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

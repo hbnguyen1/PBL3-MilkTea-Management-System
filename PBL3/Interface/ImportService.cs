@@ -36,12 +36,11 @@ namespace PBL3.Interface
                         conn.ImportNotes.Add(note);
                         conn.SaveChanges();
 
-                        Logger.Info($"Tạo phiếu nhập ID {note.importNoteID} bởi staff {staffId}");
+                        Logger.Info($"Tạo phiếu nhập ID {note.importID} bởi staff {staffId}");
 
-                        // Xử lý từng nguyên liệu
                         foreach (var d in details)
                         {
-                            d.importId = note.importNoteID;
+                            d.importId = note.importID;
 
                             conn.ImportDetails.Add(d);
 
@@ -58,7 +57,7 @@ namespace PBL3.Interface
                         conn.SaveChanges();
                         transaction.Commit();
 
-                        Logger.Info($"Hoàn tất nhập kho phiếu {note.importNoteID}, tổng tiền {totalCost}");
+                        Logger.Info($"Hoàn tất nhập kho phiếu {note.importID}, tổng tiền {totalCost}");
 
                         return true;
                     }
@@ -66,16 +65,14 @@ namespace PBL3.Interface
                     {
                         transaction.Rollback();
 
-                        // Ghi vào file log
                         Logger.Error("Lỗi nhập kho: " + ex.Message);
 
-                        // In thẳng ra màn hình Console để bạn đọc được ngay
                         Console.WriteLine("LỖI CHI TIẾT: " + ex.Message);
                         if (ex.InnerException != null)
                         {
                             Console.WriteLine("SQL Server báo: " + ex.InnerException.Message);
                         }
-
+                        System.Windows.MessageBox.Show("Lỗi SQL: " + ex.InnerException?.Message ?? ex.Message);
                         return false;
                     }
                 }

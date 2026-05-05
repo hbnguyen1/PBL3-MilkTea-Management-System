@@ -1,0 +1,48 @@
+﻿<Window x:Class="PBL3.GUI.wTuyChinhPOS"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tuỳ Chỉnh Món" Height="420" Width="400" WindowStartupLocation="CenterScreen" Background="White">
+
+    <Grid Margin="25">
+        <StackPanel>
+            <TextBlock x:Name="txtTenMon" Text="Tên món" FontSize="20" FontWeight="Bold" Foreground="#1A1A1A" HorizontalAlignment="Center" Margin="0,0,0,25" TextWrapping="Wrap" TextAlignment="Center"/>
+
+            <!-- KHU VỰC CHỈNH ĐƯỜNG -->
+            <TextBlock Text="Mức Đường" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,10"/>
+            <Grid Margin="0,0,0,25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <Slider x:Name="sldDuong" Minimum="0" Maximum="100" Value="100" TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center" Margin="0,0,15,0" Cursor="Hand"/>
+                <!-- Hiển thị % Đường lấy trực tiếp từ Slider -->
+                <TextBlock Grid.Column="1" Text="{Binding Value, ElementName=sldDuong, StringFormat='\{0:0\}%'}" FontSize="18" FontWeight="Bold" Foreground="#F28500" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            </Grid>
+
+            <!-- KHU VỰC CHỈNH ĐÁ -->
+            <TextBlock Text="Mức Đá" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,10"/>
+            <Grid Margin="0,0,0,25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <Slider x:Name="sldDa" Minimum="0" Maximum="100" Value="100" TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center" Margin="0,0,15,0" Cursor="Hand"/>
+                <!-- Hiển thị % Đá lấy trực tiếp từ Slider -->
+                <TextBlock Grid.Column="1" Text="{Binding Value, ElementName=sldDa, StringFormat='\{0:0\}%'}" FontSize="18" FontWeight="Bold" Foreground="#00BCD4" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            </Grid>
+
+            <!-- KHU VỰC GHI CHÚ THÊM -->
+            <TextBlock Text="Ghi chú khác (Tùy chọn)" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
+            <TextBox x:Name="txtGhiChu" Height="30" VerticalContentAlignment="Center" Margin="0,0,0,25" BorderBrush="#D1D5DB" Padding="5,0"/>
+
+            <!-- NÚT XÁC NHẬN -->
+            <Button Content="THÊM VÀO GIỎ HÀNG" Height="45" Background="#4CAF50" Foreground="White" FontWeight="Bold" Cursor="Hand" Click="btnXacNhan_Click">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -19,7 +19,7 @@
                 <TextBlock Text="MENU QUẢN LÝ" Foreground="#7A7A7A" FontSize="12" FontWeight="SemiBold" Margin="30,0,0,15"/>
 
                 <StackPanel Margin="15,0">
-                    <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Tổng quan" Tag="&#xE80F;" IsChecked="True"/>
+                    <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Tổng quan" Tag="&#xE80F;" IsChecked="True" Checked="btnTongQuan_Checked"/>
 
                     <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Quản lý Đơn hàng" Tag="&#xE7BF;" Checked="btnQuanLyDonHang_Checked"/>
 

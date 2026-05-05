@@ -30,6 +30,7 @@ namespace PBL3.GUI
             if (dgOrders == null) return;
 
             string? status = (cbFilterStatus.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            status = status ?? "Tất cả";
 
             using (var db = new MilkTeaDBContext())
             {

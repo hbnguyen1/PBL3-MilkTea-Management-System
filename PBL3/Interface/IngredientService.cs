@@ -90,11 +90,24 @@ namespace PBL3.Interface
                 }
             }
 
-            public bool updateIngredient(int igId, string name, string unit, int price)
+        public bool updateIngredient(int igId, string name, string unit, int price)
+        {
+            using (var db = new MilkTeaDBContext())
             {
-                throw new NotImplementedException();
+                var ig = db.Ingredients.Find(igId);
+                if (ig != null)
+                {
+                    ig.igName = name;
+                    ig.unit = unit;
+                    ig.price = price; 
+
+                    db.SaveChanges();
+                    return true;
+                }
+                return false;
             }
-            public bool CheckIngredientEnough(int itemId, string size, int quantity)
+        }
+        public bool CheckIngredientEnough(int itemId, string size, int quantity)
             {
                 using (var conn = new MilkTeaDBContext())
                 {

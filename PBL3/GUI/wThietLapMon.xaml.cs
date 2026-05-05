@@ -50,42 +50,53 @@ namespace PBL3.GUI
 
         private void btnThemNguyenLieu_Click(object sender, RoutedEventArgs e)
         {
-            if (cmbNguyenLieu.SelectedValue == null) return;
-
-            int igId = (int)cmbNguyenLieu.SelectedValue;
-
-            if (!int.TryParse(txtDinhLuong.Text, out int quantity))
+            try
             {
-                System.Windows.MessageBox.Show("Định lượng phải là số nguyên hợp lệ!");
-                return;
-            }
-
-            string donVi = "";
-            if (cmbNguyenLieu.SelectedItem is Ingredient selectedIg)
-            {
-                donVi = selectedIg.unit ?? "";
-            }
-
-            var existing = _tempRecipes.FirstOrDefault(r => r.ingredientID == igId);
-            if (existing != null)
-            {
-                existing.quantityNeeded += quantity;
-            }
-            else
-            {
-                _tempRecipes.Add(new Recipe
+                if (cmbNguyenLieu.SelectedValue == null)
                 {
-                    itemID = _itemId == -1 ? 0 : _itemId,
-                    ingredientID = igId,
-                    quantityNeeded = quantity,
-                    size = "M",
-                    unitUsed = donVi
-                });
-            }
+                    System.Windows.MessageBox.Show("Vui lòng chọn nguyên liệu!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-            dgCongThuc.ItemsSource = null;
-            dgCongThuc.ItemsSource = _tempRecipes;
-            txtDinhLuong.Clear();
+                int igId = (int)cmbNguyenLieu.SelectedValue;
+
+                if (!int.TryParse(txtDinhLuong.Text, out int quantity) || quantity <= 0)
+                {
+                    System.Windows.MessageBox.Show("Định lượng phải là số nguyên dương hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                string donVi = "";
+                if (cmbNguyenLieu.SelectedItem is Ingredient selectedIg)
+                {
+                    donVi = selectedIg.unit ?? "";
+                }
+
+                var existing = _tempRecipes.FirstOrDefault(r => r.ingredientID == igId);
+                if (existing != null)
+                {
+                    existing.quantityNeeded += quantity;
+                }
+                else
+                {
+                    _tempRecipes.Add(new Recipe
+                    {
+                        itemID = _itemId == -1 ? 0 : _itemId,
+                        ingredientID = igId,
+                        quantityNeeded = quantity,
+                        size = "M",
+                        unitUsed = donVi
+                    });
+                }
+
+                dgCongThuc.ItemsSource = null;
+                dgCongThuc.ItemsSource = _tempRecipes;
+                txtDinhLuong.Clear();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void btnXoaNguyenLieuKhoiCT_Click(object sender, RoutedEventArgs e)
