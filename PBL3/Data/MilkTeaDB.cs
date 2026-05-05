@@ -26,11 +26,16 @@ namespace PBL3.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
+//<<<<<<< Updated upstream
                 IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                     .AddJsonFile("appsettings.json")
                     .Build();
                 string connectionString = configuration.GetConnectionString("DefaultConnection");
+//=======
+        //        string connectionString =
+        //"Server=localhost,1433;Database=PBL3;User Id=sa;Password=PBL3_MilkTea@2026;TrustServerCertificate=True;";
+//>>>>>>> Stashed changes
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
