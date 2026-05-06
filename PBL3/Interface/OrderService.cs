@@ -106,7 +106,7 @@ namespace PBL3.Interface
                     if (order != null && order.orderStatus == "Pending")
                     {
                         order.staffID = staffID;
-                        order.orderStatus = "Approved";
+                        order.orderStatus = "Completed";
 
                         conn.SaveChanges();
 

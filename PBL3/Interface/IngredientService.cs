@@ -92,7 +92,7 @@ namespace PBL3.Interface
                 using (var conn = new MilkTeaDBContext())
                 {
                     var recipes = conn.Recipes
-                        .Where(r => r.itemID == itemId && r.size == size)
+                        .Where(r => r.itemID == itemId)
                         .ToList();
 
                     foreach (var r in recipes)

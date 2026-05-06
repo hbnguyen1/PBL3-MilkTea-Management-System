@@ -20,7 +20,7 @@ namespace PBL3.Data
         public DbSet<ImportDetail> ImportDetails { get; set; }
         public DbSet<WorkShiftLog> WorkShiftLogs { get; set; }
         public DbSet<WorkSchedule> WorkSchedules { get; set; }
-        public DbSet<SalarySummary> SalarySummaries { get; set; }
+        public DbSet<SalarySummary> SalarySummary { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

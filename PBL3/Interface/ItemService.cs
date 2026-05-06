@@ -85,15 +85,14 @@ namespace PBL3.Interface
                 }
             }
         }
-        public bool DeleteItemByID(int itemId)
+        public bool DisableItemById(int itemId)
         {
             using (var conn = new MilkTeaDBContext())
             {
                 var item = conn.Items.Find(itemId);
                 if (item != null)
                 {
-                    conn.Items.Remove(item);
-                    conn.SaveChanges();
+                    item.isAvailable = false;
                     return true;
                 }
             }

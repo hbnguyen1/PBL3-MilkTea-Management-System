@@ -9,9 +9,8 @@ namespace PBL3.Interface
     {
         bool AddItem(List<Item> items);
         bool AddItemWithRecipe(List<Item> items, List<Recipe> recipes);
-        bool RemoveItem(Item item);
         bool UpdateItem(int itemId, Item item);
-        bool DeleteItemByID(int itemId);
+        bool DisableItemById(int itemId);
         int GetNextItemID();
         Item? GetItemById(int itemId);
         Item? GetItemSize(int itemId, string size);

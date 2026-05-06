@@ -19,7 +19,7 @@ namespace PBL3.Interface
                 return conn.OrderDetails
                     .Where(od => od.Order != null
                               && od.Order.orderStatus != null
-                              && od.Order.orderStatus == "Approved"
+                              && od.Order.orderStatus == "Completed"
                               && od.Order.orderDate >= startDate.Date
                               && od.Order.orderDate <= endOfDay)
                     .Sum(od => od.quantity * (od.priceAtOrder - (od.costAtOrder ?? 0.0)));
@@ -86,7 +86,7 @@ namespace PBL3.Interface
         {
             using (var conn = new MilkTeaDBContext())
             {
-                return conn.SalarySummaries
+                return conn.SalarySummary
                     .Where(e => e.month == month && e.year == year)
                     .Sum(e => (double?)e.totalSalary) ?? 0.0;
             }
@@ -99,7 +99,7 @@ namespace PBL3.Interface
                 int startMonth = (quarter - 1) * 3 + 1;
                 int endMonth = startMonth + 2;
 
-                return conn.SalarySummaries
+                return conn.SalarySummary
                     .Where(e => e.year == year && e.month >= startMonth && e.month <= endMonth)
                     .Sum(e => (double?)e.totalSalary) ?? 0.0;
             }
@@ -109,7 +109,7 @@ namespace PBL3.Interface
         {
             using (var conn = new MilkTeaDBContext())
             {
-                return conn.SalarySummaries
+                return conn.SalarySummary
                     .Where(e => e.year == year)
                     .Sum(e => (double?)e.totalSalary) ?? 0.0;
             }
@@ -121,7 +121,7 @@ namespace PBL3.Interface
             using (var conn = new MilkTeaDBContext())
             {
                 var totalcost = from o in conn.Orders
-                                where o.orderStatus == "Approved"
+                                where o.orderStatus == "Completed"
                                       && o.orderDate >= start.Date
                                       && o.orderDate <= endOfDay
 

@@ -10,7 +10,7 @@ namespace PBL3.Interface
         public double GetDailyRevenue(DateTime date)
         {
             using (var conn = new MilkTeaDBContext()){ 
-                return conn.Orders.Where(o => o.orderStatus == "Approved"
+                return conn.Orders.Where(o => o.orderStatus == "Completed"
                                          && o.orderDate.Date == date.Date)
                                   .Sum(o => o.totalPrice);
 
@@ -21,7 +21,7 @@ namespace PBL3.Interface
             DateTime endOfDay = end.Date.AddDays(1).AddTicks(-1);
             using (var conn = new MilkTeaDBContext())
             {
-                return conn.Orders.Where(o => o.orderStatus == "Approved"
+                return conn.Orders.Where(o => o.orderStatus == "Completed"
                                          && o.orderDate >= start.Date
                                          && o.orderDate <= endOfDay)
                                   .Sum(o => o.totalPrice);
@@ -31,7 +31,7 @@ namespace PBL3.Interface
         {
             using (var conn = new MilkTeaDBContext())
             {
-                return conn.Orders.Where(o => o.orderStatus == "Approved"
+                return conn.Orders.Where(o => o.orderStatus == "Completed"
                                          && o.orderDate.Month == month
                                          && o.orderDate.Year == year)
                                   .Sum(o => o.totalPrice);
@@ -42,7 +42,7 @@ namespace PBL3.Interface
         {
             using (var conn = new MilkTeaDBContext())
             {
-                return conn.Orders.Where(o => o.orderStatus == "Approved"
+                return conn.Orders.Where(o => o.orderStatus == "Completed"
                                          && o.orderDate.Year == year)
                                   .Sum(o => o.totalPrice);
             }

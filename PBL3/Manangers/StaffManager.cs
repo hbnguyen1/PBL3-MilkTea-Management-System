@@ -366,7 +366,7 @@ namespace PBL3.Manangers
         {
             using (var conn = new MilkTeaDBContext())
             {
-                var exist = conn.SalarySummaries
+                var exist = conn.SalarySummary
                     .FirstOrDefault(x => x.staffID == staffID && x.month == month && x.year == year);
 
                 if (exist != null)
@@ -387,7 +387,7 @@ namespace PBL3.Manangers
 
                 double salary = CalculateSalary(staffID, month, year);
 
-                conn.SalarySummaries.Add(new SalarySummary
+                conn.SalarySummary.Add(new SalarySummary
                 {
                     staffID = staffID,
                     month = month,
