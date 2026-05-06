@@ -7,9 +7,9 @@
 
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="6.5*"/>
+            <ColumnDefinition Width="7.5*"/>
             <!-- Khu vực POS (Rộng hơn chút để dễ bấm) -->
-            <ColumnDefinition Width="3.5*"/>
+            <ColumnDefinition Width="2.5*"/>
            
         </Grid.ColumnDefinitions>
 

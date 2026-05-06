@@ -70,12 +70,18 @@ namespace PBL3.Manangers
                 DateTime now = DateTime.Now;
                 DateTime today = now.Date;
 
-                // 1. xác định ca hiện tại
+                // 1. xác định ca hiện tại hoặc ca có thể check-in sớm
                 string currentShift = GetCurrentShift(now);
 
+                // Nếu không có ca hiện tại, kiểm tra ca tiếp theo có thể check-in sớm
                 if (currentShift == "")
                 {
-                    return "❌ Hiện tại không nằm trong khung giờ của bất kỳ ca làm việc nào!";
+                    currentShift = GetUpcomingShiftForCheckIn(now, today, conn, staffID);
+
+                    if (currentShift == "")
+                    {
+                        return "❌ Hiện tại không nằm trong khung giờ của bất kỳ ca làm việc nào và không có ca sắp tới để check-in sớm!";
+                    }
                 }
 
                 // 2. kiểm tra có đăng ký ca không
@@ -103,6 +109,7 @@ namespace PBL3.Manangers
                     int lateMinutes = (int)(now - start).TotalMinutes;
                     int penalty = 0;
 
+                    // Chỉ phạt nếu check-in sau giờ bắt đầu ca (không phạt nếu check-in sớm)
                     if (lateMinutes > 10)
                     {
                         penalty = (lateMinutes / 10) * 5000;
@@ -125,11 +132,16 @@ namespace PBL3.Manangers
                     {
                         resultMsg += $"\n⚠ Lưu ý: Bạn đi trễ {lateMinutes} phút. Hệ thống ghi nhận mức phạt {penalty:N0}đ.";
                     }
+                    else if (lateMinutes < 0)
+                    {
+                        resultMsg += $"\n✨ Bạn check-in sớm {-lateMinutes} phút. Tuyệt vời!";
+                    }
                     return resultMsg;
                 }
                 else if (log.checkOut == null)
                 {
                     // ===== CHECK-OUT =====
+                    DateTime start = GetShiftStart(currentShift);
                     DateTime end = GetShiftEnd(currentShift);
 
                     int earlyMinutes = (int)(end - now).TotalMinutes;
@@ -143,12 +155,9 @@ namespace PBL3.Manangers
 
                     log.checkOut = now;
 
-                    // tính giờ làm
-                    if (log.checkIn != null)
-                    {
-                        TimeSpan work = log.checkOut.Value - log.checkIn.Value;
-                        log.totalHours = work.TotalHours;
-                    }
+                    DateTime actualEnd = now > end ? end : now;
+                    TimeSpan workDuration = actualEnd - start;
+                    log.totalHours = workDuration.TotalHours;
 
                     conn.SaveChanges();
 
@@ -171,7 +180,7 @@ namespace PBL3.Manangers
         {
             var t = now.TimeOfDay;
 
-            if (t >= new TimeSpan(8, 0, 0) && t < new TimeSpan(13, 0, 0))
+            if (t >= new TimeSpan(9, 0, 0) && t < new TimeSpan(13, 0, 0))
                 return "Morning";
 
             if (t >= new TimeSpan(13, 0, 0) && t < new TimeSpan(18, 0, 0))
@@ -182,13 +191,39 @@ namespace PBL3.Manangers
 
             return "";
         }
+
+        private string GetUpcomingShiftForCheckIn(DateTime now, DateTime today, MilkTeaDBContext conn, int staffID)
+        {
+            var t = now.TimeOfDay;
+
+            // Kiểm tra xem có thể check-in sớm cho các ca trong ngày không (cho phép check-in sớm 1 tiếng)
+            // Morning: 9:00 - 13:00, cho phép check-in từ 8:00
+            if (t >= new TimeSpan(8, 0, 0) && t < new TimeSpan(9, 0, 0))
+            {
+                return "Morning";
+            }
+
+            // Afternoon: 13:00 - 18:00, cho phép check-in từ 12:00
+            if (t >= new TimeSpan(12, 0, 0) && t < new TimeSpan(13, 0, 0))
+            {
+                return "Afternoon";
+            }
+
+            // Evening: 18:00 - 22:00, cho phép check-in từ 17:00
+            if (t >= new TimeSpan(17, 0, 0) && t < new TimeSpan(18, 0, 0))
+            {
+                return "Evening";
+            }
+
+            return "";
+        }
         private DateTime GetShiftStart(string shift)
         {
             var today = DateTime.Today;
 
             return shift switch
             {
-                "Morning" => today.AddHours(8),
+                "Morning" => today.AddHours(9),
                 "Afternoon" => today.AddHours(13),
                 "Evening" => today.AddHours(18),
                 _ => today

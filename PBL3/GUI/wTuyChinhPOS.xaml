@@ -1,11 +1,28 @@
 ﻿<Window x:Class="PBL3.GUI.wTuyChinhPOS"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Tuỳ Chỉnh Món" Height="420" Width="400" WindowStartupLocation="CenterScreen" Background="White">
+        Title="Tuỳ Chỉnh Món" Height="520" Width="400" WindowStartupLocation="CenterScreen" Background="White">
 
     <Grid Margin="25">
         <StackPanel>
             <TextBlock x:Name="txtTenMon" Text="Tên món" FontSize="20" FontWeight="Bold" Foreground="#1A1A1A" HorizontalAlignment="Center" Margin="0,0,0,25" TextWrapping="Wrap" TextAlignment="Center"/>
+
+            <!-- KHU VỰC CHỌN SIZE -->
+            <TextBlock Text="Chọn Size" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,10"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
+                <RadioButton x:Name="rdoSizeM" Content="M" FontSize="12" VerticalAlignment="Center" Tag="M" Click="rdoSize_Click" IsChecked="True" Margin="0,0,15,0"/>
+                <RadioButton x:Name="rdoSizeL" Content="L" FontSize="12" VerticalAlignment="Center" Tag="L" Click="rdoSize_Click"/>
+            </StackPanel>
+
+            <!-- HIỂN THỊ GIÁ -->
+            <Grid Margin="0,0,0,25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Giá:" FontSize="12" Foreground="#4A4A4A" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" x:Name="txtGia" Text="0 đ" FontSize="16" FontWeight="Bold" Foreground="#F28500" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
 
             <!-- KHU VỰC CHỈNH ĐƯỜNG -->
             <TextBlock Text="Mức Đường" FontSize="14" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,10"/>

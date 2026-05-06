@@ -86,7 +86,8 @@ namespace PBL3.GUI
 
             using (var db = new MilkTeaDBContext())
             {
-                var dsMonAn = db.Items.Where(i => i.isAvailable == true).ToList();
+                // Chỉ lấy items có size "M" (size mặc định)
+                var dsMonAn = db.Items.Where(i => i.isAvailable == true && i.size == "M").ToList();
 
                 if (_currentCategory != "Tất cả")
                 {
@@ -146,21 +147,29 @@ namespace PBL3.GUI
                 if (formTuyChinh.ShowDialog() == true)
                 {
                     string ghiChu = formTuyChinh.Note;
+                    string selectedSize = formTuyChinh.SelectedSize;
+                    double selectedPrice = formTuyChinh.SelectedPrice;
 
-                    var monTrongGio = _gioHang.FirstOrDefault(x => x.itemID == monDuocChon.itemID && x.size == monDuocChon.size && x.note == ghiChu);
+                    // Tìm mon trong giỏ hàng với itemName + selectedSize + ghiChu (phải khớp CHÍNH XÁC)
+                    var monTrongGio = _gioHang.FirstOrDefault(x => 
+                        x.itemName == monDuocChon.itemName && 
+                        x.size == selectedSize && 
+                        x.note == ghiChu);
 
                     if (monTrongGio != null)
                     {
+                        // Món đã tồn tại → cộng số lượng
                         monTrongGio.quantity++;
                     }
                     else
                     {
+                        // Thêm món mới
                         _gioHang.Add(new POSCartItem
                         {
                             itemID = monDuocChon.itemID,
                             itemName = monDuocChon.itemName,
-                            size = monDuocChon.size,
-                            price = monDuocChon.price,
+                            size = selectedSize,
+                            price = selectedPrice,
                             note = ghiChu,
                             quantity = 1
                         });
@@ -181,6 +190,79 @@ namespace PBL3.GUI
                 {
                     _gioHang.Remove(monCanXoa);
                     CapNhatGioHang();
+                }
+            }
+        }
+
+        private void btnTangSL_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Controls.Button btn = sender as System.Windows.Controls.Button;
+            if (btn != null && btn.Tag != null)
+            {
+                int itemID = (int)btn.Tag;
+                var mon = _gioHang.FirstOrDefault(x => x.itemID == itemID);
+                if (mon != null)
+                {
+                    mon.quantity++;
+                    CapNhatGioHang();
+                }
+            }
+        }
+
+        private void btnGiamSL_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Controls.Button btn = sender as System.Windows.Controls.Button;
+            if (btn != null && btn.Tag != null)
+            {
+                int itemID = (int)btn.Tag;
+                var mon = _gioHang.FirstOrDefault(x => x.itemID == itemID);
+                if (mon != null)
+                {
+                    if (mon.quantity > 1)
+                    {
+                        mon.quantity--;
+                    }
+                    else
+                    {
+                        // Nếu số lượng = 1 mà bấm giảm, xóa item
+                        _gioHang.Remove(mon);
+                    }
+                    CapNhatGioHang();
+                }
+            }
+        }
+
+        private void btnSuaMon_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Controls.Button btn = sender as System.Windows.Controls.Button;
+            if (btn != null && btn.Tag != null)
+            {
+                int itemID = (int)btn.Tag;
+                var mon = _gioHang.FirstOrDefault(x => x.itemID == itemID);
+                if (mon != null)
+                {
+                    // Tìm item trong database để lấy thông tin
+                    using (var db = new MilkTeaDBContext())
+                    {
+                        var dbItem = db.Items.FirstOrDefault(i => i.itemID == itemID && i.size == mon.size);
+                        if (dbItem != null)
+                        {
+                            wTuyChinhPOS formTuyChinh = new wTuyChinhPOS(dbItem);
+                            // Set giá trị cũ
+                            formTuyChinh.SelectedSize = mon.size;
+                            formTuyChinh.SelectedPrice = mon.price;
+                            formTuyChinh.Note = mon.note;
+
+                            if (formTuyChinh.ShowDialog() == true)
+                            {
+                                // Cập nhật thông tin món
+                                mon.size = formTuyChinh.SelectedSize;
+                                mon.price = formTuyChinh.SelectedPrice;
+                                mon.note = formTuyChinh.Note;
+                                CapNhatGioHang();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -220,19 +302,29 @@ namespace PBL3.GUI
         private void btnTimKhach_Click(object sender, RoutedEventArgs e)
         {
             string sdt = txtSdtKhach.Text.Trim();
-            UserService userService = new UserService();
-            _khachHangHienTai = userService.GetUserByPhone(sdt);
 
-            if (_khachHangHienTai != null)
+            // Lấy khách hàng từ bảng Customers để có đủ thông tin (tên + tích điểm)
+            using (var db = new MilkTeaDBContext())
             {
-                txtTenKhachHang.Text = $"Khách hàng hợp lệ (SĐT: {_khachHangHienTai.Phone})";
-                txtTenKhachHang.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green);
-            }
-            else
-            {
-                txtTenKhachHang.Text = "❌ Không tìm thấy khách hàng này!";
-                txtTenKhachHang.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
-                _khachHangHienTai = null;
+                var khachHang = db.Customers.FirstOrDefault(c => c.Phone == sdt);
+
+                if (khachHang != null)
+                {
+                    _khachHangHienTai = khachHang;
+
+                    // Hiển thị: Tên + SĐT + Tích điểm
+                    string displayText = $"✓ {khachHang.Name} " +
+                                       $"Tích điểm: {khachHang.point}đ";
+
+                    txtTenKhachHang.Text = displayText;
+                    txtTenKhachHang.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green);
+                }
+                else
+                {
+                    txtTenKhachHang.Text = "❌ Không tìm thấy khách hàng này!";
+                    txtTenKhachHang.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
+                    _khachHangHienTai = null;
+                }
             }
         }
 
@@ -248,6 +340,13 @@ namespace PBL3.GUI
             if (currentStaffId <= 0)
             {
                 System.Windows.MessageBox.Show("Lỗi: Không tìm thấy thông tin nhân viên! Vui lòng đăng nhập lại.", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Kiểm tra xem nhân viên đã check-in hay chưa
+            if (!IsStaffCheckedIn(currentStaffId))
+            {
+                System.Windows.MessageBox.Show("❌ Bạn chưa check-in! Vui lòng check-in trước khi thanh toán.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -281,6 +380,23 @@ namespace PBL3.GUI
             else
             {
                 System.Windows.MessageBox.Show("Đã xảy ra lỗi khi tạo hóa đơn!", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool IsStaffCheckedIn(int staffID)
+        {
+            using (var db = new MilkTeaDBContext())
+            {
+                DateTime today = DateTime.Today;
+
+                // Kiểm tra xem nhân viên có log chấm công hôm nay với checkIn != null và checkOut == null không
+                var checkedInLog = db.WorkShiftLogs.FirstOrDefault(l =>
+                    l.staffID == staffID &&
+                    l.workDate == today &&
+                    l.checkIn != null &&
+                    l.checkOut == null);
+
+                return checkedInLog != null;
             }
         }
     }

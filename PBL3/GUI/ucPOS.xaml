@@ -6,9 +6,9 @@
 
     <Grid Margin="15">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="6.5*"/>
+            <ColumnDefinition Width="5*"/>
             <!-- Cột trái: Menu món -->
-            <ColumnDefinition Width="3.5*"/>
+            <ColumnDefinition Width="5*"/>
             <!-- Cột phải: Hóa đơn & Thanh toán -->
         </Grid.ColumnDefinitions>
 
@@ -124,15 +124,41 @@
 
                 <!-- 2. CHI TIẾT GIỎ HÀNG -->
                 <DataGrid x:Name="dgGioHang" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" 
-                          Background="Transparent" BorderThickness="0" RowHeight="45" Margin="0,0,0,15">
+                          Background="Transparent" BorderThickness="0" RowHeight="50" Margin="0,0,0,15">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Tên món" Binding="{Binding itemName}" Width="*"/>
-                        <DataGridTextColumn Header="SL" Binding="{Binding quantity}" Width="40"/>
-                        <DataGridTextColumn Header="Thành tiền" Binding="{Binding total, StringFormat='{}{0:N0} đ'}" Width="90" Foreground="#F28500" FontWeight="Bold"/>
-                        <DataGridTemplateColumn Width="40">
+                        <DataGridTextColumn Header="Tên món" Binding="{Binding itemName}" Width="100"/>
+                        <DataGridTextColumn Header="Size" Binding="{Binding size}" Width="40" />
+                        <DataGridTemplateColumn Header="SL" Width="60">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="X" Tag="{Binding itemID}" Click="btnXoaMon_Click" Foreground="Red" Background="Transparent" BorderThickness="0" Cursor="Hand" FontWeight="Bold"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Button Content="−" Click="btnGiamSL_Click" Tag="{Binding itemID}" Foreground="#666" Background="#F0F0F0" BorderBrush="#D0D0D0" BorderThickness="1" Width="28" Height="28" Cursor="Hand" FontWeight="Bold" Padding="0" FontSize="14">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <TextBlock Text="{Binding quantity}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0" TextAlignment="Center" Width="20" FontWeight="Bold"/>
+                                        <Button Content="+" Click="btnTangSL_Click" Tag="{Binding itemID}" Foreground="#666" Background="#F0F0F0" BorderBrush="#D0D0D0" BorderThickness="1" Width="28" Height="28" Cursor="Hand" FontWeight="Bold" Padding="0" FontSize="14">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Thành tiền" Binding="{Binding total, StringFormat='{}{0:N0} đ'}" Width="80" Foreground="#F28500" FontWeight="Bold"/>
+                        <DataGridTemplateColumn Header="Hành động" Width="70">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0">
+                                        <Button Content="✎" Click="btnSuaMon_Click" Tag="{Binding itemID}" Foreground="White" Background="#2196F3" BorderThickness="0" Width="25" Height="25" Cursor="Hand" FontWeight="Bold" Padding="0" Margin="0,0,5,0"/>
+                                        <Button Content="X" Click="btnXoaMon_Click" Tag="{Binding itemID}" Foreground="White" Background="#F44336" BorderThickness="0" Width="25" Height="25" Cursor="Hand" FontWeight="Bold" Padding="0"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
