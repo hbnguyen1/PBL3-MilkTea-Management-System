@@ -191,13 +191,10 @@ namespace PBL3.Manangers
                             return false; 
                         }
 
-                        var recipesToDelete = db.Recipes.Where(r => r.itemID == id).ToList();
-
-                        if (recipesToDelete.Count > 0)
+                        foreach (var item in itemsToDelete)
                         {
-                            db.Recipes.RemoveRange(recipesToDelete);
+                            item.isAvailable = false;
                         }
-                        db.Items.RemoveRange(itemsToDelete);
                         db.SaveChanges();
                         transaction.Commit();
 
