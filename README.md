@@ -1,13 +1,13 @@
-Hệ Thống Quản Lý Quán Trà Sữa (Milk Tea Shop Management) - Đồ án PBL3
+# Hệ Thống Quản Lý Quán Trà Sữa (Milk Tea Shop Management) - Đồ án PBL3
 
 Dự án phần mềm quản lý cửa hàng, tập trung vào việc tối ưu hóa luồng nghiệp vụ thực tế tại các quán trà sữa/cà phê, từ khâu quản lý kho nguyên liệu, tiếp nhận đơn hàng đến báo cáo doanh thu.
 
-Công Nghệ Sử Dụng
+## Công Nghệ Sử Dụng
 - Ngôn ngữ: C# (.NET 10)
 - Cơ sở dữ liệu: SQL Server
 - ORM: Entity Framework Core (Code-First / Database-First)
 
-Các Tính Năng Nổi Bật (Key Features)
+## Các Tính Năng Nổi Bật (Key Features)
 
 1. Phân quyền Người Dùng Chặt Chẽ (Role-Based Access Control)
 - Admin: Toàn quyền quản lý hệ thống, cấu hình Menu, xem báo cáo doanh thu.
@@ -28,12 +28,13 @@ Các Tính Năng Nổi Bật (Key Features)
 - Tối ưu hóa LINQ & RAM: Các phép tính cộng dồn (Sum), gom nhóm (GroupBy) được giao hoàn toàn cho SQL Server xử lý. Chỉ gọi ".ToList()" ở khâu cuối cùng.
 - Bảo mật dữ liệu với DTO: Tránh hoàn toàn lỗi *Over-fetching*, chỉ gửi đúng những trường dữ liệu cần thiết (Tên món, Số lượng) ra màn hình của đối tượng được cấp quyền, ẩn giấu tuyệt đối các dữ liệu nhạy cảm (Doanh thu, Giá vốn).
 
-Hướng Dẫn Cài Đặt (Setup Instructions)
+## Hướng Dẫn Cài Đặt (Setup Instructions)
 
 1. Clone repository này về máy.
 2. Mở Solution bằng Visual Studio.
-3. Mở file "MilkTeaDBContext.cs" (hoặc "appsettings.json" nếu có) và cập nhật chuỗi kết nối "ConnectionString" cho phù hợp với SQL Server Local của bạn.
+3. Mở file `MilkTeaDBContext.cs` (hoặc `appsettings.json` nếu có) và cập nhật chuỗi kết nối `ConnectionString` cho phù hợp với SQL Server Local của bạn.
 4. Mở Package Manager Console và chạy lệnh để khởi tạo Database:
-   "bash
-   Update-Database"
+   ```bash
+   Update-Database
+   ```
 5. Chạy project.
