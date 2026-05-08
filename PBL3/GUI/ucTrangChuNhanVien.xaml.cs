@@ -44,6 +44,39 @@ namespace PBL3.GUI
         {
             txtTime.Text = DateTime.Now.ToString("HH:mm:ss");
             txtDate.Text = DateTime.Now.ToString("dddd, dd/MM/yyyy");
+
+            // Kiểm tra và hiển thị cảnh báo check-out
+            CheckAndShowCheckOutReminder();
+        }
+
+        private void CheckAndShowCheckOutReminder()
+        {
+            int staffId = GetCurrentStaffId();
+            if (staffId <= 0) return;
+
+            // Kiểm tra xem có cần hiển thị cảnh báo không
+            if (_staffManager.ShouldShowCheckOutReminder(staffId))
+            {
+                string reminder = _staffManager.GetCheckOutReminder(staffId);
+
+                // Chỉ hiển thị lần đầu (khi txtReminder.Text rỗng hoặc khác)
+                if (txtReminder != null && txtReminder.Text != reminder)
+                {
+                    txtReminder.Text = reminder;
+                    txtReminder.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.OrangeRed);
+
+                    // Hiển thị popup cảnh báo
+                    System.Windows.MessageBox.Show(reminder, "⏰ CẢNH BÁO HẾT CA", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            else
+            {
+                // Xóa cảnh báo khi không cần nữa
+                if (txtReminder != null && !string.IsNullOrEmpty(txtReminder.Text))
+                {
+                    txtReminder.Text = "";
+                }
+            }
         }
 
         private void LoadSchedule()

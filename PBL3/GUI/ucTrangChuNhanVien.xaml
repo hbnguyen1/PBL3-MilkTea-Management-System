@@ -33,6 +33,9 @@
                     <TextBlock x:Name="txtTime" Text="00:00:00" FontSize="45" FontWeight="Heavy" Foreground="#1A1A1A" HorizontalAlignment="Center" Margin="0,5"/>
                     <TextBlock x:Name="txtDate" Text="Thứ Hai, 01/01/2026" FontSize="16" Foreground="#4A4A4A" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
+                    <!-- CẢNH BÁO HẾT CA -->
+                    <TextBlock x:Name="txtReminder" Text="" FontSize="12" Foreground="#FF6B6B" HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15" FontWeight="Bold" TextAlignment="Center" Height="Auto"/>
+
                     <Button Click="btnChamCong_Click" Cursor="Hand" Width="180" Height="45">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">

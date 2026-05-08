@@ -63,6 +63,76 @@ namespace PBL3.Manangers
         }
 
 
+        /// <summary>
+        /// Kiểm tra xem nhân viên có đang check-in chưa check-out không
+        /// và trả về thông tin ca làm (nếu có)
+        /// </summary>
+        public (bool IsCheckedIn, string CurrentShift, int TimeRemainingMinutes, DateTime ShiftEnd) GetCheckOutStatus(int staffID)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                DateTime today = DateTime.Today;
+                DateTime now = DateTime.Now;
+
+                // Tìm log chấm công hôm nay đã check-in nhưng chưa check-out
+                var log = conn.WorkShiftLogs.FirstOrDefault(l =>
+                    l.staffID == staffID &&
+                    l.workDate == today &&
+                    l.checkIn != null &&
+                    l.checkOut == null);
+
+                if (log == null)
+                {
+                    return (false, "", 0, DateTime.MinValue);
+                }
+
+                // Lấy giờ kết thúc ca
+                DateTime shiftEnd = GetShiftEnd(log.shift);
+                int timeRemaining = (int)(shiftEnd - now).TotalMinutes;
+
+                return (true, log.shift, timeRemaining, shiftEnd);
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra xem nhân viên sắp hết ca không (còn 5 phút)
+        /// Trả về true nếu cần cảnh báo
+        /// </summary>
+        public bool ShouldShowCheckOutReminder(int staffID)
+        {
+            var (isCheckedIn, shift, timeRemaining, _) = GetCheckOutStatus(staffID);
+
+            // Nếu đã check-in, ca còn 0-5 phút → Hiển thị cảnh báo
+            return isCheckedIn && timeRemaining >= 0 && timeRemaining <= 5;
+        }
+
+        /// <summary>
+        /// Lấy thông báo cảnh báo check-out
+        /// </summary>
+        public string GetCheckOutReminder(int staffID)
+        {
+            var (isCheckedIn, shift, timeRemaining, shiftEnd) = GetCheckOutStatus(staffID);
+
+            if (!isCheckedIn)
+            {
+                return "";
+            }
+
+            if (timeRemaining > 5)
+            {
+                return ""; // Không cần cảnh báo
+            }
+
+            if (timeRemaining <= 0)
+            {
+                return $"⏰ CẢNH BÁO: Bạn đã quá giờ hết ca [{shift}]!\n" +
+                       $"Vui lòng check-out ngay để tránh bị phạt thêm.";
+            }
+
+            return $"⏰ SẮP HẾT CA: Ca [{shift}] sẽ kết thúc trong {timeRemaining} phút!\n" +
+                   $"Hãy chuẩn bị check-out lúc {shiftEnd:HH:mm}.";
+        }
+
         public string ToggleShift(int staffID)
         {
             using (var conn = new MilkTeaDBContext())
@@ -198,7 +268,7 @@ namespace PBL3.Manangers
 
             // Kiểm tra xem có thể check-in sớm cho các ca trong ngày không (cho phép check-in sớm 1 tiếng)
             // Morning: 9:00 - 13:00, cho phép check-in từ 8:00
-            if (t >= new TimeSpan(8, 0, 0) && t < new TimeSpan(9, 0, 0))
+            if (t >= new TimeSpan(7, 0, 0) && t < new TimeSpan(8, 0, 0))
             {
                 return "Morning";
             }

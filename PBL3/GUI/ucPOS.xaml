@@ -27,43 +27,65 @@
 
                 <!-- Header: Tìm kiếm & Phân loại -->
                 <Grid Grid.Row="0" Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <!-- Dòng 1: Ô tìm kiếm -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Dòng 2: Các nút lọc -->
+                    </Grid.RowDefinitions>
 
-                    <!-- Ô tìm kiếm -->
-                    <Border Grid.Column="0" Background="#F3F4F6" CornerRadius="8" Padding="10,5" Margin="0,0,15,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="#9CA3AF" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <TextBox x:Name="txtTimKiem" Width="300" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Tag="Tìm kiếm món ăn..." TextChanged="txtTimKiem_TextChanged"/>
-                        </StackPanel>
+                    <!-- Ô tìm kiếm (Nằm trọn dòng 1) -->
+                    <Border Grid.Row="0" Background="#F3F4F6" CornerRadius="8" Padding="10,5" Margin="0,0,0,10">
+                        <!-- Thay StackPanel bằng Grid để TextBox tự động Stretch (co giãn) đầy viền -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="#9CA3AF" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <!-- Đã bỏ Width="300" để ô tìm kiếm tự động kéo dài ra cho đẹp -->
+                            <TextBox Grid.Column="1" x:Name="txtTimKiem" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Tag="Tìm kiếm món ăn..." TextChanged="txtTimKiem_TextChanged"/>
+                        </Grid>
                     </Border>
 
-                    <!-- Nút Danh Mục -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button Content="Tất cả" Margin="0,0,8,0" Background="#1A1A1A" Foreground="White" Padding="15,8" Cursor="Hand"  Click="btnLocMenu_Click">
+                    <!-- Các nút phân loại (Nằm dòng 2, dùng WrapPanel để tự động rớt dòng nếu màn hình nhỏ) -->
+                    <WrapPanel Grid.Row="1" Orientation="Horizontal">
+                        <!-- Nút BEST SELLER -->
+                        <Button Content="🔥 BEST SELLER" Margin="0,0,8,8" Background="#FF6B6B" Foreground="White" Padding="15,8" Cursor="Hand" Click="btnLocMenu_Click" FontWeight="Bold">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="8"/>
                                 </Style>
                             </Button.Resources>
                         </Button>
-                        <Button Content="Trà Sữa" Margin="0,0,8,0" Background="#F3F4F6" Foreground="#4A4A4A" Padding="15,8" Cursor="Hand" Click="btnLocMenu_Click">
+
+                        <!-- Nút Tất cả -->
+                        <Button Content="Tất cả" Margin="0,0,8,8" Background="#1A1A1A" Foreground="White" Padding="15,8" Cursor="Hand" Click="btnLocMenu_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="8"/>
                                 </Style>
                             </Button.Resources>
                         </Button>
-                        <Button Content="Trà Trái Cây" Background="#F3F4F6" Foreground="#4A4A4A" Padding="15,8" Cursor="Hand" Click="btnLocMenu_Click">
+
+                        <!-- Nút Trà Sữa -->
+                        <Button Content="Trà Sữa" Margin="0,0,8,8" Background="#F3F4F6" Foreground="#4A4A4A" Padding="15,8" Cursor="Hand" Click="btnLocMenu_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="8"/>
                                 </Style>
                             </Button.Resources>
                         </Button>
-                    </StackPanel>
+
+                        <!-- Nút Trà Trái Cây -->
+                        <Button Content="Trà Trái Cây" Margin="0,0,8,8" Background="#F3F4F6" Foreground="#4A4A4A" Padding="15,8" Cursor="Hand" Click="btnLocMenu_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </WrapPanel>
                 </Grid>
 
                 <!-- Vùng hiển thị các món ăn (Sẽ đổ dữ liệu bằng ItemsControl sau) -->

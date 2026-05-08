@@ -32,5 +32,27 @@ namespace PBL3.Interface
                 return result;
             }
         }
+
+        /// <summary>
+        /// Lấy danh sách các itemID của top 5 sản phẩm bán chạy nhất
+        /// </summary>
+        public List<int> GetBestSellerItemIDs(int top = 5)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                var bestSellerIDs = (from od in conn.OrderDetails
+                                     group od by od.itemID into g
+                                     select new
+                                     {
+                                         ItemID = g.Key,
+                                         TotalQuantity = g.Sum(x => x.quantity)
+                                     })
+                                    .OrderByDescending(x => x.TotalQuantity)
+                                    .Take(top)
+                                    .Select(x => x.ItemID)
+                                    .ToList();
+                return bestSellerIDs;
+            }
+        }
     }
 }

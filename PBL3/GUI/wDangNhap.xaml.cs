@@ -66,6 +66,17 @@ namespace PBL3.GUI
                     customerWindow.Show();
                     this.Close();
                 }
+                else if (currentUser is Users currentAdmin)
+                {
+                    if (currentAdmin.userID <= 0)
+                    {
+                        System.Windows.MessageBox.Show("Lỗi: ID quản trị viên không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    wTrangChu_Admin adminWindow = new wTrangChu_Admin();
+                    adminWindow.Show();
+                    this.Close();
+                }
             }
             else
             {

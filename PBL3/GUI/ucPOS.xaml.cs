@@ -33,6 +33,7 @@ namespace PBL3.GUI
         private Users _khachHangHienTai = null;
 
         private string _currentCategory = "Tất cả";
+        private List<int> _bestSellerItemIDs = new List<int>(); // Lưu danh sách best seller
 
         public ucPOS()
         {
@@ -61,8 +62,20 @@ namespace PBL3.GUI
 
             _currentCategory = btn.Content.ToString();
 
-            StackPanel parentPanel = btn.Parent as StackPanel;
-            if (parentPanel != null)
+            // Nếu chọn BEST SELLER → Lấy danh sách best seller
+            if (_currentCategory.Contains("BEST SELLER"))
+            {
+                ReportService reportService = new ReportService();
+                _bestSellerItemIDs = reportService.GetBestSellerItemIDs(10);
+                _currentCategory = "BEST_SELLER"; // Flag để phân biệt
+            }
+            else
+            {
+                _bestSellerItemIDs.Clear(); // Xóa flag
+            }
+
+            // Cập nhật highlight button
+            if (btn.Parent is StackPanel parentPanel)
             {
                 foreach (var child in parentPanel.Children)
                 {
@@ -74,8 +87,15 @@ namespace PBL3.GUI
                 }
             }
 
+            // Highlight button được chọn
             btn.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 26));
             btn.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
+
+            // Nếu là BEST SELLER → Đổi màu nút thành đỏ
+            if (_currentCategory.Contains("BEST_SELLER"))
+            {
+                btn.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 107, 107));
+            }
 
             LoadMenuMonAn();
         }
@@ -89,7 +109,15 @@ namespace PBL3.GUI
                 // Chỉ lấy items có size "M" (size mặc định)
                 var dsMonAn = db.Items.Where(i => i.isAvailable == true && i.size == "M").ToList();
 
-                if (_currentCategory != "Tất cả")
+                // Nếu là BEST SELLER → Lọc theo danh sách best seller
+                if (_currentCategory.Contains("BEST_SELLER"))
+                {
+                    if (_bestSellerItemIDs.Count > 0)
+                    {
+                        dsMonAn = dsMonAn.Where(i => _bestSellerItemIDs.Contains(i.itemID)).ToList();
+                    }
+                }
+                else if (_currentCategory != "Tất cả")
                 {
                     string dbItemType = "";
 
