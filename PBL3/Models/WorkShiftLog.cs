@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace PBL3.Models
 {
     public class WorkShiftLog
     {
-        
+
         [Key] public int logID { get; set; }
+        [ForeignKey(nameof(Staff))]
         public int staffID { get; set; }
         public DateTime workDate { get; set; }
         public string shift { get; set; } = string.Empty;
@@ -18,5 +20,7 @@ namespace PBL3.Models
 
         public double totalHours { get; set; } = 0;
         public int penalty { get; set; } = 0;
+
+        public virtual Staff Staff { get; set; } = null!;
     }
 }
