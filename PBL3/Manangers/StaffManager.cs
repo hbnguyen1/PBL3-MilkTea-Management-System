@@ -63,10 +63,6 @@ namespace PBL3.Manangers
         }
 
 
-        /// <summary>
-        /// Kiểm tra xem nhân viên có đang check-in chưa check-out không
-        /// và trả về thông tin ca làm (nếu có)
-        /// </summary>
         public (bool IsCheckedIn, string CurrentShift, int TimeRemainingMinutes, DateTime ShiftEnd) GetCheckOutStatus(int staffID)
         {
             using (var conn = new MilkTeaDBContext())
@@ -74,7 +70,6 @@ namespace PBL3.Manangers
                 DateTime today = DateTime.Today;
                 DateTime now = DateTime.Now;
 
-                // Tìm log chấm công hôm nay đã check-in nhưng chưa check-out
                 var log = conn.WorkShiftLogs.FirstOrDefault(l =>
                     l.staffID == staffID &&
                     l.workDate == today &&
@@ -86,7 +81,6 @@ namespace PBL3.Manangers
                     return (false, "", 0, DateTime.MinValue);
                 }
 
-                // Lấy giờ kết thúc ca
                 DateTime shiftEnd = GetShiftEnd(log.shift);
                 int timeRemaining = (int)(shiftEnd - now).TotalMinutes;
 
@@ -94,21 +88,13 @@ namespace PBL3.Manangers
             }
         }
 
-        /// <summary>
-        /// Kiểm tra xem nhân viên sắp hết ca không (còn 5 phút)
-        /// Trả về true nếu cần cảnh báo
-        /// </summary>
         public bool ShouldShowCheckOutReminder(int staffID)
         {
             var (isCheckedIn, shift, timeRemaining, _) = GetCheckOutStatus(staffID);
 
-            // Nếu đã check-in, ca còn 0-5 phút → Hiển thị cảnh báo
             return isCheckedIn && timeRemaining >= 0 && timeRemaining <= 5;
         }
 
-        /// <summary>
-        /// Lấy thông báo cảnh báo check-out
-        /// </summary>
         public string GetCheckOutReminder(int staffID)
         {
             var (isCheckedIn, shift, timeRemaining, shiftEnd) = GetCheckOutStatus(staffID);
@@ -120,7 +106,7 @@ namespace PBL3.Manangers
 
             if (timeRemaining > 5)
             {
-                return ""; // Không cần cảnh báo
+                return ""; 
             }
 
             if (timeRemaining <= 0)
@@ -140,10 +126,8 @@ namespace PBL3.Manangers
                 DateTime now = DateTime.Now;
                 DateTime today = now.Date;
 
-                // 1. xác định ca hiện tại hoặc ca có thể check-in sớm
                 string currentShift = GetCurrentShift(now);
 
-                // Nếu không có ca hiện tại, kiểm tra ca tiếp theo có thể check-in sớm
                 if (currentShift == "")
                 {
                     currentShift = GetUpcomingShiftForCheckIn(now, today, conn, staffID);
@@ -154,7 +138,6 @@ namespace PBL3.Manangers
                     }
                 }
 
-                // 2. kiểm tra có đăng ký ca không
                 bool hasSchedule = conn.WorkSchedules
                     .Any(s => s.staffID == staffID
                            && s.workDate == today
@@ -165,7 +148,6 @@ namespace PBL3.Manangers
                     return $"❌ Bạn chưa đăng ký lịch làm việc cho ca [{currentShift}] ngày hôm nay!";
                 }
 
-                // 3. tìm log chấm công
                 var log = conn.WorkShiftLogs.FirstOrDefault(l =>
                     l.staffID == staffID &&
                     l.workDate == today &&
@@ -173,13 +155,11 @@ namespace PBL3.Manangers
 
                 if (log == null)
                 {
-                    // ===== CHECK-IN =====
                     DateTime start = GetShiftStart(currentShift);
 
                     int lateMinutes = (int)(now - start).TotalMinutes;
                     int penalty = 0;
 
-                    // Chỉ phạt nếu check-in sau giờ bắt đầu ca (không phạt nếu check-in sớm)
                     if (lateMinutes > 10)
                     {
                         penalty = (lateMinutes / 10) * 5000;
@@ -210,7 +190,6 @@ namespace PBL3.Manangers
                 }
                 else if (log.checkOut == null)
                 {
-                    // ===== CHECK-OUT =====
                     DateTime start = GetShiftStart(currentShift);
                     DateTime end = GetShiftEnd(currentShift);
 
@@ -266,20 +245,16 @@ namespace PBL3.Manangers
         {
             var t = now.TimeOfDay;
 
-            // Kiểm tra xem có thể check-in sớm cho các ca trong ngày không (cho phép check-in sớm 1 tiếng)
-            // Morning: 9:00 - 13:00, cho phép check-in từ 8:00
             if (t >= new TimeSpan(7, 0, 0) && t < new TimeSpan(8, 0, 0))
             {
                 return "Morning";
             }
 
-            // Afternoon: 13:00 - 18:00, cho phép check-in từ 12:00
             if (t >= new TimeSpan(12, 0, 0) && t < new TimeSpan(13, 0, 0))
             {
                 return "Afternoon";
             }
 
-            // Evening: 18:00 - 22:00, cho phép check-in từ 17:00
             if (t >= new TimeSpan(17, 0, 0) && t < new TimeSpan(18, 0, 0))
             {
                 return "Evening";
@@ -348,7 +323,6 @@ namespace PBL3.Manangers
 
                 while (true)
                 {
-                    // ===== 1. HIỂN THỊ BẢNG =====
                     ShowWeeklySchedule(staffID);
 
                     Console.WriteLine("\nNhập lịch (vd: 2/4 - AE, 3/4 A E) hoặc 0 để thoát:");
@@ -487,8 +461,7 @@ namespace PBL3.Manangers
 
                 if (staff == null)
                 {
-                    Console.WriteLine("Không tìm thấy nhân viên!");
-                    return 0;
+                    return 0; 
                 }
 
                 var logs = conn.WorkShiftLogs
@@ -501,17 +474,17 @@ namespace PBL3.Manangers
                 double totalHours = logs.Sum(l => l.totalHours);
                 int totalPenalty = logs.Sum(l => l.penalty);
 
-                double salary = totalHours * staff.salaryPerHour - totalPenalty;
+                double salary = (totalHours * staff.salaryPerHour) - totalPenalty;
 
-                Console.WriteLine($"===== LƯƠNG THÁNG {month}/{year} =====");
-                Console.WriteLine($"Tổng giờ: {totalHours:F2}");
-                Console.WriteLine($"Phạt: {totalPenalty}");
-                Console.WriteLine($"Lương: {salary}");
+                if (salary < 0)
+                {
+                    salary = 0;
+                }
 
-                return salary;
+                return salary; 
             }
         }
-        public void SaveSalary(int staffID, int month, int year)
+        public string SaveSalary(int staffID, int month, int year)
         {
             using (var conn = new MilkTeaDBContext())
             {
@@ -520,8 +493,7 @@ namespace PBL3.Manangers
 
                 if (exist != null)
                 {
-                    Console.WriteLine("Đã có lương tháng này rồi!");
-                    return;
+                    return "⚠ Nhân viên này đã được chốt lương trong tháng này rồi!";
                 }
 
                 var logs = conn.WorkShiftLogs
@@ -531,9 +503,13 @@ namespace PBL3.Manangers
                              && l.workDate.Year == year)
                     .ToList();
 
+                if (logs.Count == 0)
+                {
+                    return "❌ Nhân viên không có ca làm việc nào hoàn thành trong tháng này!";
+                }
+
                 double totalHours = logs.Sum(l => l.totalHours);
                 int totalPenalty = logs.Sum(l => l.penalty);
-
                 double salary = CalculateSalary(staffID, month, year);
 
                 conn.SalarySummaries.Add(new SalarySummary
@@ -547,8 +523,7 @@ namespace PBL3.Manangers
                 });
 
                 conn.SaveChanges();
-
-                Console.WriteLine("Đã lưu lương!");
+                return "✔ Chốt lương thành công!";
             }
         }
 
