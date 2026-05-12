@@ -45,6 +45,7 @@ namespace PBL3.Data
             //ÁNH XẠ TÊN BẢNG
             modelBuilder.Entity<Users>().ToTable("USERS");
             modelBuilder.Entity<Staff>().ToTable("STAFF");
+            modelBuilder.Entity<Admin>().ToTable("ADMIN");
             modelBuilder.Entity<Customer>().ToTable("CUSTOMER");
             modelBuilder.Entity<Item>().ToTable("ITEM");
             modelBuilder.Entity<Recipe>().ToTable("RECIPE");
@@ -56,6 +57,21 @@ namespace PBL3.Data
 
             //CẤU HÌNH KHÓA CHÍNH (PRIMARY KEYS)
             modelBuilder.Entity<Users>().HasKey(u => u.userID);
+            modelBuilder.Entity<Users>()
+                .Property(u => u.userID)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("userID");
+
+            // CẤU HÌNH KẾ THỪA (INHERITANCE CONFIGURATION)
+            // CẤU HÌNH KẾ THỪA (INHERITANCE CONFIGURATION)
+            modelBuilder.Entity<Customer>()
+                .HasBaseType<Users>(); 
+
+            modelBuilder.Entity<Staff>()
+                .HasBaseType<Users>(); 
+
+            modelBuilder.Entity<Admin>()
+                .HasBaseType<Users>(); 
             modelBuilder.Entity<Ingredient>().HasKey(i => i.igID);
             modelBuilder.Entity<Orders>().HasKey(o => o.orderID);
             modelBuilder.Entity<ImportNote>().HasKey(i => i.importID);
@@ -91,6 +107,7 @@ namespace PBL3.Data
 
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<WorkShiftLog>().ToTable("WorkShiftLog");
+            modelBuilder.Entity<SalarySummary>().ToTable("SalarySummary");
         }
     }
 }
