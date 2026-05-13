@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using PBL3.Core;
 using PBL3.Manangers;
 using PBL3.Models;
 
@@ -51,6 +52,7 @@ namespace PBL3.GUI
                         System.Windows.MessageBox.Show("Lỗi: ID nhân viên không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
+                    UserSession.CurrentUser = currentStaff;
                     wTrangChu_NhanVien staffWindow = new wTrangChu_NhanVien();
                     staffWindow.Show();
                     this.Close();
@@ -62,6 +64,7 @@ namespace PBL3.GUI
                         System.Windows.MessageBox.Show("Lỗi: ID quản trị viên không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
+                    UserSession.CurrentUser = currentAdmin;
                     wTrangChu_Boss adminWindow = new wTrangChu_Boss();
                     adminWindow.Show();
                     this.Close();
@@ -73,6 +76,7 @@ namespace PBL3.GUI
                         System.Windows.MessageBox.Show("Lỗi: ID khách hàng không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
+                    UserSession.CurrentUser = currentCustomer;
                     wTrangChu customerWindow = new wTrangChu(currentCustomer.userID);
                     customerWindow.Show();
                     this.Close();

@@ -3,6 +3,8 @@ using System.Linq;
 using System.Windows;
 using PBL3.Data; 
 using PBL3.Models;
+using PBL3.Interface;
+using PBL3.Core;
 
 namespace PBL3.GUI
 {
@@ -55,25 +57,33 @@ namespace PBL3.GUI
             var result = System.Windows.MessageBox.Show($"Xác nhận đã pha chế xong đơn #{_orderId}?", "Xác nhận", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
             if (result == System.Windows.MessageBoxResult.Yes)
             {
+                OrderService orderService = new OrderService();
                 try
                 {
-                    using (var db = new MilkTeaDBContext())
-                    {
-                        var order = db.Orders.FirstOrDefault(o => o.orderID == _orderId);
-                        if (order != null)
-                        {
-                            order.orderStatus = "Completed";
-                            db.SaveChanges();
+                    //using (var db = new MilkTeaDBContext())
+                    //{
+                    //    var order = db.Orders.FirstOrDefault(o => o.orderID == _orderId);
+                    //    if (order != null)
+                    //    {
+                    //        order.orderStatus = "Completed";
+                    //        db.SaveChanges();
 
-                            System.Windows.MessageBox.Show("Đã duyệt đơn thành công!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                            this.Close();
-                        }
-                        else
-                        {
-                            System.Windows.MessageBox.Show("Duyệt đơn thất bại. Không tìm thấy đơn hàng.", "Lỗi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                        }
+                    //        System.Windows.MessageBox.Show("Đã duyệt đơn thành công!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    //        this.Close();
+                    //    }
+                    //    else
+                    //    {
+                    //        System.Windows.MessageBox.Show("Duyệt đơn thất bại. Không tìm thấy đơn hàng.", "Lỗi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    //    }
+                    bool isSuccess = orderService.ProcessNextOrderInQueue(_orderId, UserSession.CurrentUser.userID);
+                    if (isSuccess)
+                    {
+                        System.Windows.MessageBox.Show("Đã duyệt đơn thành công!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+
+                        this.Close();
                     }
-                }
+
+                }   
                 catch (Exception ex)
                 {
                     System.Windows.MessageBox.Show("Lỗi khi duyệt đơn: " + ex.Message, "Lỗi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);

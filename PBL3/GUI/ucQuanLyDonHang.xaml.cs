@@ -1,6 +1,8 @@
 ﻿using PBL3.Data;
+using PBL3.Interface;
 using PBL3.Manangers;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -51,6 +53,19 @@ namespace PBL3.GUI
                 int orderId = (int)btn.Tag;
 
                 wChiTietDon detailWindow = new wChiTietDon(orderId);
+                detailWindow.ShowDialog();
+
+                LoadOrders();
+            }
+        }
+        private void btnApproveOrder_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Controls.Button? btn = sender as System.Windows.Controls.Button;
+            OrderService orderService = new OrderService();
+            var nextOrder = orderService.GetNextOrder();
+            if (nextOrder != null)
+            {
+                wChiTietDon detailWindow = new wChiTietDon(nextOrder.orderID);
                 detailWindow.ShowDialog();
 
                 LoadOrders();

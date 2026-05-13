@@ -27,7 +27,8 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15,5" Margin="0,0,15,0">
+
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15,5">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Lọc trạng thái:" VerticalAlignment="Center" Foreground="#6B7280" FontWeight="SemiBold" Margin="0,0,10,0"/>
                         <ComboBox x:Name="cbFilterStatus" Width="130" SelectedIndex="0" SelectionChanged="cbFilterStatus_SelectionChanged" 
@@ -38,10 +39,9 @@
                         </ComboBox>
                     </StackPanel>
                 </Border>
-
                 <Button x:Name="btnLamMoi" Click="btnLamMoi_Click" Cursor="Hand">
                     <Button.Template>
-                        <ControlTemplate TargetType="Button">
+                        <ControlTemplate TargetType="{x:Type Button}">
                             <Border Background="#F28500" CornerRadius="8" Padding="20,0" Height="42">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0,0,8,0" FontSize="14" VerticalAlignment="Center"/>
@@ -51,6 +51,19 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                <Button x:Name="btnApproveOrder" Click="btnApproveOrder_Click" Cursor="Hand" Margin="10,0,0,0">
+                    <Button.Template>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border Background="#F28500" CornerRadius="8" Padding="20,0" Height="42">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0,0,8,0" FontSize="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Xử lý đơn" Foreground="White" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
             </StackPanel>
         </Grid>
 
@@ -157,7 +170,7 @@
                                                 <TextBlock Foreground="White" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
-                                                            <Setter Property="Text" Value="Xem / Duyệt"/>
+                                                            <Setter Property="Text" Value="Xem"/>
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding orderStatus}" Value="Completed">
                                                                     <Setter Property="Text" Value="Xem Chi Tiết"/>
