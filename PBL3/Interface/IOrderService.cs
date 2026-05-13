@@ -9,7 +9,8 @@ namespace PBL3.Interface
     internal interface IOrderService
     {
         bool CreateOrder(Orders order, List<OrderDetails> listorders);
-        bool ApproveOrder(int orderID, int staffID);
+        bool ProcessNextOrderInQueue(int orderId, int staffid);
+        Orders? GetNextOrder();
         List<Orders> GetAllOrders();
         List<Orders> GetOrdersByStatus(string status);
         List<Orders> GetPendingOrders();

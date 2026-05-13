@@ -68,38 +68,59 @@ namespace PBL3.Interface
                 }
             }
         }
-        public bool ApproveOrder(int orderID, int staffID)
+        public bool ProcessNextOrderInQueue(int orderId, int staffid)
         {
             using (var conn = new MilkTeaDBContext())
             {
                 try
                 {
-                    var order = conn.Orders.Find(orderID);
-
+                    var order = conn.Orders.FirstOrDefault(o => o.orderID == orderId);
                     if (order != null)
                     {
-                        if (order.orderStatus == "Pending")
-                        {
-                            order.staffID = staffID;
-                            order.orderStatus = "Approved";
-                            conn.SaveChanges();
-                            Logger.Info($"Nhân viên {staffID} đã duyệt đơn hàng số {orderID}");
-                            return true;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Đơn hàng này đã được xử lý trước đó rồi!");
-                            return false;
-                        }
+                        order.orderStatus = "Completed";
+                        conn.SaveChanges();
+                        Logger.Info($"Nhân viên {staffid} duyệt đơn {orderId} thành công!");
+                        return true;
                     }
-                    return false;
+                    else
+                    {
+                        Logger.Error($"Đơn hàng {orderId} không tồn tại!");
+                        return false;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"Lỗi khi duyệt đơn {orderID}: {ex.Message}");
+                    Logger.Error($"Lỗi khi duyệt đơn: {ex.Message}");
                     return false;
                 }
             }
+        }
+        public Orders? GetNextOrder()
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                try
+                {
+                    var nextOrder = conn.Orders
+                                        .Where(o => o.orderStatus == "Pending")
+                                        .OrderBy(o => o.orderDate)
+                                        .FirstOrDefault();
+                    if (nextOrder != null)
+                    {
+                        return nextOrder;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Lỗi khi lấy đơn: {ex.Message}");
+                    return null;
+                }
+            }
+
         }
         public List<Orders> GetAllOrders()
         {

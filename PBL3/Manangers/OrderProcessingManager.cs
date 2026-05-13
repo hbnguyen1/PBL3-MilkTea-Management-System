@@ -63,7 +63,7 @@ namespace PBL3.Manangers
                         Console.WriteLine("\nBạn có muốn duyệt đơn này không? (y/n)");
                         if (Console.ReadLine()?.ToLower() == "y")
                         {
-                            bool isSuccess = orderService.ApproveOrder(orderIdToApprove, currentStaff.userID);
+                            bool isSuccess = orderService.ProcessNextOrderInQueue(orderIdToApprove , currentStaff.userID);
                             if (isSuccess)
                                 Console.WriteLine($"\nĐã duyệt đơn #{orderIdToApprove} thành công! Mời bắt tay vào pha chế.");
                             else
