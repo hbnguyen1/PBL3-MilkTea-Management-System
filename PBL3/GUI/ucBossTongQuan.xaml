@@ -14,28 +14,16 @@
         <Grid Grid.Row="0" Margin="0,0,0,25">
             <StackPanel>
                 <TextBlock Text="BÁO CÁO KẾT QUẢ KINH DOANH" FontSize="24" FontWeight="Heavy" Foreground="#1A1A1A"/>
-                <TextBlock Text="Phân tích Doanh thu &amp; Lợi nhuận " FontSize="14" Foreground="#6B7280" Margin="0,5,0,0"/>
+                <TextBlock Text="Phân tích Doanh thu &amp; Lợi nhuận toàn hệ thống" FontSize="14" Foreground="#6B7280" Margin="0,5,0,0"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                <TextBlock Text="Chọn Tháng:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" FontSize="15"/>
-                <ComboBox x:Name="cmbThang" Width="80" Height="40" FontSize="16" VerticalContentAlignment="Center" SelectionChanged="LocDuLieu_Changed">
-                    <ComboBoxItem Content="1"/>
-                    <ComboBoxItem Content="2"/>
-                    <ComboBoxItem Content="3"/>
-                    <ComboBoxItem Content="4"/>
-                    <ComboBoxItem Content="5"/>
-                    <ComboBoxItem Content="6"/>
-                    <ComboBoxItem Content="7"/>
-                    <ComboBoxItem Content="8"/>
-                    <ComboBoxItem Content="9"/>
-                    <ComboBoxItem Content="10"/>
-                    <ComboBoxItem Content="11"/>
-                    <ComboBoxItem Content="12"/>
-                </ComboBox>
+                <TextBlock Text="Kỳ báo cáo:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" FontSize="15"/>
+                <ComboBox x:Name="cmbKyBaoCao" Width="120" Height="40" FontSize="16" VerticalContentAlignment="Center" SelectionChanged="LocDuLieu_Changed"/>
+
                 <TextBlock Text="Năm:" VerticalAlignment="Center" Margin="20,0,10,0" FontWeight="SemiBold" FontSize="15"/>
-                
-                <ComboBox x:Name="cmbNam" Width="80" Height="40" FontSize="16" VerticalContentAlignment="Center" SelectionChanged="LocDuLieu_Changed"/>
+                <ComboBox x:Name="cmbNam" Width="90" Height="40" FontSize="16" VerticalContentAlignment="Center" SelectionChanged="LocDuLieu_Changed"/>
+
                 <Button Content="Tra Cứu" Width="100" Height="40" Margin="15,0,0,0" Background="#1A1A1A" Foreground="White" FontWeight="Bold" Cursor="Hand" Click="btnTraCuu_Click">
                     <Button.Resources>
                         <Style TargetType="Border">
@@ -81,7 +69,7 @@
                 <StackPanel>
                     <TextBlock Text="Lương &amp; Mặt bằng" FontSize="15" FontWeight="SemiBold" Foreground="#6B7280"/>
                     <TextBlock x:Name="txtChiPhiLuong" Text="0 đ" FontSize="28" FontWeight="Heavy" Foreground="#F59E0B" Margin="0,10,0,5"/>
-                    <TextBlock Text="Phí cố định 10Tr + Lương NV" FontSize="12" Foreground="#9CA3AF" FontStyle="Italic"/>
+                    <TextBlock x:Name="txtGhiChuChiPhi" Text="Phí cố định 3Tr + Lương NV" FontSize="12" Foreground="#9CA3AF" FontStyle="Italic"/>
                 </StackPanel>
             </Border>
 
@@ -90,7 +78,7 @@
                     <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05"/>
                 </Border.Effect>
                 <StackPanel>
-                    <TextBlock Text="Lợi Nhuận Ròng (Net Profit)" FontSize="15" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="Lợi Nhuận Ròng" FontSize="15" FontWeight="SemiBold" Foreground="#6B7280"/>
                     <TextBlock x:Name="txtLoiNhuan" Text="0 đ" FontSize="28" FontWeight="Heavy" Foreground="#10B981" Margin="0,10,0,5"/>
                 </StackPanel>
             </Border>
@@ -105,19 +93,17 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
-                <TextBlock Text="Biểu Đồ Doanh Thu 12 Tháng" FontSize="16" FontWeight="Bold" Foreground="#1A1A1A" Margin="0,0,0,15"/>
-
-                <lvc:CartesianChart Grid.Row="1" Series="{Binding BieuDoDoanhThu}" Margin="0,10,0,0">
+                <TextBlock Text="So Sánh Doanh Thu &amp; Lợi Nhuận 12 Tháng" FontSize="16" FontWeight="Bold" Foreground="#1A1A1A" Margin="0,0,0,15"/>
+                <lvc:CartesianChart Grid.Row="1" Series="{Binding BieuDoDoanhThu}" LegendLocation="Bottom" Margin="0,10,0,0">
                     <lvc:CartesianChart.AxisX>
                         <lvc:Axis Title="Tháng" Labels="{Binding ThangLabels}" Foreground="#6B7280" FontSize="14">
                             <lvc:Axis.Separator>
-                                <lvc:Separator Step="1" Stroke="Transparent" />
+                                <lvc:Separator Step="1" Stroke="Transparent"/>
                             </lvc:Axis.Separator>
                         </lvc:Axis>
                     </lvc:CartesianChart.AxisX>
                     <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="Doanh thu (VNĐ)" LabelFormatter="{Binding FormatterTien}" Foreground="#6B7280" FontSize="13"/>
+                        <lvc:Axis Title="Số tiền (VNĐ)" LabelFormatter="{Binding FormatterTien}" Foreground="#6B7280" FontSize="13"/>
                     </lvc:CartesianChart.AxisY>
                 </lvc:CartesianChart>
             </Grid>
