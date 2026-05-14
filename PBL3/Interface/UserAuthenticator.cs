@@ -17,7 +17,7 @@ namespace PBL3.Interface
                 var loginUser = conn.Users.FirstOrDefault(u => u.Phone.Trim() == phoneNumber.Trim());
                 if (loginUser != null)
                 {
-                    bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(password, loginUser.Password);
+                    bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(password, loginUser.Password.Trim());
                     if (isPasswordCorrect)
                     {
                         return loginUser;
