@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using PBL3.Interface;
 using PBL3.Manangers;
 
 namespace PBL3.GUI
@@ -77,7 +78,8 @@ namespace PBL3.GUI
                 return;
             }
 
-            bool isSuccess = CustomerManagers.Register(fullName, phoneNumber, password);
+            CustomerService customerService = new CustomerService();
+            bool isSuccess = customerService.AddNewCustomer(fullName, phoneNumber, password);
 
             if (isSuccess)
             {
@@ -89,7 +91,7 @@ namespace PBL3.GUI
             }
             else
             {
-                System.Windows.MessageBox.Show("Đăng ký thất bại: Số điện thoại này có thể đã được đăng ký từ trước. Vui lòng kiểm tra lại!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("Đăng ký thất bại: Số điện thoại đã tồn tại. Vui lòng kiểm tra lại!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

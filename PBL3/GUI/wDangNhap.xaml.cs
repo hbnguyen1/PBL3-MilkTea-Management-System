@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using System.Windows.Media;
 using PBL3.Core;
+using PBL3.Interface;
 using PBL3.Manangers;
 using PBL3.Models;
 
@@ -41,7 +42,8 @@ namespace PBL3.GUI
             string phoneNumber = txtPhoneNumber.Text;
             string password = isPasswordVisible ? txtPasswordVisible.Text : txtPassword.Password;
 
-            var currentUser = AuthManager.Login(phoneNumber, password);
+            UserAuthenticator userAuthenticator = new UserAuthenticator();
+            var currentUser = userAuthenticator.Authenticate(phoneNumber, password);
 
             if (currentUser != null)
             {

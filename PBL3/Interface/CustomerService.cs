@@ -3,6 +3,7 @@ using PBL3.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using BCrypt.Net;
 
 namespace PBL3.Interface
 {
@@ -24,7 +25,7 @@ namespace PBL3.Interface
                 {
                     Name = name,
                     Phone = phoneNumber,
-                    Password = password,
+                    Password = BCrypt.Net.BCrypt.HashPassword(password),
                     point = 0
                 };
                 conn.Customers.Add(newCustomer);
