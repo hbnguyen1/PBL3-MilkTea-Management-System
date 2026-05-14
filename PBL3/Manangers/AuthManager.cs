@@ -12,12 +12,9 @@ namespace PBL3.Manangers
             UserAuthenticator authenticator = new UserAuthenticator();
             var currenuser = authenticator.Authenticate(phoneNumber, password);
 
-            if (currenuser != null)
-            {
-                UserSession.CurrentUser = currenuser;
-            }
 
             return currenuser;
+
         }
     }
 }
