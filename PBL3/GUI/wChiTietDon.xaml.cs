@@ -5,17 +5,20 @@ using PBL3.Data;
 using PBL3.Models;
 using PBL3.Interface;
 using PBL3.Core;
+using PBL3.Manangers;
 
 namespace PBL3.GUI
 {
     public partial class wChiTietDon : Window
     {
         private int _orderId;
+        private bool _canApprove;
 
-        public wChiTietDon(int orderId)
+        public wChiTietDon(int orderId, bool canApprove = false)
         {
             InitializeComponent();
             _orderId = orderId;
+            _canApprove = canApprove;
             lblMaDon.Text = $"Đơn hàng: #{orderId:D4}";
             LoadOrderDetails();
         }
@@ -45,7 +48,7 @@ namespace PBL3.GUI
                 }
                 icChiTiet.ItemsSource = viewList;
                 var order = db.Orders.FirstOrDefault(o => o.orderID == _orderId);
-                if (order != null && order.orderStatus == "Completed")
+                if (order != null && (order.orderStatus == "Completed" || !_canApprove))
                 {
                     btnDuyet.Visibility = Visibility.Collapsed;
                 }
@@ -54,27 +57,22 @@ namespace PBL3.GUI
 
         private void btnDuyet_Click(object sender, RoutedEventArgs e)
         {
+            // Kiểm tra nhân viên có đang check-in không
+            StaffManager staffManager = new StaffManager();
+            var (isCheckedIn, _, _, _) = staffManager.GetCheckOutStatus(UserSession.CurrentUser.userID);
+
+            if (!isCheckedIn)
+            {
+                System.Windows.MessageBox.Show("❌ Bạn chưa check-in. Vui lòng check-in trước khi hoàn thành đơn!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
+            }
+
             var result = System.Windows.MessageBox.Show($"Xác nhận đã pha chế xong đơn #{_orderId}?", "Xác nhận", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
             if (result == System.Windows.MessageBoxResult.Yes)
             {
                 OrderService orderService = new OrderService();
                 try
                 {
-                    //using (var db = new MilkTeaDBContext())
-                    //{
-                    //    var order = db.Orders.FirstOrDefault(o => o.orderID == _orderId);
-                    //    if (order != null)
-                    //    {
-                    //        order.orderStatus = "Completed";
-                    //        db.SaveChanges();
-
-                    //        System.Windows.MessageBox.Show("Đã duyệt đơn thành công!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                    //        this.Close();
-                    //    }
-                    //    else
-                    //    {
-                    //        System.Windows.MessageBox.Show("Duyệt đơn thất bại. Không tìm thấy đơn hàng.", "Lỗi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                    //    }
                     bool isSuccess = orderService.ProcessNextOrderInQueue(_orderId, UserSession.CurrentUser.userID);
                     if (isSuccess)
                     {
@@ -82,7 +80,6 @@ namespace PBL3.GUI
 
                         this.Close();
                     }
-
                 }   
                 catch (Exception ex)
                 {

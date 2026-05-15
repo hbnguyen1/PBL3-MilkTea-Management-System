@@ -23,6 +23,7 @@
                 <StackPanel Margin="15,0">
                     <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Tổng quan doanh thu" Tag="&#xE80F;" IsChecked="True" Checked="btnTongQuan_Checked"/>
                     <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Quản lý Nhân sự" Tag="&#xE716;" Checked="btnNhanSu_Checked"/>
+                    <RadioButton Style="{DynamicResource MenuButtonStyle}" Content="Quản lý Ca làm việc" Tag="&#xE787;" Checked="btnQuanLyCaLam_Checked"/>
                 </StackPanel>
             </StackPanel>
         </Border>

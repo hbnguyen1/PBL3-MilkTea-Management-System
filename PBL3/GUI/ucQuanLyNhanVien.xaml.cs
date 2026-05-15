@@ -31,7 +31,14 @@ namespace PBL3.GUI
                 dgNhanVien.ItemsSource = db.Staffs.ToList();
             }
         }
-
+        private void btnThemNhanVien_Click(object sender, RoutedEventArgs e)
+        {
+            wThemNhanVien formThem = new wThemNhanVien();
+            if (formThem.ShowDialog() == true)
+            {
+                LoadDanhSachNhanVien();
+            }
+        }
         private void dgNhanVien_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgNhanVien.SelectedItem != null)

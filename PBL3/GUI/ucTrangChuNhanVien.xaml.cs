@@ -137,6 +137,12 @@ namespace PBL3.GUI
             DateTime selectedDate = dpNgayDangKy.SelectedDate.Value;
             string selectedShift = cmbCaLam.Text;
 
+            if (string.IsNullOrEmpty(selectedShift))
+            {
+                System.Windows.MessageBox.Show("Vui lòng chọn ca làm!");
+                return;
+            }
+
             try
             {
                 string msg = _staffManager.QuickRegisterShift(staffId, selectedDate, selectedShift);
@@ -154,5 +160,14 @@ namespace PBL3.GUI
             }
         }
 
+        public int GetRemainingSpots(DateTime workDate, string shift)
+        {
+            return _staffManager.GetRemainingSpots(workDate, shift);
+        }
+
+        public int GetRegisteredStaffCount(DateTime workDate, string shift)
+        {
+            return _staffManager.GetRegisteredStaffCountForShift(workDate, shift);
+        }
     }
 }

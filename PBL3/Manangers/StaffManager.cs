@@ -1,4 +1,5 @@
 ﻿using PBL3.Data;
+using BCrypt.Net;
 using PBL3.Interface;
 using PBL3.Models;
 using System;
@@ -11,11 +12,42 @@ namespace PBL3.Manangers
 {
     internal class StaffManager
     {
+        private const int MAX_STAFF_PER_SHIFT = 2; 
+
         private DateTime GetStartOfWeek()
         {
             DateTime today = DateTime.Today;
             int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
             return today.AddDays(-diff).Date;
+        }
+
+        private int GetRegisteredStaffCount(DateTime workDate, string shift)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                return conn.WorkSchedules
+                    .Where(s => s.workDate == workDate && s.shift == shift)
+                    .Select(s => s.staffID)
+                    .Distinct()
+                    .Count();
+            }
+        }
+
+        private bool CanRegisterShift(DateTime workDate, string shift)
+        {
+            int count = GetRegisteredStaffCount(workDate, shift);
+            return count < MAX_STAFF_PER_SHIFT;
+        }
+
+        public int GetRegisteredStaffCountForShift(DateTime workDate, string shift)
+        {
+            return GetRegisteredStaffCount(workDate, shift);
+        }
+
+        public int GetRemainingSpots(DateTime workDate, string shift)
+        {
+            int registered = GetRegisteredStaffCount(workDate, shift);
+            return Math.Max(0, MAX_STAFF_PER_SHIFT - registered);
         }
 
         public List<WorkSchedule> GetMyWeeklySchedule(int staffID)
@@ -48,6 +80,17 @@ namespace PBL3.Manangers
                 if (exists)
                 {
                     return "⚠ Bạn đã đăng ký ca này rồi!";
+                }
+
+                int registeredCount = conn.WorkSchedules
+                    .Where(s => s.workDate == date.Date && s.shift == shift)
+                    .Select(s => s.staffID)
+                    .Distinct()
+                    .Count();
+
+                if (registeredCount >= MAX_STAFF_PER_SHIFT)
+                {
+                    return $"❌ Ca này đã đủ {MAX_STAFF_PER_SHIFT} nhân viên, không thể đăng ký thêm!";
                 }
 
                 conn.WorkSchedules.Add(new WorkSchedule
@@ -229,7 +272,7 @@ namespace PBL3.Manangers
         {
             var t = now.TimeOfDay;
 
-            if (t >= new TimeSpan(9, 0, 0) && t < new TimeSpan(13, 0, 0))
+            if (t >= new TimeSpan(8, 0, 0) && t < new TimeSpan(12, 0, 0))
                 return "Morning";
 
             if (t >= new TimeSpan(13, 0, 0) && t < new TimeSpan(18, 0, 0))
@@ -268,7 +311,7 @@ namespace PBL3.Manangers
 
             return shift switch
             {
-                "Morning" => today.AddHours(9),
+                "Morning" => today.AddHours(8),
                 "Afternoon" => today.AddHours(13),
                 "Evening" => today.AddHours(18),
                 _ => today
@@ -281,7 +324,7 @@ namespace PBL3.Manangers
 
             return shift switch
             {
-                "Morning" => today.AddHours(13),
+                "Morning" => today.AddHours(12),
                 "Afternoon" => today.AddHours(18),
                 "Evening" => today.AddHours(22),
                 _ => today
@@ -314,7 +357,146 @@ namespace PBL3.Manangers
                 }
             }
         }
-        public void RegisterWeeklySchedule(int staffID)
+        public List<string> RegisterWeeklySchedule(int staffID, List<string> scheduleEntries)
+        {
+            var messages = new List<string>();
+
+            using (var conn = new MilkTeaDBContext())
+            {
+                DateTime start = GetStartOfWeek();
+                DateTime end = start.AddDays(6);
+
+                foreach (var entry in scheduleEntries)
+                {
+                    try
+                    {
+                        string datePart = "";
+                        string shiftPart = "";
+
+                        if (entry.Contains("-"))
+                        {
+                            var parts = entry.Split('-');
+                            if (parts.Length != 2)
+                            {
+                                messages.Add($"❌ Sai format: {entry}");
+                                continue;
+                            }
+
+                            datePart = parts[0].Trim();
+                            shiftPart = parts[1].Trim().ToUpper();
+                        }
+                        else
+                        {
+                            var parts = entry.Trim().Split(' ');
+
+                            if (parts.Length < 2)
+                            {
+                                messages.Add($"❌ Sai format: {entry}");
+                                continue;
+                            }
+
+                            datePart = parts[0].Trim();
+                            shiftPart = string.Join("", parts.Skip(1)).ToUpper();
+                        }
+
+                        var dateSplit = datePart.Split('/');
+                        if (dateSplit.Length != 2)
+                        {
+                            messages.Add($"❌ Sai ngày: {datePart}");
+                            continue;
+                        }
+
+                        int day = int.Parse(dateSplit[0]);
+                        int month = int.Parse(dateSplit[1]);
+
+                        DateTime chosenDay = new DateTime(DateTime.Now.Year, month, day);
+
+                        if (chosenDay < start || chosenDay > end)
+                        {
+                            messages.Add($"❌ Ngày {datePart} không thuộc tuần này!");
+                            continue;
+                        }
+
+                        var shiftTokens = shiftPart
+                            .Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        List<string> shifts = new List<string>();
+
+                        foreach (var token in shiftTokens)
+                        {
+                            foreach (char c in token)
+                            {
+                                switch (c)
+                                {
+                                    case 'M':
+                                        shifts.Add("Morning");
+                                        break;
+                                    case 'A':
+                                        shifts.Add("Afternoon");
+                                        break;
+                                    case 'E':
+                                        shifts.Add("Evening");
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (shifts.Count == 0)
+                        {
+                            messages.Add($"❌ Không có ca hợp lệ: {entry}");
+                            continue;
+                        }
+
+                        foreach (var shift in shifts)
+                        {
+                            bool exists = conn.WorkSchedules.Any(s =>
+                                s.staffID == staffID &&
+                                s.workDate == chosenDay &&
+                                s.shift == shift);
+
+                            if (exists)
+                            {
+                                messages.Add($"⚠ Đã tồn tại: {datePart} - {shift}");
+                                continue;
+                            }
+
+                            int registeredCount = conn.WorkSchedules
+                                .Where(s => s.workDate == chosenDay && s.shift == shift)
+                                .Select(s => s.staffID)
+                                .Distinct()
+                                .Count();
+
+                            if (registeredCount >= MAX_STAFF_PER_SHIFT)
+                            {
+                                messages.Add($"❌ Ca {shift} ngày {datePart} đã đủ {MAX_STAFF_PER_SHIFT} nhân viên!");
+                                continue;
+                            }
+
+                            WorkSchedule ws = new WorkSchedule
+                            {
+                                staffID = staffID,
+                                workDate = chosenDay,
+                                shift = shift
+                            };
+
+                            conn.WorkSchedules.Add(ws);
+                            messages.Add($"✔ Đã thêm: {datePart} - {shift}");
+                        }
+                    }
+                    catch
+                    {
+                        messages.Add($"❌ Sai format: {entry}");
+                    }
+                }
+
+                conn.SaveChanges();
+                messages.Add("✔ Lưu thành công!");
+            }
+
+            return messages;
+        }
+
+        public void RegisterWeeklyScheduleConsole(int staffID)
         {
             using (var conn = new MilkTeaDBContext())
             {
@@ -331,125 +513,13 @@ namespace PBL3.Manangers
                     string input = Console.ReadLine();
                     if (input == "0") break;
 
-                    var entries = input.Split(',');
+                    var entries = input.Split(',').ToList();
+                    var messages = RegisterWeeklySchedule(staffID, entries);
 
-                    foreach (var entry in entries)
+                    foreach (var msg in messages)
                     {
-                        try
-                        {
-                            string datePart = "";
-                            string shiftPart = "";
-
-                            if (entry.Contains("-"))
-                            {
-                                var parts = entry.Split('-');
-                                if (parts.Length != 2)
-                                {
-                                    Console.WriteLine($"Sai format: {entry}");
-                                    continue;
-                                }
-
-                                datePart = parts[0].Trim();
-                                shiftPart = parts[1].Trim().ToUpper();
-                            }
-                            else
-                            {
-                                var parts = entry.Trim().Split(' ');
-
-                                if (parts.Length < 2)
-                                {
-                                    Console.WriteLine($"Sai format: {entry}");
-                                    continue;
-                                }
-
-                                datePart = parts[0].Trim();
-                                shiftPart = string.Join("", parts.Skip(1)).ToUpper();
-                            }
-
-                            var dateSplit = datePart.Split('/');
-                            if (dateSplit.Length != 2)
-                            {
-                                Console.WriteLine($"Sai ngày: {datePart}");
-                                continue;
-                            }
-
-                            int day = int.Parse(dateSplit[0]);
-                            int month = int.Parse(dateSplit[1]);
-
-                            DateTime chosenDay = new DateTime(DateTime.Now.Year, month, day);
-
-                            if (chosenDay < start || chosenDay > end)
-                            {
-                                Console.WriteLine($"Ngày {datePart} không thuộc tuần này!");
-                                continue;
-                            }
-
-                            var shiftTokens = shiftPart
-                                .Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-                            List<string> shifts = new List<string>();
-
-                            foreach (var token in shiftTokens)
-                            {
-                                foreach (char c in token)
-                                {
-                                    switch (c)
-                                    {
-                                        case 'M':
-                                            shifts.Add("Morning");
-                                            break;
-                                        case 'A':
-                                            shifts.Add("Afternoon");
-                                            break;
-                                        case 'E':
-                                            shifts.Add("Evening");
-                                            break;
-                                        default:
-                                            Console.WriteLine($"Ca không hợp lệ: {c}");
-                                            break;
-                                    }
-                                }
-                            }
-
-                            if (shifts.Count == 0)
-                            {
-                                Console.WriteLine($"Không có ca hợp lệ: {entry}");
-                                continue;
-                            }
-
-                            foreach (var shift in shifts)
-                            {
-                                bool exists = conn.WorkSchedules.Any(s =>
-                                    s.staffID == staffID &&
-                                    s.workDate == chosenDay &&
-                                    s.shift == shift);
-
-                                if (exists)
-                                {
-                                    Console.WriteLine($"Đã tồn tại: {datePart} - {shift}");
-                                    continue;
-                                }
-
-                                WorkSchedule ws = new WorkSchedule
-                                {
-                                    staffID = staffID,
-                                    workDate = chosenDay,
-                                    shift = shift
-                                };
-
-                                conn.WorkSchedules.Add(ws);
-
-                                Console.WriteLine($"✔ Đã thêm: {datePart} - {shift}");
-                            }
-                        }
-                        catch
-                        {
-                            Console.WriteLine($"Sai format: {entry}");
-                        }
+                        Console.WriteLine(msg);
                     }
-
-                    conn.SaveChanges();
-                    Console.WriteLine("\n✔ Lưu thành công!\n");
                 }
             }
         }
@@ -524,6 +594,30 @@ namespace PBL3.Manangers
 
                 conn.SaveChanges();
                 return "✔ Chốt lương thành công!";
+            }
+        }
+        public bool AddNewStaff(string name, string phoneNumber, string password, string role, double salaryPerHour)
+        {
+            using (var conn = new MilkTeaDBContext())
+            {
+                var existingUser = conn.Users.SingleOrDefault(u => u.Phone == phoneNumber);
+                if (existingUser != null)
+                {
+                    return false; 
+                }
+
+                var newStaff = new Staff
+                {
+                    Name = name,
+                    Phone = phoneNumber,
+                    Password = BCrypt.Net.BCrypt.HashPassword(password),
+                    salaryPerHour = (int)salaryPerHour
+                };
+
+                conn.Staffs.Add(newStaff);
+                conn.SaveChanges();
+
+                return true;
             }
         }
 

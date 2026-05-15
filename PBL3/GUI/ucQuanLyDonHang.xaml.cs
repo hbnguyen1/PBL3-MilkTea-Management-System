@@ -1,6 +1,7 @@
 ﻿using PBL3.Data;
 using PBL3.Interface;
 using PBL3.Manangers;
+using PBL3.Core;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Windows;
@@ -52,7 +53,7 @@ namespace PBL3.GUI
             {
                 int orderId = (int)btn.Tag;
 
-                wChiTietDon detailWindow = new wChiTietDon(orderId);
+                wChiTietDon detailWindow = new wChiTietDon(orderId, canApprove: false);
                 detailWindow.ShowDialog();
 
                 LoadOrders();
@@ -60,12 +61,21 @@ namespace PBL3.GUI
         }
         private void btnApproveOrder_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Controls.Button? btn = sender as System.Windows.Controls.Button;
+            // Kiểm tra nhân viên có đang check-in không
+            StaffManager staffManager = new StaffManager();
+            var (isCheckedIn, _, _, _) = staffManager.GetCheckOutStatus(UserSession.CurrentUser.userID);
+
+            if (!isCheckedIn)
+            {
+                System.Windows.MessageBox.Show("❌ Bạn chưa check-in. Vui lòng check-in trước khi xử lí đơn!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
+            }
+
             OrderService orderService = new OrderService();
             var nextOrder = orderService.GetNextOrder();
             if (nextOrder != null)
             {
-                wChiTietDon detailWindow = new wChiTietDon(nextOrder.orderID);
+                wChiTietDon detailWindow = new wChiTietDon(nextOrder.orderID, canApprove: true);
                 detailWindow.ShowDialog();
 
                 LoadOrders();
