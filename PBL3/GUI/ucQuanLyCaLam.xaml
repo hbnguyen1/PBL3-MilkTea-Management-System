@@ -1,0 +1,93 @@
+﻿<UserControl x:Class="PBL3.GUI.ucQuanLyCaLam"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#F5F6F8" FontFamily="Segoe UI"
+             UseLayoutRounding="True" SnapsToDevicePixels="True" TextOptions.TextFormattingMode="Display">
+    <Grid Margin="25">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,25">
+            <StackPanel>
+                <TextBlock Text="THỜI KHÓA BIỂU CA LÀM VIỆC" FontSize="24" FontWeight="Heavy" Foreground="#1A1A1A"/>
+                <TextBlock Text="Theo dõi danh sách nhân sự trực trong tuần" FontSize="14" Foreground="#6B7280" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="btnTuanTruoc" Grid.Column="0" Content="← Tuần Trước" Width="120" Height="35" Background="#6B7280" Foreground="White" FontWeight="Bold" Cursor="Hand" Click="btnTuanTruoc_Click">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+
+            <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock x:Name="txtTuanHienTai" Text="Tuần 01 (01/01 - 07/01/2026)" FontSize="18" FontWeight="Bold" Foreground="#1A1A1A"/>
+            </StackPanel>
+
+            <Button x:Name="btnTuanSau" Grid.Column="2" Content="Tuần Sau →" Width="120" Height="35" Background="#6B7280" Foreground="White" FontWeight="Bold" Cursor="Hand" Click="btnTuanSau_Click">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </Grid>
+
+        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="15">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
+            </Border.Effect>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <Grid x:Name="gridSchedule">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Column="0" Background="#1F2937" CornerRadius="6" Margin="2" Padding="10">
+                        <TextBlock x:Name="txtDate0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </Border>
+                    <Border Grid.Column="1" Background="#1F2937" CornerRadius="6" Margin="2" Padding="10">
+                        <TextBlock x:Name="txtDate1" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </Border>
+                    <Border Grid.Column="2" Background="#1F2937" CornerRadius="6" Margin="2" Padding="10">
+                        <TextBlock x:Name="txtDate2" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </Border>
+                    <Border Grid.Column="3" Background="#1F2937" CornerRadius="6" Margin="2" Padding="10">
+                        <TextBlock x:Name="txtDate3" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </Border>
+                    <Border Grid.Column="4" Background="#1F2937" CornerRadius="6" Margin="2" Padding="10">
+                        <TextBlock x:Name="txtDate4" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </Border>
+                    <Border Grid.Column="5" Background="#1F2937" CornerRadius="6" Margin="2" Padding="10">
+                        <TextBlock x:Name="txtDate5" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </Border>
+                    <Border Grid.Column="6" Background="#1F2937" CornerRadius="6" Margin="2" Padding="10">
+                        <TextBlock x:Name="txtDate6" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

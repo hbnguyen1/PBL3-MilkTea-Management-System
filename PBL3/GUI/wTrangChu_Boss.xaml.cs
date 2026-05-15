@@ -34,5 +34,11 @@ namespace PBL3.GUI
             if (MainContent == null) return;
             MainContent.Content = new ucQuanLyNhanVien();
         }
+
+        private void btnQuanLyCaLam_Checked(object sender, RoutedEventArgs e)
+        {
+            if (MainContent == null) return;
+            MainContent.Content = new ucQuanLyCaLam();
+        }
     }
 }
