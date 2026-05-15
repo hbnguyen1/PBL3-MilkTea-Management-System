@@ -5,8 +5,9 @@ using System.Linq;
 
 namespace PBL3.Interface
 {
-    internal interface IReportService
+    public interface IReportService
     {
         public dynamic GetTopSellingItems(int top = 5);
+        public List<int> GetBestSellerItemIDs(int top = 5);
     }
 }

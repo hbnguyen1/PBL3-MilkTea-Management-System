@@ -4,7 +4,7 @@ using System.Text;
 
 namespace PBL3.Interface
 {
-    internal interface ICustomerPointService
+    public interface ICustomerPointService
     {
         bool AddPoints(int customerId, int totalbill);
         int GetCurrentPoints(int customerId);

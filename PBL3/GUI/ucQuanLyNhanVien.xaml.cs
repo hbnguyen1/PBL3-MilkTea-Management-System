@@ -3,33 +3,29 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using PBL3.Data;
-using PBL3.Manangers;
+using Microsoft.Extensions.DependencyInjection;
+using PBL3.Interface;
 using PBL3.Models;
 
 namespace PBL3.GUI
 {
     public partial class ucQuanLyNhanVien : System.Windows.Controls.UserControl
     {
-        private StaffManager _staffManager = new StaffManager();
-        private dynamic _selectedStaff = null; 
+        private readonly IStaffService _staffManager;
+        private dynamic _selectedStaff = null;
 
         public ucQuanLyNhanVien()
         {
             InitializeComponent();
-
+            _staffManager = Program.ServiceProvider.GetRequiredService<IStaffService>();
             cmbThang.SelectedIndex = DateTime.Now.Month - 1;
             txtNam.Text = DateTime.Now.Year.ToString();
-
             LoadDanhSachNhanVien();
         }
 
         private void LoadDanhSachNhanVien()
         {
-            using (var db = new MilkTeaDBContext())
-            {
-                dgNhanVien.ItemsSource = db.Staffs.ToList();
-            }
+            dgNhanVien.ItemsSource = _staffManager.GetAllStaffs();
         }
 
         private void dgNhanVien_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -65,39 +61,27 @@ namespace PBL3.GUI
             int month = int.Parse((cmbThang.SelectedItem as ComboBoxItem).Content.ToString());
             int year = 2026;
             int.TryParse(txtNam.Text, out year);
+            var logs = _staffManager.GetShiftLogs(staffId, month, year);
+            dgChamCong.ItemsSource = logs;
+            double totalHours = logs.Sum(l => l.totalHours);
+            int totalPenalty = logs.Sum(l => l.penalty);
+            double luong = _staffManager.CalculateSalary(staffId, month, year);
 
-            using (var db = new MilkTeaDBContext())
+            txtTongGio.Text = $"{totalHours:F1}h";
+            txtTienPhat.Text = $"{totalPenalty:N0}đ";
+            txtLuongThuc.Text = $"{luong:N0}đ";
+            bool isSaved = _staffManager.IsSalarySaved(staffId, month, year);
+            if (isSaved)
             {
-                // 1. Load danh sách ca làm
-                var logs = db.WorkShiftLogs
-                             .Where(l => l.staffID == staffId && l.workDate.Month == month && l.workDate.Year == year)
-                             .OrderBy(l => l.workDate)
-                             .ToList();
-                dgChamCong.ItemsSource = logs;
-
-                // 2. Tính toán tổng quan
-                double totalHours = logs.Sum(l => l.totalHours);
-                int totalPenalty = logs.Sum(l => l.penalty);
-                double luong = _staffManager.CalculateSalary(staffId, month, year);
-
-                txtTongGio.Text = $"{totalHours:F1}h";
-                txtTienPhat.Text = $"{totalPenalty:N0}đ";
-                txtLuongThuc.Text = $"{luong:N0}đ";
-
-                // 3. Kiểm tra xem đã chốt lương chưa
-                bool isSaved = db.SalarySummaries.Any(s => s.staffID == staffId && s.month == month && s.year == year);
-                if (isSaved)
-                {
-                    btnChotLuong.Content = "ĐÃ CHỐT LƯƠNG";
-                    btnChotLuong.Background = new SolidColorBrush(Colors.Gray);
-                    btnChotLuong.IsEnabled = false;
-                }
-                else
-                {
-                    btnChotLuong.Content = "CHỐT LƯƠNG";
-                    btnChotLuong.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(16, 185, 129)); // Màu xanh
-                    btnChotLuong.IsEnabled = true;
-                }
+                btnChotLuong.Content = "ĐÃ CHỐT LƯƠNG";
+                btnChotLuong.Background = new SolidColorBrush(Colors.Gray);
+                btnChotLuong.IsEnabled = false;
+            }
+            else
+            {
+                btnChotLuong.Content = "CHỐT LƯƠNG";
+                btnChotLuong.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(16, 185, 129)); // Màu xanh
+                btnChotLuong.IsEnabled = true;
             }
         }
 
@@ -114,7 +98,7 @@ namespace PBL3.GUI
             if (resultMsg.Contains("✔"))
             {
                 System.Windows.MessageBox.Show(resultMsg, "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-                LoadDuLieuChamCong(); 
+                LoadDuLieuChamCong();
             }
             else
             {

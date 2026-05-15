@@ -2,9 +2,10 @@
 using System.Windows.Input;
 using System.Windows.Media;
 using PBL3.Core;
-using PBL3.Interface;
-using PBL3.Manangers;
+using PBL3.Service;
 using PBL3.Models;
+using PBL3.Interface;
+using Microsoft.Extensions.DependencyInjection; // BẮT BUỘC THÊM ĐỂ GỌI FORM TỪ DI
 
 namespace PBL3.GUI
 {
@@ -12,9 +13,14 @@ namespace PBL3.GUI
     {
         private bool isPasswordVisible = false;
 
-        public wDangNhap()
+        // 1. Khai báo biến readonly để hứng Service
+        private readonly IPasswordAuthenticator _authService;
+
+        // 2. Yêu cầu truyền Service vào Constructor
+        public wDangNhap(IPasswordAuthenticator authService)
         {
             InitializeComponent();
+            _authService = authService; // Gán để sử dụng
         }
 
         private void btnTogglePassword_Click(object sender, MouseButtonEventArgs e)
@@ -42,8 +48,8 @@ namespace PBL3.GUI
             string phoneNumber = txtPhoneNumber.Text;
             string password = isPasswordVisible ? txtPasswordVisible.Text : txtPassword.Password;
 
-            UserAuthenticator userAuthenticator = new UserAuthenticator();
-            var currentUser = userAuthenticator.Authenticate(phoneNumber, password);
+            // 3. XÓA dòng new UserAuthenticator() và dùng biến _authService
+            var currentUser = _authService.Authenticate(phoneNumber, password);
 
             if (currentUser != null)
             {
@@ -55,7 +61,9 @@ namespace PBL3.GUI
                         return;
                     }
                     UserSession.CurrentUser = currentStaff;
-                    wTrangChu_NhanVien staffWindow = new wTrangChu_NhanVien();
+
+                    // 4. Lấy Window từ "Trung tâm phân phối DI" thay vì dùng chữ new
+                    var staffWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_NhanVien>();
                     staffWindow.Show();
                     this.Close();
                 }
@@ -67,7 +75,9 @@ namespace PBL3.GUI
                         return;
                     }
                     UserSession.CurrentUser = currentAdmin;
-                    wTrangChu_Boss adminWindow = new wTrangChu_Boss();
+
+                    // 4. Tương tự, lấy Window Boss từ DI
+                    var adminWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_Boss>();
                     adminWindow.Show();
                     this.Close();
                 }
@@ -79,11 +89,12 @@ namespace PBL3.GUI
                         return;
                     }
                     UserSession.CurrentUser = currentCustomer;
+
+                    // (Giữ nguyên dùng new vì wTrangChu đang yêu cầu truyền tham số ID)
                     wTrangChu customerWindow = new wTrangChu(currentCustomer.userID);
                     customerWindow.Show();
                     this.Close();
                 }
-                
             }
             else
             {
@@ -93,6 +104,7 @@ namespace PBL3.GUI
 
         private void lblDangKy_Click(object sender, MouseButtonEventArgs e)
         {
+            // Nếu bạn chưa đăng ký wDangKy trong App.xaml.cs thì tạm thời cứ dùng new
             wDangKy registerWindow = new wDangKy();
             registerWindow.Show();
             this.Close();

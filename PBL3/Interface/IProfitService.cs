@@ -6,7 +6,7 @@ using System.Text;
 
 namespace PBL3.Interface
 {
-    internal interface IProfitService
+    public interface IProfitService
     {
         int CalculateTotalIngredientCost(DateTime start, DateTime end);
         double CalculateTotalSalaryCost(int month, int year);

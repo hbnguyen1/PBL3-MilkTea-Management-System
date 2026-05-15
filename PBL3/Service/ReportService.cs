@@ -5,17 +5,21 @@ using PBL3.Models;
 using PBL3.Core;
 using PBL3.Data;
 using Microsoft.IdentityModel.Tokens;
+using PBL3.Interface;
 
-namespace PBL3.Interface
+namespace PBL3.Service
 {
     internal class ReportService : IReportService
     {
+        private readonly MilkTeaDBContext _conn;
+        public ReportService(MilkTeaDBContext conn)
+        {
+            _conn = conn;
+        }
         public dynamic GetTopSellingItems(int top = 5)
         {
-            using (var conn = new MilkTeaDBContext())
-            {
-                var result = (from od in conn.OrderDetails
-                              join i in conn.Items on od.itemID equals i.itemID
+                var result = (from od in _conn.OrderDetails
+                              join i in _conn.Items on od.itemID equals i.itemID
                               // Nhóm luôn cả ID, Tên và Giá lại với nhau để xíu nữa lấy cho dễ
                               group new { od, i } by new { i.itemID, i.itemName, i.price } into g
                               select new
@@ -30,7 +34,7 @@ namespace PBL3.Interface
                              .Take(top)
                              .ToList();
                 return result;
-            }
+            
         }
 
         /// <summary>
@@ -38,9 +42,7 @@ namespace PBL3.Interface
         /// </summary>
         public List<int> GetBestSellerItemIDs(int top = 5)
         {
-            using (var conn = new MilkTeaDBContext())
-            {
-                var bestSellerIDs = (from od in conn.OrderDetails
+                var bestSellerIDs = (from od in _conn.OrderDetails
                                      group od by od.itemID into g
                                      select new
                                      {
@@ -53,6 +55,5 @@ namespace PBL3.Interface
                                     .ToList();
                 return bestSellerIDs;
             }
-        }
     }
 }

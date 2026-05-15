@@ -1,18 +1,20 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.Extensions.DependencyInjection;
 using PBL3.Interface;
-using PBL3.Manangers;
+using PBL3.Service;
 
 namespace PBL3.GUI
 {
     public partial class wDangKy : Window
     {
         private bool isPasswordVisible = false;
-
+        private readonly ICustomerService _customerService;
         public wDangKy()
         {
             InitializeComponent();
+            _customerService = Program.ServiceProvider.GetRequiredService<CustomerService>();
         }
 
         private void btnTogglePassword_Click(object sender, MouseButtonEventArgs e)
@@ -37,7 +39,7 @@ namespace PBL3.GUI
 
         private void lblDangNhap_Click(object sender, MouseButtonEventArgs e)
         {
-            wDangNhap loginWindow = new wDangNhap();
+            wDangNhap loginWindow = Program.ServiceProvider.GetRequiredService<wDangNhap>();
             loginWindow.Show();
             this.Close();
         }
@@ -78,14 +80,13 @@ namespace PBL3.GUI
                 return;
             }
 
-            CustomerService customerService = new CustomerService();
-            bool isSuccess = customerService.AddNewCustomer(fullName, phoneNumber, password);
+            bool isSuccess = _customerService.AddNewCustomer(fullName, phoneNumber, password);
 
             if (isSuccess)
             {
                 System.Windows.MessageBox.Show("Đăng ký tài khoản thành công! Vui lòng đăng nhập để tiếp tục.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                wDangNhap loginWindow = new wDangNhap();
+                wDangNhap loginWindow = Program.ServiceProvider.GetRequiredService<wDangNhap>();
                 loginWindow.Show();
                 this.Close();
             }

@@ -2,19 +2,22 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using PBL3.Manangers;
+using Microsoft.Extensions.DependencyInjection;
 using PBL3.Core;
+using PBL3.Interface;
+using PBL3.Service;
 
 namespace PBL3.GUI
 {
     public partial class ucTrangChuNhanVien : System.Windows.Controls.UserControl
     {
         private DispatcherTimer _timer;
-        private StaffManager _staffManager = new StaffManager();
+        private readonly IStaffService _staffService;
 
         public ucTrangChuNhanVien()
         {
             InitializeComponent();
+            _staffService = Program.ServiceProvider.GetRequiredService<IStaffService>();
 
             StartClock();
 
@@ -55,9 +58,9 @@ namespace PBL3.GUI
             if (staffId <= 0) return;
 
             // Kiểm tra xem có cần hiển thị cảnh báo không
-            if (_staffManager.ShouldShowCheckOutReminder(staffId))
+            if (_staffService.ShouldShowCheckOutReminder(staffId))
             {
-                string reminder = _staffManager.GetCheckOutReminder(staffId);
+                string reminder = _staffService.GetCheckOutReminder(staffId);
 
                 // Chỉ hiển thị lần đầu (khi txtReminder.Text rỗng hoặc khác)
                 if (txtReminder != null && txtReminder.Text != reminder)
@@ -87,7 +90,7 @@ namespace PBL3.GUI
                 System.Windows.MessageBox.Show("Lỗi: Không tìm thấy thông tin nhân viên!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            dgLich.ItemsSource = _staffManager.GetMyWeeklySchedule(staffId);
+            dgLich.ItemsSource = _staffService.GetMyWeeklySchedule(staffId);
         }
 
 
@@ -102,7 +105,7 @@ namespace PBL3.GUI
                     return;
                 }
 
-                string resultMessage = _staffManager.ToggleShift(staffId);
+                string resultMessage = _staffService.ToggleShift(staffId);
 
                 if (resultMessage.Contains("❌") || resultMessage.Contains("⚠"))
                 {
@@ -139,7 +142,7 @@ namespace PBL3.GUI
 
             try
             {
-                string msg = _staffManager.QuickRegisterShift(staffId, selectedDate, selectedShift);
+                string msg = _staffService.QuickRegisterShift(staffId, selectedDate, selectedShift);
 
                 System.Windows.MessageBox.Show(msg, "Thông báo");
 

@@ -5,49 +5,46 @@ using System.Text;
 using PBL3.Models;
 using System.Text.RegularExpressions;
 using PBL3.Core;
+using PBL3.Interface;
 
-namespace PBL3.Interface
+namespace PBL3.Service
 {
     internal class IngredientService : IIngredientService
     {
-            public bool AddIngredient(Ingredient ig)
+        private readonly MilkTeaDBContext _conn;
+        public IngredientService(MilkTeaDBContext conn)
+        {
+            _conn = conn;
+        }
+
+        public bool AddIngredient(Ingredient ig)
             {
-                using (var conn = new MilkTeaDBContext()) 
-                { 
-                    conn.Ingredients.Add(ig);
-                    conn.SaveChanges();
+                    _conn.Ingredients.Add(ig);
+                    _conn.SaveChanges();
                     return true;
-                }
             }
     
             public bool DeductStock(int igId, int quantity)
             {
-                using (var conn = new MilkTeaDBContext())
-                {
-                    var ig = conn.Ingredients.Find(igId);
+                    var ig = _conn.Ingredients.Find(igId);
                     if (ig != null && ig.igCount >= quantity)
                     {
                         ig.igCount -= quantity;
-                        conn.SaveChanges();
+                        _conn.SaveChanges();
                         return true;
                     }
                     return false;
-                }
+                
             }
     
             public List<Ingredient> GetAllIngredients()
             {
-                using (var conn = new MilkTeaDBContext())
-                {
-                    var list = conn.Ingredients.ToList();
+                    var list = _conn.Ingredients.ToList();
                     return list;
-                }
             }
 
             public bool ImportStock(int staffId, List<ImportDetail> listAdd)
             {
-                using (var conn = new MilkTeaDBContext())
-                {
                     var importNote = new ImportNote
                     {
                         staffID = staffId,
@@ -55,69 +52,58 @@ namespace PBL3.Interface
                         ImportDetails = listAdd,
                         totalCost = listAdd.Sum(x => x.quantityAdded * x.importPrice)
                     };
-                    conn.ImportNotes.Add(importNote);
+                    _conn.ImportNotes.Add(importNote);
                     foreach (var item in listAdd)
                     {
-                        var ig = conn.Ingredients.Find(item.igId);
+                        var ig = _conn.Ingredients.Find(item.igId);
                         if (ig != null)
                         {
                             ig.igCount += item.quantityAdded;
                         }
                     }
-                    conn.SaveChanges();
+                    _conn.SaveChanges();
                     return true;
-                }
+                
             }
             
     
             public bool isAvailable(int igId, int requiredQuantity)
             {
-                using (var conn = new MilkTeaDBContext())
-                {
-                    var ig = conn.Ingredients.Find(igId);
+                    var ig = _conn.Ingredients.Find(igId);
                     if (ig != null && ig.igCount >= requiredQuantity)
                     {
                         return true;
                     }
                     return false;
-                }
             }
             public List<Ingredient> GetLowStockIngredients()
             {
-                using (var db = new MilkTeaDBContext())
-                {
-                    return db.Ingredients.Where(ig => ig.igCount < 500).ToList();
-                }
+                    return _conn.Ingredients.Where(ig => ig.igCount < 500).ToList();
             }
 
         public bool updateIngredient(int igId, string name, string unit, int price)
         {
-            using (var db = new MilkTeaDBContext())
-            {
-                var ig = db.Ingredients.Find(igId);
+                var ig = _conn.Ingredients.Find(igId);
                 if (ig != null)
                 {
                     ig.igName = name;
                     ig.unit = unit;
-                    ig.price = price; 
+                    ig.price = price;
 
-                    db.SaveChanges();
+                    _conn.SaveChanges();
                     return true;
                 }
                 return false;
-            }
         }
         public bool CheckIngredientEnough(int itemId, string size, int quantity)
             {
-                using (var conn = new MilkTeaDBContext())
-                {
-                    var recipes = conn.Recipes
+                    var recipes = _conn.Recipes
                         .Where(r => r.itemID == itemId && r.size == size)
                         .ToList();
 
                     foreach (var r in recipes)
                     {
-                        var ingredient = conn.Ingredients
+                        var ingredient = _conn.Ingredients
                             .FirstOrDefault(i => i.igID == r.ingredientID);
 
                         if (ingredient == null)
@@ -134,8 +120,6 @@ namespace PBL3.Interface
                     }
 
                     return true;
-                }
-            }
-
+                }       
     }
 }

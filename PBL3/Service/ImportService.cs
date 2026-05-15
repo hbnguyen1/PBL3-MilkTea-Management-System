@@ -4,16 +4,20 @@ using System.Linq;
 using PBL3.Data;
 using PBL3.Models;
 using PBL3.Core;
+using PBL3.Interface;
 
-namespace PBL3.Interface
+namespace PBL3.Service
 {
-    internal class ImportService
+    internal class ImportService : IImportService
     {
+        private readonly MilkTeaDBContext _conn;
+        public ImportService(MilkTeaDBContext conn)
+        {
+            _conn = conn;
+        }
         public bool CreateImport(int staffId, List<ImportDetail> details)
         {
-            using (var conn = new MilkTeaDBContext())
-            {
-                using (var transaction = conn.Database.BeginTransaction())
+                using (var transaction = _conn.Database.BeginTransaction())
                 {
                     try
                     {
@@ -33,8 +37,8 @@ namespace PBL3.Interface
                             totalCost = totalCost
                         };
 
-                        conn.ImportNotes.Add(note);
-                        conn.SaveChanges();
+                        _conn.ImportNotes.Add(note);
+                        _conn.SaveChanges();
 
                         Logger.Info($"Tạo phiếu nhập ID {note.importID} bởi staff {staffId}");
 
@@ -42,9 +46,9 @@ namespace PBL3.Interface
                         {
                             d.importId = note.importID;
 
-                            conn.ImportDetails.Add(d);
+                            _conn.ImportDetails.Add(d);
 
-                            var ig = conn.Ingredients.Find(d.igId);
+                            var ig = _conn.Ingredients.Find(d.igId);
 
                             if (ig != null)
                             {
@@ -54,7 +58,7 @@ namespace PBL3.Interface
                             }
                         }
 
-                        conn.SaveChanges();
+                        _conn.SaveChanges();
                         transaction.Commit();
 
                         Logger.Info($"Hoàn tất nhập kho phiếu {note.importID}, tổng tiền {totalCost}");
@@ -76,7 +80,6 @@ namespace PBL3.Interface
                         return false;
                     }
                 }
-            }
         }
     }
 }

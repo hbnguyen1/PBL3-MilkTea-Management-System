@@ -1,24 +1,28 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PBL3.Interface;
+using PBL3.Models;
+using PBL3.Service;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using PBL3.Manangers;
 
 namespace PBL3.GUI
 {
     public partial class ucQuanLyKho : System.Windows.Controls.UserControl
     {
-        private IngredientManager _manager = new IngredientManager();
+        private readonly IIngredientService _ingredientService;
         private int _selectedIgId = -1; 
 
         public ucQuanLyKho()
         {
             InitializeComponent();
+            _ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
             LoadData();
         }
 
         private void LoadData()
         {
-            dgKho.ItemsSource = _manager.GetAllIngredients();
+            dgKho.ItemsSource = _ingredientService.GetAllIngredients();
         }
 
         private void btnRefresh_Click(object sender, RoutedEventArgs e)
@@ -35,7 +39,16 @@ namespace PBL3.GUI
                 int count = int.Parse(txtSoLuong.Text);
                 int price = int.Parse(txtGia.Text);
 
-                if (_manager.AddIngredient(name, price, unit, count))
+
+                Ingredient ig = new Ingredient()
+                {
+                    igName = name,
+                    price = price,
+                    unit = unit,
+                    igCount = count
+                };
+
+                if (_ingredientService.AddIngredient(ig))
                 {
                     System.Windows.MessageBox.Show("Thêm nguyên liệu thành công!", "Thông báo");
                     LoadData();
@@ -57,7 +70,7 @@ namespace PBL3.GUI
 
         private void btnCanhBao_Click(object sender, RoutedEventArgs e)
         {
-            dgKho.ItemsSource = _manager.GetLowStockIngredients();
+            dgKho.ItemsSource = _ingredientService.GetLowStockIngredients();
         }
 
         private void dgKho_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -110,8 +123,9 @@ namespace PBL3.GUI
                     System.Windows.MessageBox.Show("Giá phải là số không âm hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
+                
 
-                if (_manager.UpdateIngredientInfo(_selectedIgId, name, price, unit))
+                if (!(string.IsNullOrEmpty(name)) && (_ingredientService.updateIngredient(_selectedIgId, name, unit, price)))
                 {
                     System.Windows.MessageBox.Show("Cập nhật thông tin nguyên liệu thành công!", "Thông báo");
                     LoadData();

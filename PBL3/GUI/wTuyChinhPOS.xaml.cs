@@ -1,12 +1,14 @@
 ﻿using System.Windows;
 using PBL3.Models;
-using PBL3.Data;
 using System.Linq;
+using PBL3.Interface;
+using Microsoft.Extensions.DependencyInjection; // Bắt buộc thêm thư viện này để gọi Tổng đài
 
 namespace PBL3.GUI
 {
     public partial class wTuyChinhPOS : Window
     {
+        private readonly IItemService _itemService;
         public string Note { get; set; } = "";
         public string SelectedSize { get; set; } = "M";
         public double SelectedPrice { get; set; } = 0;
@@ -16,21 +18,19 @@ namespace PBL3.GUI
         public wTuyChinhPOS(Item mon)
         {
             InitializeComponent();
-            _originalItem = mon;
 
+            _itemService = PBL3.Program.ServiceProvider.GetRequiredService<IItemService>();
+            _originalItem = mon;
             txtTenMon.Text = $"{mon.itemName}";
-            SelectedSize = "M"; // Mặc định M
+            SelectedSize = "M"; 
             SelectedPrice = GetPriceForSize("M", mon.itemID);
             UpdatePriceDisplay();
         }
 
         private double GetPriceForSize(string size, int itemID)
         {
-            using (var db = new MilkTeaDBContext())
-            {
-                var item = db.Items.FirstOrDefault(i => i.itemID == itemID && i.size == size);
-                return item?.price ?? 0;
-            }
+            var item = _itemService.GetItemSize(itemID, size);
+            return item?.price ?? 0;
         }
 
         private void rdoSize_Click(object sender, RoutedEventArgs e)
