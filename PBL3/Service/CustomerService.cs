@@ -4,17 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using BCrypt.Net;
+using PBL3.Interface;
 
-namespace PBL3.Interface
+namespace PBL3.Service
 {
     internal class CustomerService: ICustomerService
     {
+        private readonly MilkTeaDBContext _conn;
+        public CustomerService(MilkTeaDBContext conn)
+        {
+            _conn = conn;
+        }
         public bool AddNewCustomer(string name, string phoneNumber, string password)
         {
-            // Kiểm tra xem số điện thoại đã tồn tại trong database chưa
-            using (var conn = new Data.MilkTeaDBContext())
-            {
-                var existingUser = conn.Users.SingleOrDefault(u => u.Phone == phoneNumber);
+                var existingUser = _conn.Users.SingleOrDefault(u => u.Phone == phoneNumber);
                 if (existingUser != null)
                 {
                     //Console.WriteLine("Số điện thoại đã tồn tại. Vui lòng chọn số khác.");
@@ -28,27 +31,22 @@ namespace PBL3.Interface
                     Password = BCrypt.Net.BCrypt.HashPassword(password),
                     point = 0
                 };
-                conn.Customers.Add(newCustomer);
-                conn.SaveChanges();
+                _conn.Customers.Add(newCustomer);
+                _conn.SaveChanges();
                 //Console.WriteLine("Đăng ký thành công!");
                 return true;
-            }
         }
         public List<string> GetTrendingItemNamesForCustomer()
         {
-            using (var db = new MilkTeaDBContext())
-            {
                 // 1. Chỉ gom nhóm và đếm số lượng để tìm ra món Hot
                 // 2. Không hề đụng tới phép tính Doanh thu ở đây
-                var trendingNames = db.OrderDetails
+                var trendingNames = _conn.OrderDetails
                     .GroupBy(od => od.itemID)
                     .OrderByDescending(g => g.Sum(od => od.quantity)) // Vẫn lấy top bán chạy
                     .Take(5)
-                    .Select(g => db.Items.FirstOrDefault(i => i.itemID == g.Key).itemName) // CHỈ SELECT ĐÚNG TÊN MÓN
+                    .Select(g => _conn.Items.FirstOrDefault(i => i.itemID == g.Key).itemName) // CHỈ SELECT ĐÚNG TÊN MÓN
                     .ToList();
 
-                return trendingNames;
-            }
-        }
+                return trendingNames;        }
     }
 }

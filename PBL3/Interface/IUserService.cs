@@ -5,8 +5,8 @@ using System.Text;
 
 namespace PBL3.Interface
 {
-    public interface IPasswordAuthenticator
+    public interface IUserService
     {
-        Users? Authenticate(string phoneNumber, string password);
+        Users? GetUserByPhone(string phone);
     }
 }

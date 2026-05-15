@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PBL3.Interface
 {
-    internal interface IRevenueService
+    public interface IRevenueService
     {
         double GetDailyRevenue(DateTime date);
         double GetRevenueByRange(DateTime start, DateTime end);

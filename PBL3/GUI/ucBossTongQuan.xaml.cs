@@ -2,17 +2,19 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using PBL3.Interface;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System.Collections.Generic;
+using PBL3.Service;
+using PBL3.Interface;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PBL3.GUI
 {
     public partial class ucBossTongQuan : System.Windows.Controls.UserControl
     {
-        private RevenueService _revenueService = new RevenueService();
-        private ProfitService _profitService = new ProfitService();
+        private readonly IRevenueService _revenueService;
+        private readonly IProfitService _profitService;
 
         public SeriesCollection BieuDoDoanhThu { get; set; }
         public string[] ThangLabels { get; set; }
@@ -26,6 +28,8 @@ namespace PBL3.GUI
             DataContext = this;
 
             InitializeComponent();
+            _revenueService = Program.ServiceProvider.GetRequiredService<IRevenueService>();
+            _profitService = Program.ServiceProvider.GetRequiredService<IProfitService>();
 
             for (int i = 2020; i <= 2030; i++) cmbNam.Items.Add(i.ToString());
             cmbNam.SelectedItem = DateTime.Now.Year.ToString();
@@ -34,7 +38,7 @@ namespace PBL3.GUI
             for (int i = 1; i <= 4; i++) cmbKyBaoCao.Items.Add($"Quý {i}");
             cmbKyBaoCao.SelectedIndex = DateTime.Now.Month - 1;
 
-            LoadThongKe();
+            //LoadThongKe();
         }
 
         private void btnTraCuu_Click(object sender, RoutedEventArgs e) => LoadThongKe();
@@ -90,7 +94,8 @@ namespace PBL3.GUI
 
                 VeBieuDoTheoNam(year);
             }
-            catch { }
+            catch { }//catch { System.Windows.MessageBox.Show("Lỗi tải thống kê: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error); }
+
         }
 
         private void VeBieuDoTheoNam(int year)

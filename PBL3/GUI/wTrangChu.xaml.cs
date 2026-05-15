@@ -3,10 +3,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using PBL3.Interface;
-using PBL3.Manangers;
 using PBL3.Models;
 using PBL3.Data;
+using PBL3.Service;
 
 namespace PBL3.GUI
 {
@@ -71,9 +70,18 @@ namespace PBL3.GUI
             {
                 ProductList = new ObservableCollection<ProductViewModel>();
                 allProducts = new List<ProductViewModel>();
+                ItemService itemService = new ItemService();
+                List<Item> allItems = new List<Item>();
 
-                ItemManager itemManager = new ItemManager();
-                var dbItems = itemManager.GetAllMenuItems();
+                var milkTeas = itemService.GetMenuByCategory("Milk Tea");
+                if (milkTeas != null) allItems.AddRange(milkTeas);
+                var fruitTeas = itemService.GetMenuByCategory("Fruit Tea");
+                if (fruitTeas != null) allItems.AddRange(fruitTeas);
+                var topping = itemService.GetMenuByCategory("Topping");
+                if (topping != null) allItems.AddRange(topping);
+                var others = itemService.GetMenuByCategory("Món khác");
+                if (others != null) allItems.AddRange(others);
+                var dbItems = allItems.OrderBy(item => item.itemID).ToList();
 
                 if (dbItems != null && dbItems.Count > 0)
                 {

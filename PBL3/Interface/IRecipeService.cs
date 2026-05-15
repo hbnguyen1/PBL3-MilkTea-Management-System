@@ -5,7 +5,7 @@ using PBL3.Models;
 
 namespace PBL3.Interface
 {
-    internal interface IRecipeService
+    public interface IRecipeService
     {
         bool AddRecipe(List<Recipe> lRecipe);
         bool DeleteRecipeByID(int id);

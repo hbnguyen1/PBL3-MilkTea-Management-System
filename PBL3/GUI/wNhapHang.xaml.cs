@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using PBL3.Interface;
 using PBL3.Models;
 using PBL3.Core;
+using PBL3.Service;
+using PBL3.Interface;
+using Microsoft.Extensions.DependencyInjection; 
 
 namespace PBL3.GUI
 {
@@ -21,12 +23,16 @@ namespace PBL3.GUI
     {
         private int _staffId;
         private List<ImportDetailUI> _chiTietNhap = new List<ImportDetailUI>();
-        private IngredientService _ingredientService = new IngredientService();
-        private ImportService _importService = new ImportService();
+
+        private readonly IIngredientService _ingredientService;
+        private readonly IImportService _importService;
 
         public wNhapHang()
         {
             InitializeComponent();
+
+            _ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
+            _importService = Program.ServiceProvider.GetRequiredService<IImportService>();
 
             _staffId = UserSession.CurrentUser?.userID ?? 0;
             if (_staffId <= 0)
@@ -66,12 +72,12 @@ namespace PBL3.GUI
                         igId = selectedIg.igID,
                         igName = selectedIg.igName,
                         quantityAdded = sl,
-                        importPrice = giaMacDinh 
+                        importPrice = giaMacDinh
                     });
                 }
 
                 RefreshDataGrid();
-                txtSoLuong.Clear(); 
+                txtSoLuong.Clear();
             }
             else
             {

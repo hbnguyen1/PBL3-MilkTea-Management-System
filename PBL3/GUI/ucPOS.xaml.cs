@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using PBL3.Interface;
-using PBL3.Manangers;
 using PBL3.Models;
-using PBL3.Data;
 using PBL3.Core;
+using PBL3.Service;
+using PBL3.Interface;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PBL3.GUI
 {
@@ -29,15 +29,27 @@ namespace PBL3.GUI
 
     public partial class ucPOS : System.Windows.Controls.UserControl
     {
+        private readonly IReportService _reportService;
+        private readonly IUserService _userService;
+        private readonly IOrderService _orderService;
+        private readonly IItemService _itemService;
+        private readonly IStaffService _staffService;
+
         private List<POSCartItem> _gioHang = new List<POSCartItem>();
-        private Users _khachHangHienTai = null;
+        private dynamic _khachHangHienTai = null; // Dùng dynamic để linh hoạt lấy Point của Customer
 
         private string _currentCategory = "Tất cả";
-        private List<int> _bestSellerItemIDs = new List<int>(); // Lưu danh sách best seller
+        private List<int> _bestSellerItemIDs = new List<int>();
 
         public ucPOS()
         {
             InitializeComponent();
+            _userService = Program.ServiceProvider.GetRequiredService<IUserService>();
+            _reportService = Program.ServiceProvider.GetRequiredService<IReportService>();
+            _orderService = Program.ServiceProvider.GetRequiredService<IOrderService>();
+            _itemService = Program.ServiceProvider.GetRequiredService<IItemService>();
+            _staffService = Program.ServiceProvider.GetRequiredService<IStaffService>();
+
             LoadMenuMonAn();
         }
 
@@ -62,19 +74,16 @@ namespace PBL3.GUI
 
             _currentCategory = btn.Content.ToString();
 
-            // Nếu chọn BEST SELLER → Lấy danh sách best seller
             if (_currentCategory.Contains("BEST SELLER"))
             {
-                ReportService reportService = new ReportService();
-                _bestSellerItemIDs = reportService.GetBestSellerItemIDs(10);
-                _currentCategory = "BEST_SELLER"; // Flag để phân biệt
+                _bestSellerItemIDs = _reportService.GetBestSellerItemIDs(10);
+                _currentCategory = "BEST_SELLER";
             }
             else
             {
-                _bestSellerItemIDs.Clear(); // Xóa flag
+                _bestSellerItemIDs.Clear();
             }
 
-            // Cập nhật highlight button
             if (btn.Parent is StackPanel parentPanel)
             {
                 foreach (var child in parentPanel.Children)
@@ -87,11 +96,9 @@ namespace PBL3.GUI
                 }
             }
 
-            // Highlight button được chọn
             btn.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 26));
             btn.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
 
-            // Nếu là BEST SELLER → Đổi màu nút thành đỏ
             if (_currentCategory.Contains("BEST_SELLER"))
             {
                 btn.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 107, 107));
@@ -104,65 +111,60 @@ namespace PBL3.GUI
         {
             if (wpMenu == null) return;
 
-            using (var db = new MilkTeaDBContext())
+            var dsMonAn = _itemService.GetAllItems().Where(i => i.isAvailable == true && i.size == "M").ToList();
+
+            if (_currentCategory.Contains("BEST_SELLER"))
             {
-                // Chỉ lấy items có size "M" (size mặc định)
-                var dsMonAn = db.Items.Where(i => i.isAvailable == true && i.size == "M").ToList();
-
-                // Nếu là BEST SELLER → Lọc theo danh sách best seller
-                if (_currentCategory.Contains("BEST_SELLER"))
+                if (_bestSellerItemIDs.Count > 0)
                 {
-                    if (_bestSellerItemIDs.Count > 0)
-                    {
-                        dsMonAn = dsMonAn.Where(i => _bestSellerItemIDs.Contains(i.itemID)).ToList();
-                    }
+                    dsMonAn = dsMonAn.Where(i => _bestSellerItemIDs.Contains(i.itemID)).ToList();
                 }
-                else if (_currentCategory != "Tất cả")
+            }
+            else if (_currentCategory != "Tất cả")
+            {
+                string dbItemType = "";
+
+                if (_currentCategory == "Trà Sữa")
                 {
-                    string dbItemType = "";
-
-                    if (_currentCategory == "Trà Sữa")
-                    {
-                        dbItemType = "Milk Tea";
-                    }
-                    else if (_currentCategory == "Trà Trái Cây")
-                    {
-                        dbItemType = "Fruit Tea";
-                    }
-
-                    dsMonAn = dsMonAn.Where(i => i.itemType == dbItemType).ToList();
+                    dbItemType = "Milk Tea";
+                }
+                else if (_currentCategory == "Trà Trái Cây")
+                {
+                    dbItemType = "Fruit Tea";
                 }
 
-                string keyword = txtTimKiem?.Text?.Trim().ToLower() ?? "";
-                if (!string.IsNullOrEmpty(keyword))
+                dsMonAn = dsMonAn.Where(i => i.itemType == dbItemType).ToList();
+            }
+
+            string keyword = txtTimKiem?.Text?.Trim().ToLower() ?? "";
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                dsMonAn = dsMonAn.Where(i => i.itemName.ToLower().Contains(keyword)).ToList();
+            }
+
+            wpMenu.Children.Clear();
+            foreach (var mon in dsMonAn)
+            {
+                System.Windows.Controls.Button btnMon = new System.Windows.Controls.Button
                 {
-                    dsMonAn = dsMonAn.Where(i => i.itemName.ToLower().Contains(keyword)).ToList();
-                }
+                    Width = 160,
+                    Height = 100,
+                    Margin = new Thickness(5),
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Tag = mon,
+                    Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White),
+                    BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(229, 231, 235)),
+                    BorderThickness = new Thickness(1)
+                };
 
-                wpMenu.Children.Clear();
-                foreach (var mon in dsMonAn)
-                {
-                    System.Windows.Controls.Button btnMon = new System.Windows.Controls.Button
-                    {
-                        Width = 160,
-                        Height = 100,
-                        Margin = new Thickness(5),
-                        Cursor = System.Windows.Input.Cursors.Hand,
-                        Tag = mon,
-                        Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White),
-                        BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(229, 231, 235)),
-                        BorderThickness = new Thickness(1)
-                    };
+                StackPanel sp = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                sp.Children.Add(new TextBlock { Text = mon.itemName, FontWeight = FontWeights.Bold, FontSize = 14, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center });
+                sp.Children.Add(new TextBlock { Text = $"Size {mon.size}", Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray), FontSize = 12, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 5) });
+                sp.Children.Add(new TextBlock { Text = $"{mon.price:N0} đ", Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(242, 133, 0)), FontWeight = FontWeights.Heavy, HorizontalAlignment = System.Windows.HorizontalAlignment.Center });
 
-                    StackPanel sp = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-                    sp.Children.Add(new TextBlock { Text = mon.itemName, FontWeight = FontWeights.Bold, FontSize = 14, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center });
-                    sp.Children.Add(new TextBlock { Text = $"Size {mon.size}", Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray), FontSize = 12, HorizontalAlignment = System.Windows.HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 5) });
-                    sp.Children.Add(new TextBlock { Text = $"{mon.price:N0} đ", Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(242, 133, 0)), FontWeight = FontWeights.Heavy, HorizontalAlignment = System.Windows.HorizontalAlignment.Center });
-
-                    btnMon.Content = sp;
-                    btnMon.Click += BtnMonAn_Click;
-                    wpMenu.Children.Add(btnMon);
-                }
+                btnMon.Content = sp;
+                btnMon.Click += BtnMonAn_Click;
+                wpMenu.Children.Add(btnMon);
             }
         }
 
@@ -178,20 +180,17 @@ namespace PBL3.GUI
                     string selectedSize = formTuyChinh.SelectedSize;
                     double selectedPrice = formTuyChinh.SelectedPrice;
 
-                    // Tìm mon trong giỏ hàng với itemName + selectedSize + ghiChu (phải khớp CHÍNH XÁC)
-                    var monTrongGio = _gioHang.FirstOrDefault(x => 
-                        x.itemName == monDuocChon.itemName && 
-                        x.size == selectedSize && 
+                    var monTrongGio = _gioHang.FirstOrDefault(x =>
+                        x.itemName == monDuocChon.itemName &&
+                        x.size == selectedSize &&
                         x.note == ghiChu);
 
                     if (monTrongGio != null)
                     {
-                        // Món đã tồn tại → cộng số lượng
                         monTrongGio.quantity++;
                     }
                     else
                     {
-                        // Thêm món mới
                         _gioHang.Add(new POSCartItem
                         {
                             itemID = monDuocChon.itemID,
@@ -252,7 +251,6 @@ namespace PBL3.GUI
                     }
                     else
                     {
-                        // Nếu số lượng = 1 mà bấm giảm, xóa item
                         _gioHang.Remove(mon);
                     }
                     CapNhatGioHang();
@@ -269,26 +267,20 @@ namespace PBL3.GUI
                 var mon = _gioHang.FirstOrDefault(x => x.itemID == itemID);
                 if (mon != null)
                 {
-                    // Tìm item trong database để lấy thông tin
-                    using (var db = new MilkTeaDBContext())
+                    var dbItem = _itemService.GetAllItems().FirstOrDefault(i => i.itemID == itemID && i.size == mon.size);
+                    if (dbItem != null)
                     {
-                        var dbItem = db.Items.FirstOrDefault(i => i.itemID == itemID && i.size == mon.size);
-                        if (dbItem != null)
-                        {
-                            wTuyChinhPOS formTuyChinh = new wTuyChinhPOS(dbItem);
-                            // Set giá trị cũ
-                            formTuyChinh.SelectedSize = mon.size;
-                            formTuyChinh.SelectedPrice = mon.price;
-                            formTuyChinh.Note = mon.note;
+                        wTuyChinhPOS formTuyChinh = new wTuyChinhPOS(dbItem);
+                        formTuyChinh.SelectedSize = mon.size;
+                        formTuyChinh.SelectedPrice = mon.price;
+                        formTuyChinh.Note = mon.note;
 
-                            if (formTuyChinh.ShowDialog() == true)
-                            {
-                                // Cập nhật thông tin món
-                                mon.size = formTuyChinh.SelectedSize;
-                                mon.price = formTuyChinh.SelectedPrice;
-                                mon.note = formTuyChinh.Note;
-                                CapNhatGioHang();
-                            }
+                        if (formTuyChinh.ShowDialog() == true)
+                        {
+                            mon.size = formTuyChinh.SelectedSize;
+                            mon.price = formTuyChinh.SelectedPrice;
+                            mon.note = formTuyChinh.Note;
+                            CapNhatGioHang();
                         }
                     }
                 }
@@ -297,10 +289,7 @@ namespace PBL3.GUI
 
         private void CapNhatGioHang()
         {
-            if (dgGioHang == null || txtTongTien == null)
-            {
-                return;
-            }
+            if (dgGioHang == null || txtTongTien == null) return;
 
             dgGioHang.ItemsSource = null;
             dgGioHang.ItemsSource = _gioHang;
@@ -330,29 +319,26 @@ namespace PBL3.GUI
         private void btnTimKhach_Click(object sender, RoutedEventArgs e)
         {
             string sdt = txtSdtKhach.Text.Trim();
+            var khachHang = _userService.GetUserByPhone(sdt);
 
-            // Lấy khách hàng từ bảng Customers để có đủ thông tin (tên + tích điểm)
-            using (var db = new MilkTeaDBContext())
+            if (khachHang != null)
             {
-                var khachHang = db.Customers.FirstOrDefault(c => c.Phone == sdt);
+                _khachHangHienTai = khachHang;
+                // Sử dụng biến dynamic để lấy trường point (nếu Class Customer kế thừa từ User)
+                int diemTichLuy = 0;
+                try { diemTichLuy = _khachHangHienTai.point; } catch { }
 
-                if (khachHang != null)
-                {
-                    _khachHangHienTai = khachHang;
+                string displayText = $"✓ {khachHang.Name} " +
+                                     $"Tích điểm: {diemTichLuy:N0}đ";
 
-                    // Hiển thị: Tên + SĐT + Tích điểm
-                    string displayText = $"✓ {khachHang.Name} " +
-                                       $"Tích điểm: {khachHang.point}đ";
-
-                    txtTenKhachHang.Text = displayText;
-                    txtTenKhachHang.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green);
-                }
-                else
-                {
-                    txtTenKhachHang.Text = "❌ Không tìm thấy khách hàng này!";
-                    txtTenKhachHang.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
-                    _khachHangHienTai = null;
-                }
+                txtTenKhachHang.Text = displayText;
+                txtTenKhachHang.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green);
+            }
+            else
+            {
+                txtTenKhachHang.Text = "❌ Không tìm thấy khách hàng này!";
+                txtTenKhachHang.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
+                _khachHangHienTai = null;
             }
         }
 
@@ -371,7 +357,6 @@ namespace PBL3.GUI
                 return;
             }
 
-            // Kiểm tra xem nhân viên đã check-in hay chưa
             if (!IsStaffCheckedIn(currentStaffId))
             {
                 System.Windows.MessageBox.Show("❌ Bạn chưa check-in! Vui lòng check-in trước khi thanh toán.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -387,13 +372,11 @@ namespace PBL3.GUI
             }
             else
             {
-                UserService us = new UserService();
-                var guest = us.GetUserByPhone("0000000000");
+                var guest = _userService.GetUserByPhone("0000000000");
                 if (guest != null) customerId = guest.userID;
             }
 
-            OrderManager orderManager = new OrderManager();
-            int newOrderId = orderManager.CreateNewOrder(currentStaffId, customerId, _gioHang, tongTien);
+            int newOrderId = _orderService.CreateNewOrder(currentStaffId, customerId, _gioHang, tongTien);
 
             if (newOrderId > 0)
             {
@@ -413,19 +396,8 @@ namespace PBL3.GUI
 
         private bool IsStaffCheckedIn(int staffID)
         {
-            using (var db = new MilkTeaDBContext())
-            {
-                DateTime today = DateTime.Today;
-
-                // Kiểm tra xem nhân viên có log chấm công hôm nay với checkIn != null và checkOut == null không
-                var checkedInLog = db.WorkShiftLogs.FirstOrDefault(l =>
-                    l.staffID == staffID &&
-                    l.workDate == today &&
-                    l.checkIn != null &&
-                    l.checkOut == null);
-
-                return checkedInLog != null;
-            }
+            var status = _staffService.GetCheckOutStatus(staffID);
+            return status.IsCheckedIn;
         }
     }
 }

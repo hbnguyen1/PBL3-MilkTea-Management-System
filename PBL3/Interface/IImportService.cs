@@ -5,8 +5,8 @@ using System.Text;
 
 namespace PBL3.Interface
 {
-    public interface IPasswordAuthenticator
+    public interface IImportService
     {
-        Users? Authenticate(string phoneNumber, string password);
+        bool CreateImport(int staffId, List<ImportDetail> details);
     }
 }

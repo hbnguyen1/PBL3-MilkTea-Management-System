@@ -1,25 +1,29 @@
-﻿using PBL3.Data;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PBL3.Data;
 using PBL3.Interface;
-using PBL3.Manangers;
+using PBL3.Models;
+using PBL3.Service;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Windows;
 using System.Windows.Controls;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace PBL3.GUI
 {
     public partial class ucQuanLyDonHang : System.Windows.Controls.UserControl
     {
+        private readonly IOrderService _orderService;
         public ucQuanLyDonHang()
         {
             InitializeComponent();
+            _orderService = Program.ServiceProvider.GetRequiredService<IOrderService>();
             LoadOrders();
         }
 
         private void LoadOrders()
         {
-            OrderManager manager = new OrderManager();
-            dgOrders.ItemsSource = manager.GetAllOrders();
+            dgOrders.ItemsSource = _orderService.GetAllOrders();
         }
 
         private void btnLamMoi_Click(object sender, RoutedEventArgs e)
@@ -33,15 +37,9 @@ namespace PBL3.GUI
 
             string? status = (cbFilterStatus.SelectedItem as ComboBoxItem)?.Content?.ToString();
             status = status ?? "Tất cả";
-
-            using (var db = new MilkTeaDBContext())
+            if (status != "Tất cả" && !string.IsNullOrEmpty(status))
             {
-                var query = db.Orders.AsQueryable();
-                if (status != "Tất cả" && !string.IsNullOrEmpty(status))
-                {
-                    query = query.Where(o => o.orderStatus == status);
-                }
-                dgOrders.ItemsSource = query.OrderByDescending(o => o.orderID).ToList();
+                dgOrders.ItemsSource = _orderService.GetOrdersByStatus(status);
             }
         }
 
@@ -61,8 +59,7 @@ namespace PBL3.GUI
         private void btnApproveOrder_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Controls.Button? btn = sender as System.Windows.Controls.Button;
-            OrderService orderService = new OrderService();
-            var nextOrder = orderService.GetNextOrder();
+            var nextOrder = _orderService.GetNextOrder();
             if (nextOrder != null)
             {
                 wChiTietDon detailWindow = new wChiTietDon(nextOrder.orderID);

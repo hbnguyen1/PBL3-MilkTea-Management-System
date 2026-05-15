@@ -1,14 +1,16 @@
-﻿using System;
+﻿using PBL3.GUI;
+using PBL3.Models;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.Marshalling;
 using System.Text;
-using PBL3.Models;
 
 namespace PBL3.Interface
 {
-    internal interface IOrderService
+    public interface IOrderService
     {
         bool CreateOrder(Orders order, List<OrderDetails> listorders);
+        public int CreateNewOrder(int staffID, int? customerID, List<POSCartItem> cart, double total);
         bool ProcessNextOrderInQueue(int orderId, int staffid);
         Orders? GetNextOrder();
         List<Orders> GetAllOrders();

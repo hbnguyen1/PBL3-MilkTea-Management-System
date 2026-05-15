@@ -1,22 +1,36 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using PBL3.Manangers;
+using Microsoft.Extensions.DependencyInjection;
+using PBL3.Interface;
+using PBL3.Models;
+using PBL3.Service;
 
 namespace PBL3.GUI
 {
     public partial class ucQuanLyMon : System.Windows.Controls.UserControl
     {
-        private ItemManager _itemManager = new ItemManager();
+        private readonly IItemService _itemService;
 
         public ucQuanLyMon()
         {
             InitializeComponent();
+            _itemService = Program.ServiceProvider.GetRequiredService<IItemService>();
             LoadData();
         }
 
         private void LoadData()
         {
-            dgMonAn.ItemsSource = _itemManager.GetAllMenuItems();
+            List<Item> allItems = new List<Item>();
+            var milkTeas = _itemService.GetMenuByCategory("Milk Tea");
+            if (milkTeas != null) allItems.AddRange(milkTeas);
+            var fruitTeas = _itemService.GetMenuByCategory("Fruit Tea");
+            if (fruitTeas != null) allItems.AddRange(fruitTeas);
+            var topping = _itemService.GetMenuByCategory("Topping");
+            if (topping != null) allItems.AddRange(topping);
+            var others = _itemService.GetMenuByCategory("Món khác");
+            if (others != null) allItems.AddRange(others);
+
+            dgMonAn.ItemsSource = allItems.OrderBy(item => item.itemID).ToList();
         }
 
         private void btnRefresh_Click(object sender, RoutedEventArgs e)

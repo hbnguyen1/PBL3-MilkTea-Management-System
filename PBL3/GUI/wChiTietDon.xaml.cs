@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using PBL3.Data; 
+using PBL3.Data;
 using PBL3.Models;
-using PBL3.Interface;
 using PBL3.Core;
+using PBL3.Service;
 
 namespace PBL3.GUI
 {
