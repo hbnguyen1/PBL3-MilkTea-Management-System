@@ -9,7 +9,7 @@ namespace PBL3.GUI
     {
         private ucBossTongQuan? _ucTongQuan;
         private ucQuanLyNhanVien? _ucNhanSu;
-
+        private ucQuanLyCaLam? _ucQuanLyCaLam;
         public wTrangChu_Boss()
         {
             InitializeComponent();
@@ -50,6 +50,17 @@ namespace PBL3.GUI
                 _ucNhanSu = new ucQuanLyNhanVien();
             }
             MainContent.Content = _ucNhanSu;
+        }
+
+        private void btnQuanLyCaLam_Checked(object sender, RoutedEventArgs e)
+        {
+            if (MainContent == null) return;
+
+            if (_ucQuanLyCaLam == null)
+            {
+                _ucQuanLyCaLam = new ucQuanLyCaLam();
+            }
+            MainContent.Content = _ucQuanLyCaLam;
         }
     }
 }

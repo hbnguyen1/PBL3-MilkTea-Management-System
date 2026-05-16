@@ -14,6 +14,9 @@ namespace PBL3.GUI
         private DispatcherTimer _timer;
         private readonly IStaffService _staffService;
 
+        // ✅ THÊM BIẾN ĐẾM: Giúp giảm tần suất chọc vào Database
+        private int _reminderCheckCounter = 0;
+
         public ucTrangChuNhanVien()
         {
             InitializeComponent();
@@ -32,7 +35,7 @@ namespace PBL3.GUI
             {
                 return UserSession.CurrentUser.userID;
             }
-            return 0; 
+            return 0;
         }
 
         private void StartClock()
@@ -45,11 +48,17 @@ namespace PBL3.GUI
 
         private void Timer_Tick(object sender, EventArgs e)
         {
+            // Đồng hồ hiển thị thời gian thực vẫn chạy mỗi giây cực mượt
             txtTime.Text = DateTime.Now.ToString("HH:mm:ss");
             txtDate.Text = DateTime.Now.ToString("dddd, dd/MM/yyyy");
 
-            // Kiểm tra và hiển thị cảnh báo check-out
-            CheckAndShowCheckOutReminder();
+            // ✅ TỐI ƯU: Chỉ kiểm tra nhắc nhở hết ca mỗi 30 giây (30 ticks) thay vì mỗi giây
+            _reminderCheckCounter++;
+            if (_reminderCheckCounter >= 30)
+            {
+                _reminderCheckCounter = 0;
+                CheckAndShowCheckOutReminder();
+            }
         }
 
         private void CheckAndShowCheckOutReminder()
@@ -57,24 +66,20 @@ namespace PBL3.GUI
             int staffId = GetCurrentStaffId();
             if (staffId <= 0) return;
 
-            // Kiểm tra xem có cần hiển thị cảnh báo không
             if (_staffService.ShouldShowCheckOutReminder(staffId))
             {
                 string reminder = _staffService.GetCheckOutReminder(staffId);
 
-                // Chỉ hiển thị lần đầu (khi txtReminder.Text rỗng hoặc khác)
                 if (txtReminder != null && txtReminder.Text != reminder)
                 {
                     txtReminder.Text = reminder;
                     txtReminder.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.OrangeRed);
 
-                    // Hiển thị popup cảnh báo
                     System.Windows.MessageBox.Show(reminder, "⏰ CẢNH BÁO HẾT CA", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             else
             {
-                // Xóa cảnh báo khi không cần nữa
                 if (txtReminder != null && !string.IsNullOrEmpty(txtReminder.Text))
                 {
                     txtReminder.Text = "";
@@ -92,7 +97,6 @@ namespace PBL3.GUI
             }
             dgLich.ItemsSource = _staffService.GetMyWeeklySchedule(staffId);
         }
-
 
         private void btnChamCong_Click(object sender, RoutedEventArgs e)
         {
@@ -122,6 +126,7 @@ namespace PBL3.GUI
             }
         }
 
+        // ✅ ĐÃ VÁ LỖI: Sắp xếp lại cấu trúc try-catch chuẩn chỉnh cho nút đăng ký ca
         private void btnDangKyCa_Click(object sender, RoutedEventArgs e)
         {
             if (dpNgayDangKy.SelectedDate == null)
@@ -140,10 +145,15 @@ namespace PBL3.GUI
             DateTime selectedDate = dpNgayDangKy.SelectedDate.Value;
             string selectedShift = cmbCaLam.Text;
 
+            if (string.IsNullOrEmpty(selectedShift))
+            {
+                System.Windows.MessageBox.Show("Vui lòng chọn ca làm!");
+                return;
+            }
+
             try
             {
                 string msg = _staffService.QuickRegisterShift(staffId, selectedDate, selectedShift);
-
                 System.Windows.MessageBox.Show(msg, "Thông báo");
 
                 if (msg.Contains("✔"))
@@ -157,5 +167,15 @@ namespace PBL3.GUI
             }
         }
 
+        // Các hàm helper được đưa về đúng vị trí trong Class
+        public int GetRemainingSpots(DateTime workDate, string shift)
+        {
+            return _staffService.GetRemainingSpots(workDate, shift);
+        }
+
+        public int GetRegisteredStaffCount(DateTime workDate, string shift)
+        {
+            return _staffService.GetRegisteredStaffCountForShift(workDate, shift);
+        }
     }
 }
