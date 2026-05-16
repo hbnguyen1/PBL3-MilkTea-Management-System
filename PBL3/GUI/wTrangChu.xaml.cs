@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Extensions.DependencyInjection; 
 using PBL3.Models;
 using PBL3.Data;
 using PBL3.Service;
+using PBL3.Interface;
 
 namespace PBL3.GUI
 {
@@ -19,12 +22,21 @@ namespace PBL3.GUI
 
         private int _currentCustomerId;
         private double _currentDiscount = 0;
-        private CustomerPointService _pointService = new CustomerPointService();
+
+        private readonly ICustomerPointService _pointService;
+        private readonly IItemService _itemService;
+        private readonly IOrderService _orderService;
+        private readonly IUserService _userService;
 
         public wTrangChu(int loggedInCustomerId)
         {
             InitializeComponent();
             _currentCustomerId = loggedInCustomerId;
+
+            _pointService = Program.ServiceProvider.GetRequiredService<ICustomerPointService>();
+            _itemService = Program.ServiceProvider.GetRequiredService<IItemService>();
+            _orderService = Program.ServiceProvider.GetRequiredService<IOrderService>();
+            _userService = Program.ServiceProvider.GetRequiredService<IUserService>();
 
             LoadDataFromDatabase();
 
@@ -38,21 +50,20 @@ namespace PBL3.GUI
         {
             try
             {
-                using (var db = new MilkTeaDBContext())
+                var customer = _userService.GetUserById(_currentCustomerId);
+                if (customer != null)
                 {
-                    var customer = db.Customers.FirstOrDefault(c => c.userID == _currentCustomerId);
-                    if (customer != null)
-                    {
-                        string rank = _pointService.GetCustomerRank(customer.userID);
-                        _currentDiscount = _pointService.GetDiscountPercentage(customer.userID);
+                    string rank = _pointService.GetCustomerRank(customer.userID);
+                    _currentDiscount = _pointService.GetDiscountPercentage(customer.userID);
+                    int points = 0;
+                    try { points = ((dynamic)customer).point; } catch { }
 
-                        lblThongTinKhach.Text = $"Xin chào {customer.Name} | Hạng: {rank} (Giảm {_currentDiscount * 100}%) | Điểm: {customer.point}";
-                    }
-                    else
-                    {
-                        lblThongTinKhach.Text = "Khách vãng lai";
-                        _currentDiscount = 0;
-                    }
+                    lblThongTinKhach.Text = $"Xin chào {customer.Name} | Hạng: {rank} (Giảm {_currentDiscount * 100}%) | Điểm: {points}";
+                }
+                else
+                {
+                    lblThongTinKhach.Text = "Khách vãng lai";
+                    _currentDiscount = 0;
                 }
                 TinhTongTien();
             }
@@ -70,18 +81,11 @@ namespace PBL3.GUI
             {
                 ProductList = new ObservableCollection<ProductViewModel>();
                 allProducts = new List<ProductViewModel>();
-                ItemService itemService = new ItemService();
-                List<Item> allItems = new List<Item>();
 
-                var milkTeas = itemService.GetMenuByCategory("Milk Tea");
-                if (milkTeas != null) allItems.AddRange(milkTeas);
-                var fruitTeas = itemService.GetMenuByCategory("Fruit Tea");
-                if (fruitTeas != null) allItems.AddRange(fruitTeas);
-                var topping = itemService.GetMenuByCategory("Topping");
-                if (topping != null) allItems.AddRange(topping);
-                var others = itemService.GetMenuByCategory("Món khác");
-                if (others != null) allItems.AddRange(others);
-                var dbItems = allItems.OrderBy(item => item.itemID).ToList();
+                var dbItems = _itemService.GetAllItems()
+                                          .Where(i => i.size == "M")
+                                          .OrderBy(item => item.itemID)
+                                          .ToList();
 
                 if (dbItems != null && dbItems.Count > 0)
                 {
@@ -96,7 +100,7 @@ namespace PBL3.GUI
                             Name = item.itemName,
                             Description = $"Size: {item.size} | Loại: {item.itemType}",
                             Price = $"{item.price:N0}đ",
-                            Badge = item.isAvailable ? "SẴN SÀNG" : "TẠM HẾT",
+                            Badge = _itemService.isAvailable(item.itemID, item.size) ? "SẴN SÀNG" : "TẠM HẾT",
                             ImagePath = fullImagePath,
                             Category = item.itemType
                         };
@@ -214,7 +218,7 @@ namespace PBL3.GUI
             }
 
             int totalCount = 0;
-            foreach (var item in CartManager.GioHang) 
+            foreach (var item in CartManager.GioHang)
             {
                 totalCount += item.SoLuong;
             }
@@ -337,14 +341,13 @@ namespace PBL3.GUI
                 Orders newOrder = new Orders()
                 {
                     customerID = _currentCustomerId,
-                    staffID = null,
+                    staffID = null, // Vì khách hàng tự đặt
                     orderDate = System.DateTime.Now,
                     orderStatus = "Pending",
                     totalPrice = finalPrice
                 };
 
-                OrderService orderService = new OrderService();
-                bool isSuccess = orderService.CreateOrder(newOrder, listOrderDetails);
+                bool isSuccess = _orderService.CreateOrder(newOrder, listOrderDetails);
 
                 if (isSuccess)
                 {
@@ -418,15 +421,16 @@ namespace PBL3.GUI
             var result = System.Windows.MessageBox.Show("Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                wDangNhap loginWindow = new wDangNhap();
+                wDangNhap loginWindow = Program.ServiceProvider.GetRequiredService<wDangNhap>();
                 loginWindow.Show();
 
                 this.Close();
             }
         }
+
         private void lblLichSu_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (_currentCustomerId == 1)
+            if (_currentCustomerId == 1) 
             {
                 System.Windows.MessageBox.Show("Khách vãng lai không có lịch sử đơn hàng. Vui lòng đăng nhập tài khoản thành viên!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;

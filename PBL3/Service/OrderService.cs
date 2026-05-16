@@ -12,10 +12,8 @@ namespace PBL3.Service
 {
     internal class OrderService : IOrderService
     {
-        // 1. Khai báo biến bất biến (Chỉ đọc)
         private readonly MilkTeaDBContext _conn;
 
-        // 2. Tiêm DbContext thông qua Constructor
         public OrderService(MilkTeaDBContext conn)
         {
             _conn = conn;
@@ -23,7 +21,6 @@ namespace PBL3.Service
 
         public bool CreateOrder(Orders order, List<OrderDetails> listorders)
         {
-            // Xóa using var conn = new... Dùng trực tiếp _db
             using (var transaction = _conn.Database.BeginTransaction())
             {
                 try
@@ -122,7 +119,7 @@ namespace PBL3.Service
             }
         }
 
-        public bool ProcessNextOrderInQueue(int orderId, int staffid)
+        public bool ProcessNextOrderInQueue(int orderId, int staffId)
         {
             try
             {
@@ -130,8 +127,9 @@ namespace PBL3.Service
                 if (order != null)
                 {
                     order.orderStatus = "Completed";
+                    order.staffID = staffId;
                     _conn.SaveChanges();
-                    Logger.Info($"Nhân viên {staffid} duyệt đơn {orderId} thành công!");
+                    Logger.Info($"Nhân viên {staffId} duyệt đơn {orderId} thành công!");
                     return true;
                 }
                 else
@@ -210,6 +208,11 @@ namespace PBL3.Service
                 Logger.Error($"Lỗi khi lấy chi tiết đơn {orderId}: " + ex.Message);
                 return new List<OrderDetails>();
             }
+        }
+        public Orders? GetOrderById(int id)
+        {
+            var order = _conn.Orders.FirstOrDefault(o => o.orderID == id);
+            return order;
         }
     }
 }

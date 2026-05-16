@@ -13,6 +13,7 @@ namespace PBL3.Models
         public Boolean isAvailable { get; set; } = true;
         public required double price { get; set; } = 0;
         public string? ImagePath { get; set; }
+        public virtual ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
 
     }
 }

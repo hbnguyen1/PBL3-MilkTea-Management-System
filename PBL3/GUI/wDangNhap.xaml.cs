@@ -20,7 +20,7 @@ namespace PBL3.GUI
         public wDangNhap(IPasswordAuthenticator authService)
         {
             InitializeComponent();
-            _authService = authService; // Gán để sử dụng
+            _authService = authService; 
         }
 
         private void btnTogglePassword_Click(object sender, MouseButtonEventArgs e)
@@ -47,8 +47,6 @@ namespace PBL3.GUI
         {
             string phoneNumber = txtPhoneNumber.Text;
             string password = isPasswordVisible ? txtPasswordVisible.Text : txtPassword.Password;
-
-            // 3. XÓA dòng new UserAuthenticator() và dùng biến _authService
             var currentUser = _authService.Authenticate(phoneNumber, password);
 
             if (currentUser != null)
@@ -61,8 +59,6 @@ namespace PBL3.GUI
                         return;
                     }
                     UserSession.CurrentUser = currentStaff;
-
-                    // 4. Lấy Window từ "Trung tâm phân phối DI" thay vì dùng chữ new
                     var staffWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_NhanVien>();
                     staffWindow.Show();
                     this.Close();
@@ -76,7 +72,6 @@ namespace PBL3.GUI
                     }
                     UserSession.CurrentUser = currentAdmin;
 
-                    // 4. Tương tự, lấy Window Boss từ DI
                     var adminWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_Boss>();
                     adminWindow.Show();
                     this.Close();
@@ -89,8 +84,6 @@ namespace PBL3.GUI
                         return;
                     }
                     UserSession.CurrentUser = currentCustomer;
-
-                    // (Giữ nguyên dùng new vì wTrangChu đang yêu cầu truyền tham số ID)
                     wTrangChu customerWindow = new wTrangChu(currentCustomer.userID);
                     customerWindow.Show();
                     this.Close();
@@ -104,8 +97,7 @@ namespace PBL3.GUI
 
         private void lblDangKy_Click(object sender, MouseButtonEventArgs e)
         {
-            // Nếu bạn chưa đăng ký wDangKy trong App.xaml.cs thì tạm thời cứ dùng new
-            wDangKy registerWindow = new wDangKy();
+            wDangKy registerWindow = Program.ServiceProvider.GetRequiredService<wDangKy>();
             registerWindow.Show();
             this.Close();
         }

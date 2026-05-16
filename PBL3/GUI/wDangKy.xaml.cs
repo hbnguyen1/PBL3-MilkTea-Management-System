@@ -14,7 +14,7 @@ namespace PBL3.GUI
         public wDangKy()
         {
             InitializeComponent();
-            _customerService = Program.ServiceProvider.GetRequiredService<CustomerService>();
+            _customerService = Program.ServiceProvider.GetRequiredService<ICustomerService>();
         }
 
         private void btnTogglePassword_Click(object sender, MouseButtonEventArgs e)

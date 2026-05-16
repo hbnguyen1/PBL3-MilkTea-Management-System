@@ -7,15 +7,12 @@ namespace PBL3.GUI
 {
     public partial class wTrangChu_Boss : Window
     {
-        // 1. Khai báo sẵn các biến chứa UserControl để dùng lại
         private ucBossTongQuan? _ucTongQuan;
         private ucQuanLyNhanVien? _ucNhanSu;
 
         public wTrangChu_Boss()
         {
             InitializeComponent();
-
-            // Khởi tạo lần đầu
             _ucTongQuan = new ucBossTongQuan();
             MainContent.Content = _ucTongQuan;
         }

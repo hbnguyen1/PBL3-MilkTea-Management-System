@@ -8,5 +8,6 @@ namespace PBL3.Interface
     public interface IUserService
     {
         Users? GetUserByPhone(string phone);
+        Users? GetUserById(int id);
     }
 }
