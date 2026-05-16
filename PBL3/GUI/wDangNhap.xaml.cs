@@ -84,6 +84,8 @@ namespace PBL3.GUI
                         return;
                     }
                     UserSession.CurrentUser = currentCustomer;
+
+                    // (Giữ nguyên dùng new vì wTrangChu đang yêu cầu truyền tham số ID)
                     wTrangChu customerWindow = new wTrangChu(currentCustomer.userID);
                     customerWindow.Show();
                     this.Close();
