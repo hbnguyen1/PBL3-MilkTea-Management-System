@@ -19,6 +19,11 @@ namespace PBL3.Service
         {
                 var user = _conn.Users.FirstOrDefault(u => u.Phone == phone);
                 return user;
-            }
+        }
+        public Users? GetUserById(int id)
+        {
+            var user = _conn.Users.FirstOrDefault(u => u.userID == id);
+            return user;
+        }
     }
 }

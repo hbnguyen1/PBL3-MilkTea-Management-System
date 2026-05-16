@@ -26,16 +26,11 @@ namespace PBL3.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-//<<<<<<< Updated upstream
                 IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                     .AddJsonFile("appsettings.json")
                     .Build();
                 string connectionString = configuration.GetConnectionString("DefaultConnection");
-//=======
-        //        string connectionString =
-        //"Server=localhost,1433;Database=PBL3;User Id=sa;Password=PBL3_MilkTea@2026;TrustServerCertificate=True;";
-//>>>>>>> Stashed changes
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
@@ -79,10 +74,15 @@ namespace PBL3.Data
             // Khóa chính kép
             modelBuilder.Entity<Item>().HasKey(i => new { i.itemID, i.size });
             modelBuilder.Entity<OrderDetails>().HasKey(od => new { od.orderID, od.itemID, od.size });
-            modelBuilder.Entity<Recipe>().HasKey(r => new { r.itemID, r.size, r.ingredientID });
+            modelBuilder.Entity<Recipe>().HasKey(r => r.recipeID);
             modelBuilder.Entity<ImportDetail>().HasKey(id => new { id.importId, id.igId });
 
             // CẤU HÌNH KHÓA NGOẠI (FOREIGN KEYS)
+
+            modelBuilder.Entity<Item>()
+            .HasMany(i => i.Recipes)
+            .WithOne()
+            .HasForeignKey(r => new { r.itemID, r.size });
 
             modelBuilder.Entity<Recipe>()
                 .HasOne(r => r.Ingredient)
@@ -91,8 +91,9 @@ namespace PBL3.Data
 
             modelBuilder.Entity<Recipe>()
                 .HasOne(r => r.Item)
-                .WithMany()
-                .HasForeignKey(r => new { r.itemID, r.size });
+                .WithMany(i => i.Recipes)
+                .HasForeignKey(r => new { r.itemID, r.size })
+                .HasPrincipalKey(i => new { i.itemID, i.size }); 
 
             modelBuilder.Entity<ImportDetail>()
                 .HasOne(d => d.ImportNote)

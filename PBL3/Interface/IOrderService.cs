@@ -13,6 +13,7 @@ namespace PBL3.Interface
         public int CreateNewOrder(int staffID, int? customerID, List<POSCartItem> cart, double total);
         bool ProcessNextOrderInQueue(int orderId, int staffid);
         Orders? GetNextOrder();
+        Orders? GetOrderById(int id);
         List<Orders> GetAllOrders();
         List<Orders> GetOrdersByStatus(string status);
         List<Orders> GetPendingOrders();
