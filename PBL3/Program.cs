@@ -43,6 +43,7 @@ namespace PBL3
             services.AddTransient<wTrangChu_Boss>();
             services.AddTransient<wTrangChu_NhanVien>();
             services.AddTransient<wDangKy>();
+            services.AddTransient<wThemNhanVien>();
 
             // --- 4. Chốt danh sách và tạo "Trung tâm phân phối" ---
             ServiceProvider = services.BuildServiceProvider();

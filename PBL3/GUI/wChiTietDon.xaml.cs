@@ -1,30 +1,34 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PBL3.Core;
+using PBL3.Interface; 
+using PBL3.Models;
+using PBL3.Service;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
-using PBL3.Models;
-using PBL3.Core;
-using PBL3.Service;
-using PBL3.Interface; 
 
 namespace PBL3.GUI
 {
     public partial class wChiTietDon : Window
     {
         private int _orderId;
+        private bool _canApprove;
 
         private readonly IOrderService _orderService;
         private readonly IItemService _itemService;
+        private readonly IStaffService _staffService;
 
-        public wChiTietDon(int orderId)
+        public wChiTietDon(int orderId, bool canApprove = false)
         {
             InitializeComponent();
             _orderId = orderId;
+            _canApprove = canApprove;
             lblMaDon.Text = $"Đơn hàng: #{orderId:D4}";
 
             _orderService = Program.ServiceProvider.GetRequiredService<IOrderService>();
             _itemService = Program.ServiceProvider.GetRequiredService<IItemService>();
+            _staffService = Program.ServiceProvider.GetRequiredService<IStaffService>();
 
             LoadOrderDetails();
         }
@@ -57,7 +61,7 @@ namespace PBL3.GUI
                 icChiTiet.ItemsSource = viewList;
 
                 var order = _orderService.GetOrderById(_orderId);
-                if (order != null && order.orderStatus == "Completed")
+                if (order != null && order.orderStatus == "Completed" || !_canApprove)
                 {
                     btnDuyet.Visibility = Visibility.Collapsed;
                 }
@@ -70,6 +74,13 @@ namespace PBL3.GUI
 
         private void btnDuyet_Click(object sender, RoutedEventArgs e)
         {
+            var (isCheckedIn, _, _, _) = _staffService.GetCheckOutStatus(UserSession.CurrentUser.userID);
+
+            if (!isCheckedIn)
+            {
+                System.Windows.MessageBox.Show("❌ Bạn chưa check-in. Vui lòng check-in trước khi hoàn thành đơn!", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
+            }
             var result = System.Windows.MessageBox.Show($"Xác nhận đã pha chế xong đơn #{_orderId}?", "Xác nhận", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
             if (result == System.Windows.MessageBoxResult.Yes)
             {

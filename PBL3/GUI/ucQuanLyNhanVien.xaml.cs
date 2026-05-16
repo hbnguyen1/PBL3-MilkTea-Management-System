@@ -11,13 +11,13 @@ namespace PBL3.GUI
 {
     public partial class ucQuanLyNhanVien : System.Windows.Controls.UserControl
     {
-        private readonly IStaffService _staffManager;
+        private readonly IStaffService _staffService;
         private dynamic _selectedStaff = null;
 
         public ucQuanLyNhanVien()
         {
             InitializeComponent();
-            _staffManager = Program.ServiceProvider.GetRequiredService<IStaffService>();
+            _staffService = Program.ServiceProvider.GetRequiredService<IStaffService>();
             cmbThang.SelectedIndex = DateTime.Now.Month - 1;
             txtNam.Text = DateTime.Now.Year.ToString();
             LoadDanhSachNhanVien();
@@ -25,7 +25,15 @@ namespace PBL3.GUI
 
         private void LoadDanhSachNhanVien()
         {
-            dgNhanVien.ItemsSource = _staffManager.GetAllStaffs();
+            dgNhanVien.ItemsSource = _staffService.GetAllStaffs();
+        }
+        private void btnThemNhanVien_Click(object sender, RoutedEventArgs e)
+        {
+            wThemNhanVien formThem = Program.ServiceProvider.GetRequiredService<wThemNhanVien>();
+            if (formThem.ShowDialog() == true)
+            {
+                LoadDanhSachNhanVien();
+            }
         }
 
         private void dgNhanVien_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -61,16 +69,16 @@ namespace PBL3.GUI
             int month = int.Parse((cmbThang.SelectedItem as ComboBoxItem).Content.ToString());
             int year = 2026;
             int.TryParse(txtNam.Text, out year);
-            var logs = _staffManager.GetShiftLogs(staffId, month, year);
+            var logs = _staffService.GetShiftLogs(staffId, month, year);
             dgChamCong.ItemsSource = logs;
             double totalHours = logs.Sum(l => l.totalHours);
             int totalPenalty = logs.Sum(l => l.penalty);
-            double luong = _staffManager.CalculateSalary(staffId, month, year);
+            double luong = _staffService.CalculateSalary(staffId, month, year);
 
             txtTongGio.Text = $"{totalHours:F1}h";
             txtTienPhat.Text = $"{totalPenalty:N0}đ";
             txtLuongThuc.Text = $"{luong:N0}đ";
-            bool isSaved = _staffManager.IsSalarySaved(staffId, month, year);
+            bool isSaved = _staffService.IsSalarySaved(staffId, month, year);
             if (isSaved)
             {
                 btnChotLuong.Content = "ĐÃ CHỐT LƯƠNG";
@@ -93,7 +101,7 @@ namespace PBL3.GUI
             int month = int.Parse((cmbThang.SelectedItem as ComboBoxItem).Content.ToString());
             int year = int.Parse(txtNam.Text);
 
-            string resultMsg = _staffManager.SaveSalary(staffId, month, year);
+            string resultMsg = _staffService.SaveSalary(staffId, month, year);
 
             if (resultMsg.Contains("✔"))
             {

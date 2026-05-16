@@ -1,4 +1,5 @@
 ﻿using PBL3.Data;
+using BCrypt.Net;
 using PBL3.Interface;
 using PBL3.Models;
 using System;
@@ -9,10 +10,13 @@ using PBL3.Core;
 
 namespace PBL3.Service 
 {
-    public class StaffService : IStaffService
+    internal class StaffService : IStaffService
     {
+        private const int MAX_STAFF_PER_SHIFT = 2;
+
         private readonly MilkTeaDBContext _conn;
 
+        private static readonly object _shiftLock = new object();
         public StaffService(MilkTeaDBContext conn)
         {
             _conn = conn;
@@ -23,6 +27,32 @@ namespace PBL3.Service
             DateTime today = DateTime.Today;
             int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
             return today.AddDays(-diff).Date;
+        }
+
+        private int GetRegisteredStaffCount(DateTime workDate, string shift)
+        {
+            return _conn.WorkSchedules
+                .Where(s => s.workDate == workDate && s.shift == shift)
+                .Select(s => s.staffID)
+                .Distinct()
+                .Count();
+        }
+
+        private bool CanRegisterShift(DateTime workDate, string shift)
+        {
+            int count = GetRegisteredStaffCount(workDate, shift);
+            return count < MAX_STAFF_PER_SHIFT;
+        }
+
+        public int GetRegisteredStaffCountForShift(DateTime workDate, string shift)
+        {
+            return GetRegisteredStaffCount(workDate, shift);
+        }
+
+        public int GetRemainingSpots(DateTime workDate, string shift)
+        {
+            int registered = GetRegisteredStaffCount(workDate, shift);
+            return Math.Max(0, MAX_STAFF_PER_SHIFT - registered);
         }
 
         public List<WorkSchedule> GetMyWeeklySchedule(int staffID)
@@ -38,31 +68,44 @@ namespace PBL3.Service
 
         public string QuickRegisterShift(int staffID, DateTime date, string shift)
         {
-            DateTime start = GetStartOfWeek();
-            DateTime end = start.AddDays(6);
-
-            if (date.Date < start || date.Date > end)
+            lock (_shiftLock)
             {
-                return "❌ Chỉ được đăng ký ca trong phạm vi tuần hiện tại!";
+                DateTime start = GetStartOfWeek();
+                DateTime end = start.AddDays(6);
+
+                if (date.Date < start || date.Date > end)
+                {
+                    return "❌ Chỉ được đăng ký ca trong phạm vi tuần hiện tại!";
+                }
+
+                bool exists = _conn.WorkSchedules.Any(s => s.staffID == staffID && s.workDate == date.Date && s.shift == shift);
+                if (exists)
+                {
+                    return "⚠ Bạn đã đăng ký ca này rồi!";
+                }
+
+                int registeredCount = _conn.WorkSchedules
+                    .Where(s => s.workDate == date.Date && s.shift == shift)
+                    .Select(s => s.staffID)
+                    .Distinct()
+                    .Count();
+
+                if (registeredCount >= MAX_STAFF_PER_SHIFT)
+                {
+                    return $"❌ Ca này đã đủ {MAX_STAFF_PER_SHIFT} nhân viên, không thể đăng ký thêm!";
+                }
+
+                _conn.WorkSchedules.Add(new WorkSchedule
+                {
+                    staffID = staffID,
+                    workDate = date.Date,
+                    shift = shift
+                });
+
+                _conn.SaveChanges();
+                return "✔ Đăng ký ca làm thành công!";
             }
-
-            bool exists = _conn.WorkSchedules.Any(s => s.staffID == staffID && s.workDate == date.Date && s.shift == shift);
-            if (exists)
-            {
-                return "⚠ Bạn đã đăng ký ca này rồi!";
-            }
-
-            _conn.WorkSchedules.Add(new WorkSchedule
-            {
-                staffID = staffID,
-                workDate = date.Date,
-                shift = shift
-            });
-
-            _conn.SaveChanges();
-            return "✔ Đăng ký ca làm thành công!";
         }
-
 
         public (bool IsCheckedIn, string CurrentShift, int TimeRemainingMinutes, DateTime ShiftEnd) GetCheckOutStatus(int staffID)
         {
@@ -89,7 +132,6 @@ namespace PBL3.Service
         public bool ShouldShowCheckOutReminder(int staffID)
         {
             var (isCheckedIn, shift, timeRemaining, _) = GetCheckOutStatus(staffID);
-
             return isCheckedIn && timeRemaining >= 0 && timeRemaining <= 5;
         }
 
@@ -97,19 +139,15 @@ namespace PBL3.Service
         {
             var (isCheckedIn, shift, timeRemaining, shiftEnd) = GetCheckOutStatus(staffID);
 
-            if (!isCheckedIn || timeRemaining > 5)
-            {
-                return "";
-            }
+            if (!isCheckedIn) return "";
+            if (timeRemaining > 5) return "";
 
             if (timeRemaining <= 0)
             {
-                return $"⏰ CẢNH BÁO: Bạn đã quá giờ hết ca [{shift}]!\n" +
-                       $"Vui lòng check-out ngay để tránh bị phạt thêm.";
+                return $"⏰ CẢNH BÁO: Bạn đã quá giờ hết ca [{shift}]!\nVui lòng check-out ngay để tránh bị phạt thêm.";
             }
 
-            return $"⏰ SẮP HẾT CA: Ca [{shift}] sẽ kết thúc trong {timeRemaining} phút!\n" +
-                   $"Hãy chuẩn bị check-out lúc {shiftEnd:HH:mm}.";
+            return $"⏰ SẮP HẾT CA: Ca [{shift}] sẽ kết thúc trong {timeRemaining} phút!\nHãy chuẩn bị check-out lúc {shiftEnd:HH:mm}.";
         }
 
         public string ToggleShift(int staffID)
@@ -121,7 +159,7 @@ namespace PBL3.Service
 
             if (currentShift == "")
             {
-                currentShift = GetUpcomingShiftForCheckIn(now); // Đã bỏ các tham số thừa
+                currentShift = GetUpcomingShiftForCheckIn(now, today, _conn, staffID);
 
                 if (currentShift == "")
                 {
@@ -147,7 +185,6 @@ namespace PBL3.Service
             if (log == null)
             {
                 DateTime start = GetShiftStart(currentShift);
-
                 int lateMinutes = (int)(now - start).TotalMinutes;
                 int penalty = 0;
 
@@ -219,23 +256,18 @@ namespace PBL3.Service
         private string GetCurrentShift(DateTime now)
         {
             var t = now.TimeOfDay;
-
-            if (t >= new TimeSpan(9, 0, 0) && t < new TimeSpan(13, 0, 0)) return "Morning";
+            if (t >= new TimeSpan(8, 0, 0) && t < new TimeSpan(12, 0, 0)) return "Morning";
             if (t >= new TimeSpan(13, 0, 0) && t < new TimeSpan(18, 0, 0)) return "Afternoon";
             if (t >= new TimeSpan(18, 0, 0) && t < new TimeSpan(22, 0, 0)) return "Evening";
-
             return "";
         }
 
-        // Đã gọt bớt tham số không sử dụng
-        private string GetUpcomingShiftForCheckIn(DateTime now)
+        private string GetUpcomingShiftForCheckIn(DateTime now, DateTime today, MilkTeaDBContext conn, int staffID)
         {
             var t = now.TimeOfDay;
-
             if (t >= new TimeSpan(7, 0, 0) && t < new TimeSpan(8, 0, 0)) return "Morning";
             if (t >= new TimeSpan(12, 0, 0) && t < new TimeSpan(13, 0, 0)) return "Afternoon";
             if (t >= new TimeSpan(17, 0, 0) && t < new TimeSpan(18, 0, 0)) return "Evening";
-
             return "";
         }
 
@@ -244,7 +276,7 @@ namespace PBL3.Service
             var today = DateTime.Today;
             return shift switch
             {
-                "Morning" => today.AddHours(9),
+                "Morning" => today.AddHours(8),
                 "Afternoon" => today.AddHours(13),
                 "Evening" => today.AddHours(18),
                 _ => today
@@ -256,7 +288,7 @@ namespace PBL3.Service
             var today = DateTime.Today;
             return shift switch
             {
-                "Morning" => today.AddHours(13),
+                "Morning" => today.AddHours(12),
                 "Afternoon" => today.AddHours(18),
                 "Evening" => today.AddHours(22),
                 _ => today
@@ -271,7 +303,6 @@ namespace PBL3.Service
             for (int i = 0; i < 7; i++)
             {
                 DateTime day = start.AddDays(i);
-
                 var schedules = _conn.WorkSchedules
                     .Where(s => s.staffID == staffID && s.workDate == day)
                     .Select(s => s.shift)
@@ -285,24 +316,15 @@ namespace PBL3.Service
             }
         }
 
-        public void RegisterWeeklySchedule(int staffID)
+        public List<string> RegisterWeeklySchedule(int staffID, List<string> scheduleEntries)
         {
+            var messages = new List<string>();
             DateTime start = GetStartOfWeek();
             DateTime end = start.AddDays(6);
 
-            while (true)
+            lock (_shiftLock) // ✅ Đồng bộ khóa luồng khi đăng ký lịch tuần loạt lớn
             {
-                ShowWeeklySchedule(staffID);
-
-                Console.WriteLine("\nNhập lịch (vd: 2/4 - AE, 3/4 A E) hoặc 0 để thoát:");
-                Console.WriteLine("M = Morning | A = Afternoon | E = Evening");
-
-                string input = Console.ReadLine();
-                if (input == "0") break;
-
-                var entries = input.Split(',');
-
-                foreach (var entry in entries)
+                foreach (var entry in scheduleEntries)
                 {
                     try
                     {
@@ -314,23 +336,20 @@ namespace PBL3.Service
                             var parts = entry.Split('-');
                             if (parts.Length != 2)
                             {
-                                Console.WriteLine($"Sai format: {entry}");
+                                messages.Add($"❌ Sai format: {entry}");
                                 continue;
                             }
-
                             datePart = parts[0].Trim();
                             shiftPart = parts[1].Trim().ToUpper();
                         }
                         else
                         {
                             var parts = entry.Trim().Split(' ');
-
                             if (parts.Length < 2)
                             {
-                                Console.WriteLine($"Sai format: {entry}");
+                                messages.Add($"❌ Sai format: {entry}");
                                 continue;
                             }
-
                             datePart = parts[0].Trim();
                             shiftPart = string.Join("", parts.Skip(1)).ToUpper();
                         }
@@ -338,18 +357,17 @@ namespace PBL3.Service
                         var dateSplit = datePart.Split('/');
                         if (dateSplit.Length != 2)
                         {
-                            Console.WriteLine($"Sai ngày: {datePart}");
+                            messages.Add($"❌ Sai ngày: {datePart}");
                             continue;
                         }
 
                         int day = int.Parse(dateSplit[0]);
                         int month = int.Parse(dateSplit[1]);
-
                         DateTime chosenDay = new DateTime(DateTime.Now.Year, month, day);
 
                         if (chosenDay < start || chosenDay > end)
                         {
-                            Console.WriteLine($"Ngày {datePart} không thuộc tuần này!");
+                            messages.Add($"❌ Ngày {datePart} không thuộc tuần này!");
                             continue;
                         }
 
@@ -365,14 +383,13 @@ namespace PBL3.Service
                                     case 'M': shifts.Add("Morning"); break;
                                     case 'A': shifts.Add("Afternoon"); break;
                                     case 'E': shifts.Add("Evening"); break;
-                                    default: Console.WriteLine($"Ca không hợp lệ: {c}"); break;
                                 }
                             }
                         }
 
                         if (shifts.Count == 0)
                         {
-                            Console.WriteLine($"Không có ca hợp lệ: {entry}");
+                            messages.Add($"❌ Không có ca hợp lệ: {entry}");
                             continue;
                         }
 
@@ -385,40 +402,66 @@ namespace PBL3.Service
 
                             if (exists)
                             {
-                                Console.WriteLine($"Đã tồn tại: {datePart} - {shift}");
+                                messages.Add($"⚠ Đã tồn tại: {datePart} - {shift}");
                                 continue;
                             }
 
-                            WorkSchedule ws = new WorkSchedule
+                            int registeredCount = _conn.WorkSchedules
+                                .Where(s => s.workDate == chosenDay && s.shift == shift)
+                                .Select(s => s.staffID)
+                                .Distinct()
+                                .Count();
+
+                            if (registeredCount >= MAX_STAFF_PER_SHIFT)
+                            {
+                                messages.Add($"❌ Ca {shift} ngày {datePart} đã đủ {MAX_STAFF_PER_SHIFT} nhân viên!");
+                                continue;
+                            }
+
+                            _conn.WorkSchedules.Add(new WorkSchedule
                             {
                                 staffID = staffID,
                                 workDate = chosenDay,
                                 shift = shift
-                            };
-
-                            _conn.WorkSchedules.Add(ws);
-                            Console.WriteLine($"✔ Đã thêm: {datePart} - {shift}");
+                            });
+                            messages.Add($"✔ Đã thêm: {datePart} - {shift}");
                         }
                     }
                     catch
                     {
-                        Console.WriteLine($"Sai format: {entry}");
+                        messages.Add($"❌ Sai format: {entry}");
                     }
                 }
 
                 _conn.SaveChanges();
-                Console.WriteLine("\n✔ Lưu thành công!\n");
+                messages.Add("✔ Lưu thành công!");
+            }
+
+            return messages;
+        }
+
+        public void RegisterWeeklyScheduleConsole(int staffID)
+        {
+            while (true)
+            {
+                ShowWeeklySchedule(staffID);
+                Console.WriteLine("\nNhập lịch (vd: 2/4 - AE, 3/4 A E) hoặc 0 để thoát:");
+                Console.WriteLine("M = Morning | A = Afternoon | E = Evening");
+
+                string input = Console.ReadLine();
+                if (input == "0") break;
+
+                var entries = input.Split(',').ToList();
+                var messages = RegisterWeeklySchedule(staffID, entries);
+
+                foreach (var msg in messages) Console.WriteLine(msg);
             }
         }
 
         public double CalculateSalary(int staffID, int month, int year)
         {
             var staff = _conn.Staffs.Find(staffID);
-
-            if (staff == null)
-            {
-                return 0;
-            }
+            if (staff == null) return 0;
 
             var logs = _conn.WorkShiftLogs
                 .Where(l => l.staffID == staffID
@@ -431,13 +474,7 @@ namespace PBL3.Service
             int totalPenalty = logs.Sum(l => l.penalty);
 
             double salary = (totalHours * staff.salaryPerHour) - totalPenalty;
-
-            if (salary < 0)
-            {
-                salary = 0;
-            }
-
-            return salary;
+            return salary < 0 ? 0 : salary;
         }
 
         public string SaveSalary(int staffID, int month, int year)
@@ -479,22 +516,41 @@ namespace PBL3.Service
             _conn.SaveChanges();
             return "✔ Chốt lương thành công!";
         }
+
+        public bool AddNewStaff(string name, string phoneNumber, string password, string role, double salaryPerHour)
+        {
+            var existingUser = _conn.Users.SingleOrDefault(u => u.Phone == phoneNumber);
+            if (existingUser != null) return false;
+
+            var newStaff = new Staff
+            {
+                Name = name,
+                Phone = phoneNumber,
+                Password = BCrypt.Net.BCrypt.HashPassword(password),
+                salaryPerHour = (int)salaryPerHour
+            };
+
+            _conn.Staffs.Add(newStaff);
+            _conn.SaveChanges();
+
+            return true;
+        }
         public List<Staff> GetAllStaffs()
-            {
-                return _conn.Staffs.ToList();
-            }
+        {
+            return _conn.Staffs.ToList();
+        }
 
-            public List<WorkShiftLog> GetShiftLogs(int staffID, int month, int year)
-            {
-                return _conn.WorkShiftLogs
-                            .Where(l => l.staffID == staffID && l.workDate.Month == month && l.workDate.Year == year)
-                            .OrderBy(l => l.workDate)
-                            .ToList();
-            }
+        public List<WorkShiftLog> GetShiftLogs(int staffID, int month, int year)
+        {
+            return _conn.WorkShiftLogs
+                        .Where(l => l.staffID == staffID && l.workDate.Month == month && l.workDate.Year == year)
+                        .OrderBy(l => l.workDate)
+                        .ToList();
+        }
 
-            public bool IsSalarySaved(int staffID, int month, int year)
-            {
-                return _conn.SalarySummaries.Any(s => s.staffID == staffID && s.month == month && s.year == year);
-            }
+        public bool IsSalarySaved(int staffID, int month, int year)
+        {
+            return _conn.SalarySummaries.Any(s => s.staffID == staffID && s.month == month && s.year == year);
         }
     }
+}
