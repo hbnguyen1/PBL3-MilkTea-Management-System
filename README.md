@@ -31,9 +31,13 @@ Các Tính Năng Nổi Bật (Key Features)
 Hướng Dẫn Cài Đặt (Setup Instructions)
 
 1. Clone repository này về máy.
-2. Mở Solution bằng Visual Studio.
-3. Mở file "MilkTeaDBContext.cs" (hoặc "appsettings.json" nếu có) và cập nhật chuỗi kết nối "ConnectionString" cho phù hợp với SQL Server Local của bạn.
-4. Mở Package Manager Console và chạy lệnh để khởi tạo Database:
+2. Đảm bảo máy tính của bạn đã cài đặt và đang bật **[Docker Desktop](https://www.docker.com/products/docker-desktop)**.
+3. Mở Terminal (hoặc Git Bash/PowerShell) tại thư mục gốc của dự án và chạy lệnh khởi tạo:
+   ```bash
+   docker compose up -d
+4. Mở Solution bằng Visual Studio.
+5. Mở file "MilkTeaDBContext.cs" (hoặc "appsettings.json" nếu có) và cập nhật chuỗi kết nối "ConnectionString" cho phù hợp với SQL Server Local của bạn.
+6. Mở Package Manager Console và chạy lệnh để khởi tạo Database:
    "bash
    Update-Database"
-5. Chạy project.
+7. Chạy project.
