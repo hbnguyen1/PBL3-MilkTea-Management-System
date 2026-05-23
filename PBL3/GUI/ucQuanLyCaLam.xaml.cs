@@ -5,15 +5,20 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using PBL3.Data;
+using PBL3.Interface;
+using Microsoft.Extensions.DependencyInjection;
 using WpfColor = System.Windows.Media.Color;
+using WpfButton = System.Windows.Controls.Button;
+using WpfOrientation = System.Windows.Controls.Orientation;
+using WpfMessageBox = System.Windows.MessageBox;
 
 namespace PBL3.GUI
 {
     public partial class ucQuanLyCaLam : System.Windows.Controls.UserControl
     {
         private DateTime currentWeekStart;
-        // Dictionary để gom nhóm: Key là "Ngày_Ca", Value là Danh sách tên nhân viên
-        private Dictionary<string, List<string>> weekScheduleData = new();
+        // Dictionary để gom nhóm: Key là "Ngày_Ca", Value là Danh sách tên nhân viên kèm scheduleId
+        private Dictionary<string, List<(int scheduleId, string staffName)>> weekScheduleData = new();
 
         // Khớp tên ca trong Database
         private List<string> dbShifts = new() { "Morning", "Afternoon", "Evening" };
@@ -34,9 +39,12 @@ namespace PBL3.GUI
             { "Evening", WpfColor.FromRgb(243, 232, 255) }      // Tím nhạt
         };
 
+        private readonly IStaffService _staffService;
+
         public ucQuanLyCaLam()
         {
             InitializeComponent();
+            _staffService = Program.ServiceProvider.GetRequiredService<IStaffService>();
             SetCurrentWeek();
         }
 
@@ -80,26 +88,27 @@ namespace PBL3.GUI
                 {
                     DateTime weekEnd = currentWeekStart.AddDays(6);
 
-                    // Sử dụng Join để lấy tên nhân viên dựa trên staffID trong lịch làm
+                    // Lấy WorkSchedules với tên nhân viên
                     var schedules = (from ws in db.WorkSchedules
                                      join s in db.Staffs on ws.staffID equals s.userID
                                      where ws.workDate >= currentWeekStart.Date && ws.workDate <= weekEnd.Date
                                      select new
                                      {
+                                         ws.id,
                                          ws.workDate,
                                          ws.shift,
                                          StaffName = s.Name
                                      }).ToList();
 
-                    // Đưa vào Dictionary để dễ vẽ UI
+                    // Đưa vào Dictionary kèm scheduleId
                     foreach (var schedule in schedules)
                     {
                         string key = $"{schedule.workDate:yyyy-MM-dd}_{schedule.shift}";
                         if (!weekScheduleData.ContainsKey(key))
                         {
-                            weekScheduleData[key] = new List<string>();
+                            weekScheduleData[key] = new List<(int, string)>();
                         }
-                        weekScheduleData[key].Add(schedule.StaffName);
+                        weekScheduleData[key].Add((schedule.id, schedule.StaffName));
                     }
                 }
 
@@ -172,14 +181,20 @@ namespace PBL3.GUI
                     // Nếu có người làm ca này
                     if (weekScheduleData.ContainsKey(key) && weekScheduleData[key].Any())
                     {
-                        foreach (var staffName in weekScheduleData[key])
+                        foreach (var (scheduleId, staffName) in weekScheduleData[key])
                         {
+                            StackPanel staffItemPanel = new StackPanel 
+                            { 
+                                Orientation = WpfOrientation.Horizontal,
+                                VerticalAlignment = VerticalAlignment.Center,
+                                Margin = new Thickness(0, 0, 0, 5)
+                            };
+
                             Border nameBorder = new Border
                             {
                                 Background = new SolidColorBrush(Colors.White),
                                 CornerRadius = new CornerRadius(4),
                                 Padding = new Thickness(5),
-                                Margin = new Thickness(0, 0, 0, 5),
                                 BorderBrush = new SolidColorBrush(WpfColor.FromRgb(156, 163, 175)),
                                 BorderThickness = new Thickness(0.5)
                             };
@@ -189,10 +204,33 @@ namespace PBL3.GUI
                                 FontSize = 13,
                                 FontWeight = FontWeights.SemiBold,
                                 Foreground = new SolidColorBrush(WpfColor.FromRgb(31, 41, 55)),
-                                TextWrapping = TextWrapping.Wrap
+                                TextWrapping = TextWrapping.Wrap,
+                                VerticalAlignment = VerticalAlignment.Center
                             };
                             nameBorder.Child = staffText;
-                            cellContent.Children.Add(nameBorder);
+                            staffItemPanel.Children.Add(nameBorder);
+
+                            // Nút xoá
+                            WpfButton deleteBtn = new WpfButton
+                            {
+                                Content = "✕",
+                                Tag = scheduleId,
+                                Width = 25,
+                                Height = 25,
+                                Margin = new Thickness(5, 0, 0, 0),
+                                Background = new SolidColorBrush(WpfColor.FromRgb(239, 68, 68)),
+                                Foreground = new SolidColorBrush(Colors.White),
+                                FontSize = 12,
+                                FontWeight = FontWeights.Bold,
+                                Cursor = System.Windows.Input.Cursors.Hand,
+                                Padding = new Thickness(0),
+                                VerticalAlignment = VerticalAlignment.Center
+                            };
+                            deleteBtn.Resources.Add("CornerRadius", new CornerRadius(4));
+                            deleteBtn.Click += BtnDeleteSchedule_Click;
+                            staffItemPanel.Children.Add(deleteBtn);
+
+                            cellContent.Children.Add(staffItemPanel);
                         }
                     }
                     else
@@ -231,6 +269,52 @@ namespace PBL3.GUI
             currentWeekStart = currentWeekStart.AddDays(7);
             UpdateWeekDisplay();
             LoadSchedule();
+        }
+
+        private void BtnDeleteSchedule_Click(object sender, RoutedEventArgs e)
+        {
+            WpfButton btn = sender as WpfButton;
+            if (btn != null && btn.Tag is int scheduleId)
+            {
+                var result = WpfMessageBox.Show(
+                    "Bạn có chắc muốn xoá ca làm này?",
+                    "Xác nhận xoá",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        bool isSuccess = _staffService.DeleteWorkSchedule(scheduleId);
+                        if (isSuccess)
+                        {
+                            WpfMessageBox.Show(
+                                "✓ Xoá ca làm thành công!",
+                                "Thành công",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                            LoadSchedule();
+                        }
+                        else
+                        {
+                            WpfMessageBox.Show(
+                                "❌ Xoá ca làm thất bại!",
+                                "Lỗi",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        WpfMessageBox.Show(
+                            $"❌ Lỗi: {ex.Message}",
+                            "Lỗi",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
         }
     }
 }

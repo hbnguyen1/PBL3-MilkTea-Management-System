@@ -12,7 +12,7 @@
             <TextBlock Text="Số điện thoại (Dùng làm tài khoản)" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
             <TextBox x:Name="txtPhone" Height="35" VerticalContentAlignment="Center" Margin="0,0,0,15" Padding="5,0"/>
 
-            <TextBlock Text="Mật khẩu" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
+            <TextBlock x:Name="lblPassword" Text="Mật khẩu" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,5"/>
             <PasswordBox x:Name="txtPassword" Height="35" VerticalContentAlignment="Center" Margin="0,0,0,15" Padding="5,0"/>
 
             <Grid Margin="0,0,0,25">
@@ -34,7 +34,7 @@
                 </StackPanel>
             </Grid>
 
-            <Button Content="LƯU TÀI KHOẢN" Height="45" Background="#10B981" Foreground="White" FontWeight="Bold" Cursor="Hand" Click="btnLuu_Click">
+            <Button x:Name="btnLuu" Content="LƯU TÀI KHOẢN" Height="45" Background="#10B981" Foreground="White" FontWeight="Bold" Cursor="Hand" Click="btnLuu_Click">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="8"/>

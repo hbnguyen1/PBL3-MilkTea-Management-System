@@ -2,6 +2,7 @@
 using PBL3.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using PBL3.Core;
 using PBL3.Interface;
@@ -27,31 +28,60 @@ namespace PBL3.Service
             {
                 _conn.Items.AddRange(items);
                 _conn.SaveChanges();
-                foreach (var item in items) Logger.Info($"Đã thêm: {item.itemName}");
                 return true;
             }
-            catch (Exception ex)
-            {
-                Logger.Error($"Lỗi AddItem: {ex.Message}");
-                return false;
-            }
+            catch { return false; }
         }
 
-        public bool AddItemWithRecipe(List<Item> items, List<Recipe> recipes)
+        public bool AddItemWithRecipe(List<Item> items, List<Recipe> recipes, string localImagePath)
         {
             using (var transaction = _conn.Database.BeginTransaction())
             {
                 try
                 {
-                    _conn.Items.AddRange(items);
+                    // 1. Lưu sản phẩm trước để SQL tự sinh ID
+                    _conn.Items.Add(items[0]);
+                    _conn.Items.Add(items[1]);
                     _conn.SaveChanges();
-                    int itemId = items[0].itemID;
-                    foreach (var recipe in recipes) recipe.itemID = itemId;
 
-                    _conn.Recipes.AddRange(recipes);
+                    int realGeneratedItemId = items[0].itemID;
+
+                    // 2. CHÉP ẢNH VÀ ĐỊNH DẠNG ĐƯỜNG DẪN CHUẨN KHOẢNG TRỐNG CỦA CSDL
+                    if (!string.IsNullOrEmpty(localImagePath) && File.Exists(localImagePath))
+                    {
+                        // Thư mục mã nguồn gốc (Để Boss thấy trong Visual Studio)
+                        string projectFolder = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
+                        string sourceImgFolder = Path.Combine(projectFolder, "Images");
+                        if (!Directory.Exists(sourceImgFolder)) Directory.CreateDirectory(sourceImgFolder);
+
+                        // Thư mục Debug (Để app load được ngay lập tức)
+                        string debugImgFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
+                        if (!Directory.Exists(debugImgFolder)) Directory.CreateDirectory(debugImgFolder);
+
+                        string ext = Path.GetExtension(localImagePath);
+                        string fileNameOnly = $"mon_{realGeneratedItemId}{ext}";
+
+                        // Copy file ảnh vào CẢ 2 NƠI
+                        File.Copy(localImagePath, Path.Combine(sourceImgFolder, fileNameOnly), true);
+                        File.Copy(localImagePath, Path.Combine(debugImgFolder, fileNameOnly), true);
+
+                        // ĐÃ SỬA: Gán định dạng chuẩn có tiền tố /Images/ giống hệt DB cũ
+                        string dbPath = $"/Images/{fileNameOnly}";
+                        items[0].ImagePath = dbPath;
+                        items[1].ImagePath = dbPath;
+
+                        _conn.SaveChanges();
+                    }
+
+                    // 3. Lưu công thức
+                    foreach (var recipe in recipes)
+                    {
+                        recipe.itemID = realGeneratedItemId;
+                        _conn.Recipes.Add(recipe);
+                    }
+
                     _conn.SaveChanges();
                     transaction.Commit();
-                    Logger.Info($"Đã thêm SP + CT: {items[0].itemName}");
                     return true;
                 }
                 catch (Exception ex)
@@ -84,19 +114,14 @@ namespace PBL3.Service
             }
         }
 
-        //Thêm Include() khi lấy Item đơn lẻ
         public Item? GetItemById(int itemId)
         {
-            return _conn.Items
-                        .Include(i => i.Recipes) // Lấy kèm công thức
-                        .FirstOrDefault(i => i.itemID == itemId);
+            return _conn.Items.Include(i => i.Recipes).FirstOrDefault(i => i.itemID == itemId);
         }
 
         public Item? GetItemSize(int itemId, string size)
         {
-            return _conn.Items
-                        .Include(i => i.Recipes)
-                        .SingleOrDefault(i => i.itemID == itemId && i.size == size && i.isAvailable == true);
+            return _conn.Items.Include(i => i.Recipes).SingleOrDefault(i => i.itemID == itemId && i.size == size && i.isAvailable == true);
         }
 
         public bool UpdateItem(int itemId, Item item)
@@ -114,30 +139,19 @@ namespace PBL3.Service
             return false;
         }
 
-        //Nhận luôn list recipes có sẵn, không gọi xuống DB nữa
         public bool isAvailable(int itemId, string size)
         {
-            // Tránh N+1 bằng cách lấy trực tiếp từ DB nếu lỡ gọi lẻ
             var recipe = _conn.Recipes.Where(r => r.itemID == itemId && r.size == size).ToList();
             if (recipe.Count == 0) return false;
-
-            foreach (var item in recipe)
-            {
-                if (!_ingredientService.isAvailable(item.ingredientID, (int)item.quantityNeeded)) return false;
-            }
+            foreach (var item in recipe) { if (!_ingredientService.isAvailable(item.ingredientID, (int)item.quantityNeeded)) return false; }
             return true;
         }
 
-        // Hàm mới bổ trợ: Kiểm tra dựa trên list Recipes có sẵn trên RAM (Không gọi DB)
         private bool CheckAvailabilityFromList(List<Recipe> itemRecipes, string size)
         {
             var specificRecipes = itemRecipes.Where(r => r.size == size).ToList();
             if (specificRecipes.Count == 0) return false;
-
-            foreach (var recipe in specificRecipes)
-            {
-                if (!_ingredientService.isAvailable(recipe.ingredientID, (int)recipe.quantityNeeded)) return false;
-            }
+            foreach (var recipe in specificRecipes) { if (!_ingredientService.isAvailable(recipe.ingredientID, (int)recipe.quantityNeeded)) return false; }
             return true;
         }
 
@@ -145,26 +159,15 @@ namespace PBL3.Service
         {
             var recipe = _conn.Recipes.Where(r => r.itemID == itemId && r.size == size).ToList();
             if (recipe.Count == 0) return false;
-
-            foreach (var item in recipe)
-            {
-                if (!_ingredientService.isAvailable(item.ingredientID, (int)(item.quantityNeeded * quantity))) return false;
-            }
+            foreach (var item in recipe) { if (!_ingredientService.isAvailable(item.ingredientID, (int)(item.quantityNeeded * quantity))) return false; }
             return true;
         }
 
         public List<Item> GetMenuByCategory(string category)
         {
-            // 1. Dùng Include để JOIN bảng Items và Recipes trong 1 query duy nhất
-            var menu = _conn.Items
-                           .Include(i => i.Recipes)
-                           .Where(i => i.itemType == category && i.size == "M" && i.isAvailable == true)
-                           .ToList();
-
-            // 2. Lặp qua danh sách trên RAM, không chọc xuống DB nữa
+            var menu = _conn.Items.Include(i => i.Recipes).Where(i => i.itemType == category && i.size == "M" && i.isAvailable == true).ToList();
             foreach (var item in menu)
             {
-                // Truy cập i.Recipes không tốn thêm query vì đã Include ở trên
                 bool sizeM = CheckAvailabilityFromList(item.Recipes.ToList(), "M");
                 bool sizeL = CheckAvailabilityFromList(item.Recipes.ToList(), "L");
                 item.isAvailable = sizeM || sizeL;
@@ -181,20 +184,11 @@ namespace PBL3.Service
         {
             var recipe = _conn.Recipes.Where(r => r.itemID == itemId && r.size == size).ToList();
             if (recipe.Count == 0) return false;
-
-            foreach (var item in recipe)
-            {
-                if (!_ingredientService.isAvailable(item.ingredientID, (int)(item.quantityNeeded * quantity))) return false;
-            }
-
-            foreach (var item in recipe)
-            {
-                _ingredientService.DeductStock(item.ingredientID, (int)(item.quantityNeeded * quantity));
-            }
+            foreach (var item in recipe) { if (!_ingredientService.isAvailable(item.ingredientID, (int)(item.quantityNeeded * quantity))) return false; }
+            foreach (var item in recipe) { _ingredientService.DeductStock(item.ingredientID, (int)(item.quantityNeeded * quantity)); }
             return true;
         }
 
-        //GetAll cũng gom luôn Recipe
         public List<Item> GetAllItems()
         {
             return _conn.Items.Include(i => i.Recipes).ToList();

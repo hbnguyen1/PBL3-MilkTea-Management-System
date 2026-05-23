@@ -526,6 +526,7 @@ namespace PBL3.Service
             {
                 Name = name,
                 Phone = phoneNumber,
+                isAvailable = true,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
                 salaryPerHour = (int)salaryPerHour
             };
@@ -537,7 +538,7 @@ namespace PBL3.Service
         }
         public List<Staff> GetAllStaffs()
         {
-            return _conn.Staffs.ToList();
+            return _conn.Staffs.Where(s => s.isAvailable).ToList();
         }
 
         public List<WorkShiftLog> GetShiftLogs(int staffID, int month, int year)
@@ -551,6 +552,80 @@ namespace PBL3.Service
         public bool IsSalarySaved(int staffID, int month, int year)
         {
             return _conn.SalarySummaries.Any(s => s.staffID == staffID && s.month == month && s.year == year);
+        }
+        public bool DeleteStaff(int staffID)
+        {
+            try
+            {
+                var staff = _conn.Staffs.Find(staffID);
+                if (staff == null)
+                {
+                    return false;
+                }
+
+                var schedules = _conn.WorkSchedules.Where(s => s.staffID == staffID).ToList();
+                _conn.WorkSchedules.RemoveRange(schedules); 
+
+                var logs = _conn.WorkShiftLogs.Where(l => l.staffID == staffID).ToList();
+                _conn.WorkShiftLogs.RemoveRange(logs);
+
+                var salaries = _conn.SalarySummaries.Where(s => s.staffID == staffID).ToList();
+                _conn.SalarySummaries.RemoveRange(salaries);
+                staff.isAvailable = false;
+                _conn.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateStaff(int staffID, string name, string phoneNumber, double salaryPerHour)
+        {
+            try
+            {
+                var existingUser = _conn.Users.FirstOrDefault(u => u.Phone == phoneNumber && u.userID != staffID);
+                if (existingUser != null)
+                {
+                    return false; 
+                }
+
+                var staff = _conn.Staffs.Find(staffID);
+                if (staff == null)
+                {
+                    return false;
+                }
+
+                staff.Name = name;
+                staff.Phone = phoneNumber;
+                staff.salaryPerHour = (int)salaryPerHour;
+                _conn.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public bool DeleteWorkSchedule(int scheduleId)
+        {
+            try
+            {
+                var schedule = _conn.WorkSchedules.Find(scheduleId);
+                if (schedule == null)
+                {
+                    return false;
+                }
+
+                _conn.WorkSchedules.Remove(schedule);
+                _conn.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

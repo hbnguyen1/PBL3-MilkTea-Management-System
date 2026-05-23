@@ -15,6 +15,7 @@
 		<None Remove="Images\default.png" />
 		<None Remove="Images\hongtrasua.png" />
 		<None Remove="Images\luctrasua.png" />
+		<None Remove="Images\mon_30.png" />
 		<None Remove="Images\qrcode.png" />
 		<None Remove="Images\trachanh.png" />
 		<None Remove="Images\tradao.png" />
@@ -51,6 +52,7 @@
 	  <Resource Include="Images\default.png" />
 	  <Resource Include="Images\hongtrasua.png" />
 	  <Resource Include="Images\luctrasua.png" />
+	  <Resource Include="Images\mon_30.png" />
 	  <Resource Include="Images\qrcode.png" />
 	  <Resource Include="Images\trachanh.png" />
 	  <Resource Include="Images\tradao.png" />

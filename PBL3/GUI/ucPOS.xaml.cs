@@ -110,7 +110,6 @@ namespace PBL3.GUI
         private void LoadMenuMonAn()
         {
             if (wpMenu == null) return;
-
             var dsMonAn = _itemService.GetAllItems().Where(i => i.isAvailable == true && i.size == "M").ToList();
 
             if (_currentCategory.Contains("BEST_SELLER"))

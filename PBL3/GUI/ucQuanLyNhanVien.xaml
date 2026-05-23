@@ -5,8 +5,8 @@
              UseLayoutRounding="True" SnapsToDevicePixels="True" TextOptions.TextFormattingMode="Display">
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="7*"/>
+            <ColumnDefinition Width="3.5*"/>
+            <ColumnDefinition Width="6.5*"/>
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="15" Margin="0,0,20,0">
@@ -18,6 +18,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+
                 <Grid Margin="0,0,0,15">
                     <TextBlock Text="DANH SÁCH NHÂN SỰ" FontWeight="Heavy" FontSize="16" Foreground="#1A1A1A" VerticalAlignment="Center"/>
                     <Button Content="+ Thêm Mới" HorizontalAlignment="Right" Background="#3B82F6" Foreground="White" FontWeight="Bold" Padding="15,5" Cursor="Hand" Click="btnThemNhanVien_Click">
@@ -28,11 +29,35 @@
                         </Button.Resources>
                     </Button>
                 </Grid>
+
                 <DataGrid x:Name="dgNhanVien" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" 
-                          SelectionChanged="dgNhanVien_SelectionChanged" Background="Transparent" BorderThickness="0" RowHeight="40" HeadersVisibility="Column">
+                          SelectionChanged="dgNhanVien_SelectionChanged" Background="Transparent" BorderThickness="0" RowHeight="45" HeadersVisibility="Column">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding userID}" Width="50" FontWeight="Bold"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding userID}" Width="45" FontWeight="Bold"/>
                         <DataGridTextColumn Header="Tên Nhân Viên" Binding="{Binding Name}" Width="*"/>
+
+                        <DataGridTemplateColumn Header="Hành động" Width="85">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Button Content="✎" ToolTip="Sửa thông tin" Background="#3B82F6" Foreground="White" Width="26" Height="26" Margin="0,0,6,0" Cursor="Hand" Click="btnSuaNhanVien_Click">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button Content="✕" ToolTip="Xóa nhân viên" Background="#EF4444" Foreground="White" Width="26" Height="26" Cursor="Hand" Click="btnXoaNhanVien_Click">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

@@ -34,5 +34,8 @@ namespace PBL3.Interface
         public List<Staff> GetAllStaffs();
         public bool IsSalarySaved(int staffID, int month, int year);
         public List<WorkShiftLog> GetShiftLogs(int staffID, int month, int year);
+        bool DeleteWorkSchedule(int scheduleId);
+        bool DeleteStaff(int staffID);
+        bool UpdateStaff(int staffID, string name, string phoneNumber, double salaryPerHour);
     }
 }

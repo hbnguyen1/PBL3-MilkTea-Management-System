@@ -145,7 +145,7 @@
                                             <Grid>
                                                 <Border CornerRadius="12,12,0,0">
                                                     <Border.Background>
-                                                        <ImageBrush ImageSource="{Binding ImagePath}" Stretch="UniformToFill"/>
+                                                        <ImageBrush ImageSource="{Binding FullImagePath}" Stretch="UniformToFill"/>
                                                     </Border.Background>
                                                 </Border>
                                                 <Border Background="#F28500" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,15,0,0" Padding="10,4" CornerRadius="4">

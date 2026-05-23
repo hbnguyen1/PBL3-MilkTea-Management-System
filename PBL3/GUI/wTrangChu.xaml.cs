@@ -83,7 +83,7 @@ namespace PBL3.GUI
                 allProducts = new List<ProductViewModel>();
 
                 var dbItems = _itemService.GetAllItems()
-                                          .Where(i => i.size == "M")
+                                          .Where(i => i.isAvailable && i.size == "M")
                                           .OrderBy(item => item.itemID)
                                           .ToList();
 
@@ -91,7 +91,7 @@ namespace PBL3.GUI
                 {
                     foreach (var item in dbItems)
                     {
-                        string dbPath = string.IsNullOrEmpty(item.ImagePath) ? "/Images/default.jpg" : item.ImagePath;
+                        string dbPath = string.IsNullOrEmpty(item.FullImagePath) ? "/Images/default.jpg" : item.FullImagePath;
                         string fullImagePath = $"pack://application:,,,{dbPath}";
 
                         var product = new ProductViewModel
@@ -101,7 +101,8 @@ namespace PBL3.GUI
                             Description = $"Size: {item.size} | Loại: {item.itemType}",
                             Price = $"{item.price:N0}đ",
                             Badge = _itemService.isAvailable(item.itemID, item.size) ? "SẴN SÀNG" : "TẠM HẾT",
-                            ImagePath = fullImagePath,
+                            ImagePath = item.ImagePath,
+                            FullImagePath = item.FullImagePath,
                             Category = item.itemType
                         };
 
@@ -449,6 +450,7 @@ namespace PBL3.GUI
         public string? Price { get; set; }
         public string? Badge { get; set; }
         public string? ImagePath { get; set; }
+        public string? FullImagePath { get; set; }
         public string? Category { get; set; }
     }
 }

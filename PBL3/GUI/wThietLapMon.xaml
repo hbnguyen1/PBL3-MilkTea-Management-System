@@ -1,7 +1,7 @@
 ﻿<Window x:Class="PBL3.GUI.wThietLapMon"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Thiết lập Sản Phẩm" Height="650" Width="800"
+        Title="Thiết lập Sản Phẩm" Height="680" Width="800"
         WindowStartupLocation="CenterScreen" Background="#F5F6F8"
         UseLayoutRounding="True" SnapsToDevicePixels="True">
 
@@ -17,31 +17,52 @@
                 <TextBlock Text="1. THÔNG TIN CHUNG" FontWeight="Bold" Foreground="#F28500" Margin="0,0,0,15"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="15"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="20"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Tên món ăn:" Margin="0,0,0,5" Foreground="#7A7A7A"/>
-                        <TextBox x:Name="txtTenMon" Height="35" Padding="5,0" VerticalContentAlignment="Center"/>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Border BorderBrush="#E5E7EB" BorderThickness="1" Width="120" Height="120" CornerRadius="8" Background="#FAFAFA">
+                            <Image x:Name="imgMonAn" Stretch="UniformToFill"/>
+                        </Border>
+                        <Button x:Name="btnChonAnh" Content="Chọn ảnh" Margin="0,8,0,0" Padding="10,4" Background="#F3F4F6" FontWeight="SemiBold" Cursor="Hand" Click="btnChonAnh_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2">
-                        <TextBlock Text="Danh mục:" Margin="0,0,0,5" Foreground="#7A7A7A"/>
-                        <ComboBox x:Name="cmbLoai" Height="35" VerticalContentAlignment="Center">
-                            <ComboBoxItem Content="Milk Tea" IsSelected="True"/>
-                            <ComboBoxItem Content="Fruit Tea"/>
-                            <ComboBoxItem Content="Món khác"/>
-                        </ComboBox>
-                    </StackPanel>
+                    <Grid Grid.Column="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="Giá bán gốc (Size M):" Margin="0,0,0,5" Foreground="#7A7A7A"/>
-                        <TextBox x:Name="txtGiaBase" Height="35" Padding="5,0" VerticalContentAlignment="Center"/>
-                    </StackPanel>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Tên món ăn:" Margin="0,0,0,5" Foreground="#7A7A7A"/>
+                            <TextBox x:Name="txtTenMon" Height="35" Padding="5,0" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <TextBlock Text="Danh mục:" Margin="0,0,0,5" Foreground="#7A7A7A"/>
+                            <ComboBox x:Name="cmbLoai" Height="35" VerticalContentAlignment="Center">
+                                <ComboBoxItem Content="Milk Tea" IsSelected="True"/>
+                                <ComboBoxItem Content="Fruit Tea"/>
+                                <ComboBoxItem Content="Món khác"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                            <TextBlock Text="Giá bán gốc (Size M):" Margin="0,0,0,5" Foreground="#7A7A7A"/>
+                            <TextBox x:Name="txtGiaBase" Height="35" Padding="5,0" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </StackPanel>
         </Border>
@@ -68,7 +89,6 @@
 
                         <ComboBox x:Name="cmbNguyenLieu" Grid.Column="0" Height="35" VerticalContentAlignment="Center" DisplayMemberPath="igName" SelectedValuePath="igID"/>
                         <TextBox x:Name="txtDinhLuong" Grid.Column="2" Height="35" VerticalContentAlignment="Center" Padding="10,0"/>
-
                         <Button x:Name="btnThemNguyenLieu" Grid.Column="4" Content="Thêm vào CT" Width="100" Background="#E8F5E9" Foreground="#2E7D32" FontWeight="Bold" Cursor="Hand" Click="btnThemNguyenLieu_Click"/>
                     </Grid>
                 </StackPanel>

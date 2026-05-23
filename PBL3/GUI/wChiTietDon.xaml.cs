@@ -61,7 +61,7 @@ namespace PBL3.GUI
                 icChiTiet.ItemsSource = viewList;
 
                 var order = _orderService.GetOrderById(_orderId);
-                if (order != null && order.orderStatus == "Completed" || !_canApprove)
+                if ((order != null && order.orderStatus == "Completed") || !_canApprove)
                 {
                     btnDuyet.Visibility = Visibility.Collapsed;
                 }

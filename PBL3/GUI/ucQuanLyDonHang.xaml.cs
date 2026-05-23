@@ -62,7 +62,7 @@ namespace PBL3.GUI
             var nextOrder = _orderService.GetNextOrder();
             if (nextOrder != null)
             {
-                wChiTietDon detailWindow = new wChiTietDon(nextOrder.orderID);
+                wChiTietDon detailWindow = new wChiTietDon(nextOrder.orderID, canApprove: true);
                 detailWindow.ShowDialog();
 
                 LoadOrders();

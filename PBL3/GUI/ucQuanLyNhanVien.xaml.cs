@@ -27,6 +27,7 @@ namespace PBL3.GUI
         {
             dgNhanVien.ItemsSource = _staffService.GetAllStaffs();
         }
+
         private void btnThemNhanVien_Click(object sender, RoutedEventArgs e)
         {
             wThemNhanVien formThem = Program.ServiceProvider.GetRequiredService<wThemNhanVien>();
@@ -46,8 +47,7 @@ namespace PBL3.GUI
                 gridChiTiet.Opacity = 1.0;
 
                 try { txtTenNhanVien.Text = _selectedStaff.Name; } catch { txtTenNhanVien.Text = "Nhân viên #" + _selectedStaff.userID; }
-
-                try { txtChucVu.Text = $"Chức vụ: {_selectedStaff.role} | Lương: {_selectedStaff.salaryPerHour:N0}đ/h"; } catch { txtChucVu.Text = ""; }
+                try { txtChucVu.Text = $"Chức vụ: {_selectedStaff.Role} | Lương: {_selectedStaff.salaryPerHour:N0}đ/h"; } catch { txtChucVu.Text = ""; }
 
                 LoadDuLieuChamCong();
             }
@@ -69,8 +69,10 @@ namespace PBL3.GUI
             int month = int.Parse((cmbThang.SelectedItem as ComboBoxItem).Content.ToString());
             int year = 2026;
             int.TryParse(txtNam.Text, out year);
+
             var logs = _staffService.GetShiftLogs(staffId, month, year);
             dgChamCong.ItemsSource = logs;
+
             double totalHours = logs.Sum(l => l.totalHours);
             int totalPenalty = logs.Sum(l => l.penalty);
             double luong = _staffService.CalculateSalary(staffId, month, year);
@@ -78,6 +80,7 @@ namespace PBL3.GUI
             txtTongGio.Text = $"{totalHours:F1}h";
             txtTienPhat.Text = $"{totalPenalty:N0}đ";
             txtLuongThuc.Text = $"{luong:N0}đ";
+
             bool isSaved = _staffService.IsSalarySaved(staffId, month, year);
             if (isSaved)
             {
@@ -88,7 +91,7 @@ namespace PBL3.GUI
             else
             {
                 btnChotLuong.Content = "CHỐT LƯƠNG";
-                btnChotLuong.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(16, 185, 129)); // Màu xanh
+                btnChotLuong.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(16, 185, 129));
                 btnChotLuong.IsEnabled = true;
             }
         }
@@ -111,6 +114,53 @@ namespace PBL3.GUI
             else
             {
                 System.Windows.MessageBox.Show(resultMsg, "Cảnh Báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void btnSuaNhanVien_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn && btn.DataContext is Staff staff)
+            {
+                wThemNhanVien formSua = Program.ServiceProvider.GetRequiredService<wThemNhanVien>();
+                formSua.SetEditMode(staff);
+
+                if (formSua.ShowDialog() == true)
+                {
+                    LoadDanhSachNhanVien();
+                }
+            }
+        }
+
+        private void btnXoaNhanVien_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn && btn.DataContext is Staff staff)
+            {
+                var result = System.Windows.MessageBox.Show($"Bạn có chắc chắn muốn xóa nhân viên [{staff.Name}]?\nMọi lịch làm, chấm công và bảng lương liên quan sẽ bị xóa sạch!",
+                                             "Xác nhận xóa nhân sự", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    bool isSuccess = _staffService.DeleteStaff(staff.userID);
+                    if (isSuccess)
+                    {
+                        System.Windows.MessageBox.Show("Xóa nhân viên thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LoadDanhSachNhanVien();
+
+                        if (_selectedStaff != null && _selectedStaff.userID == staff.userID)
+                        {
+                            _selectedStaff = null;
+                            gridChiTiet.IsEnabled = false;
+                            gridChiTiet.Opacity = 0.4;
+                            txtTenNhanVien.Text = "Chọn một nhân viên để xem";
+                            txtChucVu.Text = "Vui lòng chọn từ danh sách bên trái";
+                            dgChamCong.ItemsSource = null;
+                        }
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show("Xóa nhân viên thất bại!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
             }
         }
     }
