@@ -36,8 +36,9 @@ Hướng Dẫn Cài Đặt (Setup Instructions)
    ```bash
    docker compose up -d
 4. Mở Solution bằng Visual Studio.
-5. Mở file "MilkTeaDBContext.cs" (hoặc "appsettings.json" nếu có) và cập nhật chuỗi kết nối "ConnectionString" cho phù hợp với SQL Server Local của bạn.
-6. Mở Package Manager Console và chạy lệnh để khởi tạo Database:
+5. Mở file "appsettings.json" và cập nhật chuỗi kết nối "ConnectionString" cho phù hợp với SQL Server Local của bạn.
+6. Khởi động SQL Server điền các thông tin sau để kết nới với Docker. Server Name: 127.0.0.1,14333,Authentication: SQL Server Authentication, UserName: sa, PassWord:PBL3_MilkTea@2026.
+7. Mở Package Manager Console và chạy lệnh để khởi tạo Database:
    "bash
    Update-Database"
-7. Chạy project.
+8. Chạy project.
