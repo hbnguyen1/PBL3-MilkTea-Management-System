@@ -32,7 +32,6 @@ namespace PBL3.GUI
         {
             if (MainContent == null) return;
 
-            // 2. Nếu chưa tạo thì mới new, tạo rồi thì lôi biến ra gán vào luôn
             if (_ucTongQuan == null)
             {
                 _ucTongQuan = new ucBossTongQuan();
@@ -44,7 +43,6 @@ namespace PBL3.GUI
         {
             if (MainContent == null) return;
 
-            // 2. Tương tự với nhân sự
             if (_ucNhanSu == null)
             {
                 _ucNhanSu = new ucQuanLyNhanVien();

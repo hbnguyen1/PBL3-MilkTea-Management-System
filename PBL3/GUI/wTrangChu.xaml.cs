@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection; 
+using Microsoft.Extensions.DependencyInjection;
 using PBL3.Models;
 using PBL3.Data;
 using PBL3.Service;
@@ -94,13 +94,18 @@ namespace PBL3.GUI
                         string dbPath = string.IsNullOrEmpty(item.FullImagePath) ? "/Images/default.jpg" : item.FullImagePath;
                         string fullImagePath = $"pack://application:,,,{dbPath}";
 
+                        // Check if recipes exist for available sizes
+                        bool hasRecipeM = item.Recipes != null && item.Recipes.Any(r => r.size == "M");
+                        bool hasRecipeL = item.Recipes != null && item.Recipes.Any(r => r.size == "L");
+                        bool isAvailable = hasRecipeM || hasRecipeL;
+
                         var product = new ProductViewModel
                         {
                             ItemID = item.itemID,
                             Name = item.itemName,
                             Description = $"Size: {item.size} | Loại: {item.itemType}",
                             Price = $"{item.price:N0}đ",
-                            Badge = _itemService.isAvailable(item.itemID, item.size) ? "SẴN SÀNG" : "TẠM HẾT",
+                            Badge = isAvailable ? "SẴN SÀNG" : "TẠM HẾT",
                             ImagePath = item.ImagePath,
                             FullImagePath = item.FullImagePath,
                             Category = item.itemType
@@ -342,7 +347,7 @@ namespace PBL3.GUI
                 Orders newOrder = new Orders()
                 {
                     customerID = _currentCustomerId,
-                    staffID = null, // Vì khách hàng tự đặt
+                    staffID = null, 
                     orderDate = System.DateTime.Now,
                     orderStatus = "Pending",
                     totalPrice = finalPrice
@@ -366,7 +371,7 @@ namespace PBL3.GUI
 
                     int diemDuocCongThem = newPoints - oldPoints;
 
-                    wHoaDon hoaDonWindow = new wHoaDon(newOrder.orderID, lblTongTien.Text, diemDuocCongThem, newPoints, null);
+                    wHoaDon hoaDonWindow = new wHoaDon(newOrder.orderID, lblTongTien.Text, diemDuocCongThem, newPoints, CartManager.GioHang.ToList());
                     hoaDonWindow.ShowDialog();
 
                     CartManager.GioHang.Clear();
@@ -387,7 +392,7 @@ namespace PBL3.GUI
             {
                 if (selectedProduct.Badge == "TRỐNG") return;
 
-                wChiTietMon detailWindow = new wChiTietMon(selectedProduct.ItemID, selectedProduct.Name ?? "", selectedProduct.Price ?? "", selectedProduct.ImagePath ?? "");
+                wChiTietMon detailWindow = new wChiTietMon(selectedProduct.ItemID, selectedProduct.Name ?? "", selectedProduct.Price ?? "", selectedProduct.FullImagePath ?? "");
                 detailWindow.ShowDialog();
 
                 CapNhatSoLuongGioHang();
@@ -431,7 +436,7 @@ namespace PBL3.GUI
 
         private void lblLichSu_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (_currentCustomerId == 1) 
+            if (_currentCustomerId == 1)
             {
                 System.Windows.MessageBox.Show("Khách vãng lai không có lịch sử đơn hàng. Vui lòng đăng nhập tài khoản thành viên!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;

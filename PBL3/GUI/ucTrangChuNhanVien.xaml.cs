@@ -13,8 +13,6 @@ namespace PBL3.GUI
     {
         private DispatcherTimer _timer;
         private readonly IStaffService _staffService;
-
-        // ✅ THÊM BIẾN ĐẾM: Giúp giảm tần suất chọc vào Database
         private int _reminderCheckCounter = 0;
 
         public ucTrangChuNhanVien()
@@ -48,11 +46,9 @@ namespace PBL3.GUI
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            // Đồng hồ hiển thị thời gian thực vẫn chạy mỗi giây cực mượt
             txtTime.Text = DateTime.Now.ToString("HH:mm:ss");
             txtDate.Text = DateTime.Now.ToString("dddd, dd/MM/yyyy");
 
-            // ✅ TỐI ƯU: Chỉ kiểm tra nhắc nhở hết ca mỗi 30 giây (30 ticks) thay vì mỗi giây
             _reminderCheckCounter++;
             if (_reminderCheckCounter >= 30)
             {
@@ -126,7 +122,6 @@ namespace PBL3.GUI
             }
         }
 
-        // ✅ ĐÃ VÁ LỖI: Sắp xếp lại cấu trúc try-catch chuẩn chỉnh cho nút đăng ký ca
         private void btnDangKyCa_Click(object sender, RoutedEventArgs e)
         {
             if (dpNgayDangKy.SelectedDate == null)
@@ -167,7 +162,6 @@ namespace PBL3.GUI
             }
         }
 
-        // Các hàm helper được đưa về đúng vị trí trong Class
         public int GetRemainingSpots(DateTime workDate, string shift)
         {
             return _staffService.GetRemainingSpots(workDate, shift);

@@ -9,7 +9,6 @@ namespace PBL3.GUI
     {
         private readonly IStaffService _staffService;
 
-        // 2 biến này dùng để nhận biết form đang ở chế độ Sửa hay Thêm
         private Staff _editingStaff = null;
         private bool _isEditMode = false;
 
@@ -19,19 +18,16 @@ namespace PBL3.GUI
             _staffService = Program.ServiceProvider.GetRequiredService<IStaffService>();
         }
 
-        // Hàm này được gọi từ trang Quản Lý Nhân Viên khi Boss bấm nút "Sửa"
         public void SetEditMode(Staff staff)
         {
             _editingStaff = staff;
             _isEditMode = true;
 
-            // Đổi tiêu đề và nạp dữ liệu cũ lên Form
             Title = "Sửa Thông Tin Nhân Viên";
             txtName.Text = staff.Name;
             txtPhone.Text = staff.Phone;
             txtSalary.Text = staff.salaryPerHour.ToString();
 
-            // Ẩn phần mật khẩu đi (vì sửa thông tin cơ bản không nên đổi pass ở đây)
             lblPassword.Visibility = Visibility.Collapsed;
             txtPassword.Visibility = Visibility.Collapsed;
             cmbRole.IsEnabled = false;
@@ -56,16 +52,14 @@ namespace PBL3.GUI
                 return;
             }
 
-            // Chia nhánh logic: Nếu là Sửa thì gọi UpdateStaff, nếu là Thêm thì gọi AddNewStaff
             if (_isEditMode)
             {
-                // === CHẾ ĐỘ SỬA ===
                 bool isSuccess = _staffService.UpdateStaff(_editingStaff.userID, name, phone, salary);
 
                 if (isSuccess)
                 {
                     System.Windows.MessageBox.Show("Cập nhật thông tin nhân viên thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-                    this.DialogResult = true; // Báo hiệu thành công và đóng form
+                    this.DialogResult = true; 
                 }
                 else
                 {
@@ -74,7 +68,6 @@ namespace PBL3.GUI
             }
             else
             {
-                // === CHẾ ĐỘ THÊM MỚI ===
                 string pass = txtPassword.Password;
                 if (string.IsNullOrEmpty(pass))
                 {
@@ -88,7 +81,7 @@ namespace PBL3.GUI
                 if (isSuccess)
                 {
                     System.Windows.MessageBox.Show("Tạo tài khoản nhân viên thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
-                    this.DialogResult = true; // Báo hiệu thành công và đóng form
+                    this.DialogResult = true; 
                 }
                 else
                 {

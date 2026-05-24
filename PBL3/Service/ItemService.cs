@@ -39,33 +39,27 @@ namespace PBL3.Service
             {
                 try
                 {
-                    // 1. Lưu sản phẩm trước để SQL tự sinh ID
                     _conn.Items.Add(items[0]);
                     _conn.Items.Add(items[1]);
                     _conn.SaveChanges();
 
                     int realGeneratedItemId = items[0].itemID;
 
-                    // 2. CHÉP ẢNH VÀ ĐỊNH DẠNG ĐƯỜNG DẪN CHUẨN KHOẢNG TRỐNG CỦA CSDL
                     if (!string.IsNullOrEmpty(localImagePath) && File.Exists(localImagePath))
                     {
-                        // Thư mục mã nguồn gốc (Để Boss thấy trong Visual Studio)
                         string projectFolder = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
                         string sourceImgFolder = Path.Combine(projectFolder, "Images");
                         if (!Directory.Exists(sourceImgFolder)) Directory.CreateDirectory(sourceImgFolder);
 
-                        // Thư mục Debug (Để app load được ngay lập tức)
                         string debugImgFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
                         if (!Directory.Exists(debugImgFolder)) Directory.CreateDirectory(debugImgFolder);
 
                         string ext = Path.GetExtension(localImagePath);
                         string fileNameOnly = $"mon_{realGeneratedItemId}{ext}";
 
-                        // Copy file ảnh vào CẢ 2 NƠI
                         File.Copy(localImagePath, Path.Combine(sourceImgFolder, fileNameOnly), true);
                         File.Copy(localImagePath, Path.Combine(debugImgFolder, fileNameOnly), true);
 
-                        // ĐÃ SỬA: Gán định dạng chuẩn có tiền tố /Images/ giống hệt DB cũ
                         string dbPath = $"/Images/{fileNameOnly}";
                         items[0].ImagePath = dbPath;
                         items[1].ImagePath = dbPath;
@@ -165,7 +159,19 @@ namespace PBL3.Service
 
         public List<Item> GetMenuByCategory(string category)
         {
-            var menu = _conn.Items.Include(i => i.Recipes).Where(i => i.itemType == category && i.size == "M" && i.isAvailable == true).ToList();
+            var menu = _conn.Items.Where(i => i.itemType == category && i.size == "M" && i.isAvailable == true)
+                .Select(i => new Item
+                {
+                    itemID = i.itemID,
+                    itemName = i.itemName,
+                    itemType = i.itemType,
+                    size = i.size,
+                    price = i.price,
+                    ImagePath = i.ImagePath,
+                    isAvailable = i.isAvailable,
+                    Recipes = i.Recipes.ToList()
+                }).ToList();
+
             foreach (var item in menu)
             {
                 bool sizeM = CheckAvailabilityFromList(item.Recipes.ToList(), "M");
@@ -191,7 +197,17 @@ namespace PBL3.Service
 
         public List<Item> GetAllItems()
         {
-            return _conn.Items.Include(i => i.Recipes).ToList();
+            return _conn.Items.Select(i => new Item
+            {
+                itemID = i.itemID,
+                itemName = i.itemName,
+                itemType = i.itemType,
+                size = i.size,
+                price = i.price,
+                ImagePath = i.ImagePath,
+                isAvailable = i.isAvailable,
+                Recipes = i.Recipes.ToList()
+            }).ToList();
         }
 
         public void UpdateItemWithRecipe(int itemId, Item mItem, Item lItem, List<Recipe> recipes)

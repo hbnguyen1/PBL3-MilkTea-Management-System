@@ -25,17 +25,29 @@ namespace PBL3.GUI
 
             lblGia.Text = $"{_giaGocBanDau:N0}đ";
 
-            if (!string.IsNullOrEmpty(imagePath))
+            LoadImage(imagePath);
+        }
+
+        private void LoadImage(string imagePath)
+        {
+            if (string.IsNullOrWhiteSpace(imagePath))
             {
-                try
-                {
-                    BitmapImage bitmap = new BitmapImage(new Uri(imagePath, UriKind.RelativeOrAbsolute));
-                    imgBrush.ImageSource = bitmap;
-                }
-                catch (Exception)
-                {
-                    imgMonAnBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 245, 245));
-                }
+                return;
+            }
+
+            try
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(imagePath, UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                bitmap.Freeze();
+
+                imgMonAn.Source = bitmap;
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -73,7 +85,7 @@ namespace PBL3.GUI
                     }
                     else
                     {
-                        sldDuong.Value = 100;  // Default value
+                        sldDuong.Value = 100;  
                     }
 
                     var matchDa = Regex.Match(item.MoTa, @"(\d+)%\s*Đá");
@@ -83,7 +95,7 @@ namespace PBL3.GUI
                     }
                     else
                     {
-                        sldDa.Value = 50;  // Default value
+                        sldDa.Value = 50;  
                     }
 
                     if (item.MoTa.Contains("Ghi chú: "))

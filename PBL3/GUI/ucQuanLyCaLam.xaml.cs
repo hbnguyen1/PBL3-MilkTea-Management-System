@@ -17,13 +17,10 @@ namespace PBL3.GUI
     public partial class ucQuanLyCaLam : System.Windows.Controls.UserControl
     {
         private DateTime currentWeekStart;
-        // Dictionary để gom nhóm: Key là "Ngày_Ca", Value là Danh sách tên nhân viên kèm scheduleId
         private Dictionary<string, List<(int scheduleId, string staffName)>> weekScheduleData = new();
 
-        // Khớp tên ca trong Database
         private List<string> dbShifts = new() { "Morning", "Afternoon", "Evening" };
 
-        // Tên hiển thị ra giao diện cho đẹp
         private Dictionary<string, string> shiftDisplayNames = new()
         {
             { "Morning", "CA SÁNG (08:00 - 13:00)" },
@@ -31,14 +28,12 @@ namespace PBL3.GUI
             { "Evening", "CA TỐI (18:00 - 22:00)" }
         };
 
-        // Màu nền pastel phân biệt cho các ca
         private Dictionary<string, WpfColor> shiftColors = new()
         {
-            { "Morning", WpfColor.FromRgb(219, 234, 254) },    // Xanh nhạt
-            { "Afternoon", WpfColor.FromRgb(254, 243, 199) },   // Vàng nhạt
-            { "Evening", WpfColor.FromRgb(243, 232, 255) }      // Tím nhạt
+            { "Morning", WpfColor.FromRgb(219, 234, 254) },   
+            { "Afternoon", WpfColor.FromRgb(254, 243, 199) },   
+            { "Evening", WpfColor.FromRgb(243, 232, 255) }
         };
-
         private readonly IStaffService _staffService;
 
         public ucQuanLyCaLam()
@@ -50,7 +45,6 @@ namespace PBL3.GUI
 
         private void SetCurrentWeek()
         {
-            // Tính ngày bắt đầu của tuần (luôn là Thứ 2)
             DateTime today = DateTime.Now;
             int daysToMonday = (int)today.DayOfWeek - (int)DayOfWeek.Monday;
             if (daysToMonday < 0) daysToMonday += 7;
@@ -68,7 +62,6 @@ namespace PBL3.GUI
 
             txtTuanHienTai.Text = $"Tuần {weekNumber:D2} ({currentWeekStart:dd/MM} - {weekEnd:dd/MM/yyyy})";
 
-            // Cập nhật mảng tiêu đề 7 ngày
             TextBlock[] dateBlocks = { txtDate0, txtDate1, txtDate2, txtDate3, txtDate4, txtDate5, txtDate6 };
             string[] dayNames = { "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật" };
 
@@ -88,7 +81,6 @@ namespace PBL3.GUI
                 {
                     DateTime weekEnd = currentWeekStart.AddDays(6);
 
-                    // Lấy WorkSchedules với tên nhân viên
                     var schedules = (from ws in db.WorkSchedules
                                      join s in db.Staffs on ws.staffID equals s.userID
                                      where ws.workDate >= currentWeekStart.Date && ws.workDate <= weekEnd.Date
@@ -100,7 +92,6 @@ namespace PBL3.GUI
                                          StaffName = s.Name
                                      }).ToList();
 
-                    // Đưa vào Dictionary kèm scheduleId
                     foreach (var schedule in schedules)
                     {
                         string key = $"{schedule.workDate:yyyy-MM-dd}_{schedule.shift}";
@@ -119,17 +110,14 @@ namespace PBL3.GUI
 
         private void RenderScheduleGrid()
         {
-            // Xóa rác: Bỏ hết các hàng hiển thị cũ, chỉ giữ lại hàng 0 (Header các ngày)
             while (gridSchedule.RowDefinitions.Count > 1) gridSchedule.RowDefinitions.RemoveAt(gridSchedule.RowDefinitions.Count - 1);
             var childrenToRemove = gridSchedule.Children.OfType<UIElement>().Where(e => Grid.GetRow(e) >= 1).ToList();
             foreach (var child in childrenToRemove) gridSchedule.Children.Remove(child);
 
             int currentRow = 1;
 
-            // Bắt đầu vẽ 3 Ca làm việc
             foreach (string shift in dbShifts)
             {
-                // 1. Tạo thanh ngang tên Ca (VD: CA SÁNG)
                 gridSchedule.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 Border shiftHeaderBorder = new Border
                 {
@@ -139,7 +127,6 @@ namespace PBL3.GUI
                     Padding = new Thickness(5)
                 };
 
-                // ĐÃ SỬA LỖI CS0176: Chỉ định đích danh System.Windows.HorizontalAlignment.Center
                 TextBlock shiftHeader = new TextBlock
                 {
                     Text = shiftDisplayNames[shift],
@@ -157,7 +144,6 @@ namespace PBL3.GUI
 
                 currentRow++;
 
-                // 2. Tạo 7 ô cho 7 ngày của Ca đó
                 gridSchedule.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
                 for (int dayIndex = 0; dayIndex < 7; dayIndex++)
@@ -178,7 +164,6 @@ namespace PBL3.GUI
 
                     StackPanel cellContent = new StackPanel { VerticalAlignment = VerticalAlignment.Top };
 
-                    // Nếu có người làm ca này
                     if (weekScheduleData.ContainsKey(key) && weekScheduleData[key].Any())
                     {
                         foreach (var (scheduleId, staffName) in weekScheduleData[key])
@@ -235,8 +220,6 @@ namespace PBL3.GUI
                     }
                     else
                     {
-                        // Nếu ca trống
-                        // ĐÃ SỬA LỖI CS0176: Chỉ định đích danh System.Windows.HorizontalAlignment.Center
                         cellContent.Children.Add(new TextBlock
                         {
                             Text = "Trống",

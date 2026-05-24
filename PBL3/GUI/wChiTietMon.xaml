@@ -9,20 +9,27 @@
             <ColumnDefinition Width="6*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" x:Name="imgMonAnBorder" CornerRadius="15" Margin="0,0,30,0">
-            <Border.Background>
-                <ImageBrush x:Name="imgBrush" Stretch="UniformToFill"/>
-            </Border.Background>
+        <Border Grid.Column="0" x:Name="imgMonAnBorder" CornerRadius="15" Margin="0,0,30,0" 
+                Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1" 
+                VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid>
+                <Image x:Name="imgMonAn" Visibility="Collapsed"/>
+
+                <Border CornerRadius="14">
+                    <Border.Background>
+                        <ImageBrush ImageSource="{Binding Source, ElementName=imgMonAn}" Stretch="UniformToFill"/>
+                    </Border.Background>
+                </Border>
+            </Grid>
         </Border>
 
-        <StackPanel Grid.Column="1">
+        <StackPanel Grid.Column="1" VerticalAlignment="Top">
             <TextBlock x:Name="lblTenMon" Text="Tên Món Nước" FontSize="28" FontWeight="Heavy" Foreground="#1A1A1A" Margin="0,0,0,10"/>
             <TextBlock x:Name="lblGia" Text="0đ" FontSize="22" FontWeight="Bold" Foreground="#F28500" Margin="0,0,0,25"/>
 
             <TextBlock Text="Chọn Kích Thước" FontSize="14" FontWeight="SemiBold" Foreground="#1A1A1A" Margin="0,0,0,10"/>
             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                 <RadioButton x:Name="radSizeM" Content="Size M" IsChecked="True" Checked="radSizeM_Checked" Style="{DynamicResource OptionRadioStyle}" Margin="0,0,15,0"/>
-
                 <RadioButton x:Name="radSizeL" Content="Size L (+8.000đ)" Checked="radSizeL_Checked" Style="{DynamicResource OptionRadioStyle}"/>
             </StackPanel>
 
@@ -50,6 +57,7 @@
             <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,30">
                 <TextBox x:Name="txtGhiChu" Background="Transparent" BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" Height="50" VerticalScrollBarVisibility="Auto" FontSize="14" Foreground="#4A4A4A"/>
             </Border>
+
             <Button x:Name="btnThemVaoGio" Click="btnThemVaoGio_Click" Height="50" Cursor="Hand">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">

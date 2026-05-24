@@ -145,7 +145,7 @@ namespace PBL3.GUI
                     return;
                 }
 
-                if (_itemId == -1) // ==== THÊM MỚI ====
+                if (_itemId == -1) 
                 {
                     int nextId = _itemService.GetNextItemID();
 
@@ -174,7 +174,7 @@ namespace PBL3.GUI
                         this.Close();
                     }
                 }
-                else // ==== CẬP NHẬT ====
+                else 
                 {
                     imgMonAn.Source = null;
                     GC.Collect(); GC.WaitForPendingFinalizers();
@@ -185,15 +185,13 @@ namespace PBL3.GUI
                     {
                         string ext = Path.GetExtension(_selectedLocalFullPath);
                         string fileNameOnly = $"mon_{_itemId}{ext}";
-                        targetDbPath = $"/Images/{fileNameOnly}"; // ĐĂ SỬA: Đưa về chuẩn /Images/
+                        targetDbPath = $"/Images/{fileNameOnly}"; 
 
-                        // Chép ảnh vào Source Code
                         string projectFolder = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.FullName;
                         string sourceImgFolder = Path.Combine(projectFolder, "Images");
                         if (!Directory.Exists(sourceImgFolder)) Directory.CreateDirectory(sourceImgFolder);
                         File.Copy(_selectedLocalFullPath, Path.Combine(sourceImgFolder, fileNameOnly), true);
 
-                        // Chép ảnh vào Runtime
                         string debugImgFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
                         if (!Directory.Exists(debugImgFolder)) Directory.CreateDirectory(debugImgFolder);
                         File.Copy(_selectedLocalFullPath, Path.Combine(debugImgFolder, fileNameOnly), true);
