@@ -164,12 +164,12 @@ namespace PBL3.src.Application.Service
 
         public List<Orders> GetAllOrders()
         {
-            return _conn.Orders.OrderByDescending(o => o.orderID).ToList();
+            return _conn.Orders.OrderByDescending(o => o.orderDate).ToList();
         }
 
         public List<Orders> GetOrdersByStatus(string status)
         {
-            return _conn.Orders.Where(o => o.orderStatus == status).OrderByDescending(o => o.orderID).ToList();
+            return _conn.Orders.Where(o => o.orderStatus == status).OrderByDescending(o => o.orderDate).ToList();
         }
 
         public List<Orders> GetPendingOrders()

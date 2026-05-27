@@ -52,15 +52,22 @@ namespace PBL3.UI.Views
             {
                 if (currentUser is Staff currentStaff)
                 {
-                    if (currentStaff.userID <= 0)
+                    if (currentStaff.isAvailable == true)
                     {
-                        System.Windows.MessageBox.Show("Lỗi: ID nhân viên không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
+                        if (currentStaff.userID <= 0)
+                        {
+                            System.Windows.MessageBox.Show("Lỗi: ID nhân viên không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        UserSession.CurrentUser = currentStaff;
+                        var staffWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_NhanVien>();
+                        staffWindow.Show();
+                        this.Close();
                     }
-                    UserSession.CurrentUser = currentStaff;
-                    var staffWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_NhanVien>();
-                    staffWindow.Show();
-                    this.Close();
+                    else
+                    {
+                        System.Windows.MessageBox.Show("Số điện thoại hoặc mật khẩu không chính xác!", "Lỗi đăng nhập", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
                 else if (currentUser is Admin currentAdmin)
                 {
