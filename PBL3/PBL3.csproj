@@ -30,8 +30,8 @@
 		<None Remove="Images\tratao.png" />
 		<None Remove="Images\travai.png" />
 		<None Remove="Images\traxoai.png" />
-		<None Remove="Interface\UserAuthenticator.cs~RF7d5cc21.TMP" />
-		<None Remove="Service\pheu0qsw.h1s~" />
+		<None Remove="src\Application\Interface\UserAuthenticator.cs~RF7d5cc21.TMP" />
+		<None Remove="src\Application\Service\pheu0qsw.h1s~" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text;
+
+namespace PBL3.src.Application.Interface
+{
+    public interface IRevenueService
+    {
+        double GetDailyRevenue(DateTime date);
+        double GetRevenueByRange(DateTime start, DateTime end);
+        double GetRevenueByMonth(int month, int year);
+        double GetRevenueByYear(int year);
+    }
+}
