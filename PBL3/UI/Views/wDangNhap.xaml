@@ -45,7 +45,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="&#xE717;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#A0A0A0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        <TextBox x:Name="txtPhoneNumber" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="15" Foreground="#1A1A1A" Padding="0,0,15,0"/>
+                        <TextBox x:Name="txtPhoneNumber" Text="{Binding phoneNumber, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="15" Foreground="#1A1A1A" Padding="0,0,15,0"/>
                     </Grid>
                 </Border>
 
@@ -59,8 +59,8 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#A0A0A0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
-                        <PasswordBox x:Name="txtPassword" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="15" Foreground="#1A1A1A"/>
-                        <TextBox x:Name="txtPasswordVisible" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="15" Foreground="#1A1A1A" Visibility="Collapsed"/>
+                        <PasswordBox x:Name="txtPassword" PasswordChanged="txtPassword_PasswordChanged" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="15" Foreground="#1A1A1A"/>
+                        <TextBox x:Name="txtPasswordVisible" TextChanged="txtPasswordVisible_TextChanged" Grid.Column="1" Background="Transparent" BorderThickness="0" VerticalContentAlignment="Center" FontSize="15" Foreground="#1A1A1A" Visibility="Collapsed"/>
 
                         <TextBlock x:Name="btnTogglePassword" Grid.Column="2" Text="&#xE18B;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="#A0A0A0" VerticalAlignment="Center" HorizontalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="btnTogglePassword_Click"/>
                     </Grid>
@@ -73,7 +73,7 @@
                     </Grid.ColumnDefinitions>
                 </Grid>
 
-                <Button x:Name="btnDangNhap" Click="btnDangNhap_Click" Height="50" Cursor="Hand" Margin="0,0,0,30">
+                <Button x:Name="btnDangNhap" Command="{Binding DangNhapCommand}" Height="50" Cursor="Hand" Margin="0,0,0,30">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="btnBorder" Background="#F28500" CornerRadius="10">

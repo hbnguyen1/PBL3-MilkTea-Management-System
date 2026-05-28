@@ -5,21 +5,39 @@ using Microsoft.Extensions.DependencyInjection;
 using PBL3.src.Domain.Models;
 using PBL3.src.Application.Interface;
 using PBL3.src.Application;
+using PBL3.UI.ViewModels;
 
 namespace PBL3.UI.Views
 {
     public partial class wDangNhap : Window
     {
         private bool isPasswordVisible = false;
-
-        // 1. Khai báo biến readonly để hứng Service
-        private readonly IPasswordAuthenticator _authService;
-
-        // 2. Yêu cầu truyền Service vào Constructor
-        public wDangNhap(IPasswordAuthenticator authService)
+        private readonly LoginViewModel _viewModel;
+        public wDangNhap(LoginViewModel viewModel)
         {
             InitializeComponent();
-            _authService = authService; 
+            _viewModel = viewModel; 
+            this.DataContext = _viewModel; // Khởi tạo liên kết dữ liệu để data binding
+            _viewModel.OnLoginSuccess += ViewModel_OnLoginSuccess;
+        }
+        private void ViewModel_OnLoginSuccess(Users user)
+        {
+            if (user is Staff)
+            {
+                var staffWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_NhanVien>();
+                staffWindow.Show();
+            }
+            else if (user is Admin)
+            {
+                var adminWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_Boss>();
+                adminWindow.Show();
+            }
+            else
+            {
+                wTrangChu customerWindow = new wTrangChu(user.userID);
+                customerWindow.Show();
+            }
+            this.Close();
         }
 
         private void btnTogglePassword_Click(object sender, MouseButtonEventArgs e)
@@ -42,64 +60,21 @@ namespace PBL3.UI.Views
             }
         }
 
-        private void btnDangNhap_Click(object sender, RoutedEventArgs e)
+        // Khi gõ vào ô mật khẩu ẩn (dấu chấm đen)
+        private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            string phoneNumber = txtPhoneNumber.Text;
-            string password = isPasswordVisible ? txtPasswordVisible.Text : txtPassword.Password;
-            var currentUser = _authService.Authenticate(phoneNumber, password);
-
-            if (currentUser != null)
+            if (!isPasswordVisible && _viewModel != null)
             {
-                if (currentUser is Staff currentStaff)
-                {
-                    if (currentStaff.isAvailable == true)
-                    {
-                        if (currentStaff.userID <= 0)
-                        {
-                            System.Windows.MessageBox.Show("Lỗi: ID nhân viên không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-                        UserSession.CurrentUser = currentStaff;
-                        var staffWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_NhanVien>();
-                        staffWindow.Show();
-                        this.Close();
-                    }
-                    else
-                    {
-                        System.Windows.MessageBox.Show("Số điện thoại hoặc mật khẩu không chính xác!", "Lỗi đăng nhập", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                else if (currentUser is Admin currentAdmin)
-                {
-                    if (currentAdmin.userID <= 0)
-                    {
-                        System.Windows.MessageBox.Show("Lỗi: ID quản trị viên không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-                    UserSession.CurrentUser = currentAdmin;
-
-                    var adminWindow = Program.ServiceProvider.GetRequiredService<wTrangChu_Boss>();
-                    adminWindow.Show();
-                    this.Close();
-                }
-                else if (currentUser is Users currentCustomer)
-                {
-                    if (currentCustomer.userID <= 0)
-                    {
-                        System.Windows.MessageBox.Show("Lỗi: ID khách hàng không hợp lệ!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-                    UserSession.CurrentUser = currentCustomer;
-
-                    // (Giữ nguyên dùng new vì wTrangChu đang yêu cầu truyền tham số ID)
-                    wTrangChu customerWindow = new wTrangChu(currentCustomer.userID);
-                    customerWindow.Show();
-                    this.Close();
-                }
+                _viewModel.Password = txtPassword.Password;
             }
-            else
+        }
+
+        // Khi gõ vào ô mật khẩu hiện (chữ thường)
+        private void txtPasswordVisible_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (isPasswordVisible && _viewModel != null)
             {
-                System.Windows.MessageBox.Show("Số điện thoại hoặc mật khẩu không chính xác!", "Lỗi đăng nhập", MessageBoxButton.OK, MessageBoxImage.Error);
+                _viewModel.Password = txtPasswordVisible.Text;
             }
         }
 
@@ -109,5 +84,6 @@ namespace PBL3.UI.Views
             registerWindow.Show();
             this.Close();
         }
+
     }
 }
