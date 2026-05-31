@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace PBL3.src.Domain.Models
 {
@@ -13,5 +12,7 @@ namespace PBL3.src.Domain.Models
         public required double priceAtOrder { get; set; } = 0;
         public required string? note { get; set; } = string.Empty;
         //public double? costAtOrder { get; set; }
+        public virtual Orders Order { get; set; }
+        public virtual Item Item { get; set; }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using PBL3.src.Domain.Models;
 using PBL3.src.Application.Interface;
 using PBL3.src.Infrastructure.Data;
-using PBL3.src.Infrastructure;
+using PBL3.src.Infrastructure.Common;
 
 namespace PBL3.src.Application.Service
 {

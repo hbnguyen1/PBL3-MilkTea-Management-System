@@ -1,8 +1,6 @@
-﻿using System;
+﻿using System.IO;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-using System.IO;
 
 namespace PBL3.src.Domain.Models
 {
@@ -15,7 +13,6 @@ namespace PBL3.src.Domain.Models
         public Boolean isAvailable { get; set; } = true;
         public required double price { get; set; } = 0;
         public string? ImagePath { get; set; }
-        [NotMapped]
         public string FullImagePath
         {
             get

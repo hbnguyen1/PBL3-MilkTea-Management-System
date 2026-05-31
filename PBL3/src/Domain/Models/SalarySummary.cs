@@ -13,5 +13,6 @@ namespace PBL3.src.Domain.Models
         public double totalHours { get; set; }
         public int penalty { get; set; }
         public double totalSalary { get; set; }
+        public virtual Staff Staff { get; set; }
     }
 }
