@@ -93,6 +93,25 @@ namespace PBL3.UI.Views
             {
                 System.Windows.MessageBox.Show("Đăng ký thất bại: Số điện thoại đã tồn tại. Vui lòng kiểm tra lại!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+        }
+
+        private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Return)
+            {
+                btnDangKy_Click(null, null);
+                e.Handled = true;
+            }
+        }
+
+        private void PasswordBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Return)
+            {
+                btnDangKy_Click(null, null);
+                e.Handled = true;
+            }
         }
     }
 }

@@ -20,10 +20,9 @@ namespace PBL3.src.Application.Service
                 var existingUser = _conn.Users.SingleOrDefault(u => u.Phone == phoneNumber);
                 if (existingUser != null)
                 {
-                    //Console.WriteLine("Số điện thoại đã tồn tại. Vui lòng chọn số khác.");
                     return false;
                 }
-                // Nếu chưa tồn tại, tạo mới khách hàng và lưu vào database
+                //Nếu chưa tồn tại, tạo mới khách hàng và lưu vào database
                 var newCustomer = new Customer
                 {
                     Name = name,
@@ -33,20 +32,19 @@ namespace PBL3.src.Application.Service
                 };
                 _conn.Customers.Add(newCustomer);
                 _conn.SaveChanges();
-                //Console.WriteLine("Đăng ký thành công!");
                 return true;
         }
         public List<string> GetTrendingItemNamesForCustomer()
         {
-                // 1. Chỉ gom nhóm và đếm số lượng để tìm ra món Hot
-                // 2. Không hề đụng tới phép tính Doanh thu ở đây
+                //Chỉ gom nhóm và đếm số lượng để tìm ra món Hot
                 var trendingNames = _conn.OrderDetails
                     .GroupBy(od => od.itemID)
-                    .OrderByDescending(g => g.Sum(od => od.quantity)) // Vẫn lấy top bán chạy
+                    .OrderByDescending(g => g.Sum(od => od.quantity)) //Lấy top bán chạy
                     .Take(5)
-                    .Select(g => _conn.Items.FirstOrDefault(i => i.itemID == g.Key).itemName) // CHỈ SELECT ĐÚNG TÊN MÓN
+                    .Select(g => _conn.Items.FirstOrDefault(i => i.itemID == g.Key).itemName) //SELECT ĐÚNG TÊN MÓN
                     .ToList();
 
-                return trendingNames;        }
+                return trendingNames;        
+        }
     }
 }

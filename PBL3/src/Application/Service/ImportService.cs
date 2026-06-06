@@ -5,6 +5,7 @@ using PBL3.src.Domain.Models;
 using PBL3.src.Application.Interface;
 using PBL3.src.Infrastructure.Data;
 using PBL3.src.Infrastructure.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace PBL3.src.Application.Service
 {
@@ -29,7 +30,7 @@ namespace PBL3.src.Application.Service
                             totalCost += d.quantityAdded * d.importPrice;
                         }
 
-                        // Tạo phiếu nhập
+                        //Tạo phiếu nhập
                         ImportNote note = new ImportNote
                         {
                             importDate = DateTime.Now,
@@ -80,6 +81,59 @@ namespace PBL3.src.Application.Service
                         return false;
                     }
                 }
+
+        }
+
+        public List<ImportNote> GetAllImports()
+        {
+            try
+            {
+                return _conn.ImportNotes
+                    .Include(x => x.ImportDetails)
+                    .ThenInclude(x => x.Ingredient)
+                    .OrderByDescending(x => x.importDate)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Lỗi lấy danh sách nhập kho: " + ex.Message);
+                return new List<ImportNote>();
+            }
+        }
+
+        public List<ImportNote> GetImportsByDateRange(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                return _conn.ImportNotes
+                    .Where(x => x.importDate >= startDate && x.importDate <= endDate.AddDays(1))
+                    .Include(x => x.ImportDetails)
+                    .ThenInclude(x => x.Ingredient)
+                    .OrderByDescending(x => x.importDate)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Lỗi lấy nhập kho theo khoảng ngày: " + ex.Message);
+                return new List<ImportNote>();
+            }
+        }
+
+        public ImportNote GetImportById(int importId)
+        {
+            try
+            {
+                return _conn.ImportNotes
+                    .Where(x => x.importID == importId)
+                    .Include(x => x.ImportDetails)
+                    .ThenInclude(x => x.Ingredient)
+                    .FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Lỗi lấy nhập kho ID {importId}: " + ex.Message);
+                return null;
+            }
         }
     }
 }

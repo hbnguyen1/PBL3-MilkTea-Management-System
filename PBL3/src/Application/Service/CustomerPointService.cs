@@ -9,7 +9,7 @@ namespace PBL3.src.Application.Service
     internal class CustomerPointService : ICustomerPointService
     {
         private readonly MilkTeaDBContext _conn; //Pragmatic Clean Architecture
-        public CustomerPointService(MilkTeaDBContext conn)
+        public CustomerPointService(MilkTeaDBContext conn) //Constructer tự động nhận kết nối với DB từ ServiceProvider
         {
             _conn = conn;
         }

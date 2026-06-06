@@ -2,20 +2,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using PBL3.src.Domain.Models;
 using PBL3.src.Application.Interface;
 using PBL3.src.Infrastructure.Data;
 
-namespace PBL3.src.Application.Service 
+namespace PBL3.src.Application.Service
 {
     internal class StaffService : IStaffService
     {
         private const int MAX_STAFF_PER_SHIFT = 2;
-
         private readonly MilkTeaDBContext _conn;
 
+        //Giữ nguyên hàm đồng bộ nhưng dùng lock để chống lỗi Crash Race Condition
         private static readonly object _shiftLock = new object();
+        private static readonly object _toggleLock = new object();
+
         public StaffService(MilkTeaDBContext conn)
         {
             _conn = conn;
@@ -35,12 +36,6 @@ namespace PBL3.src.Application.Service
                 .Select(s => s.staffID)
                 .Distinct()
                 .Count();
-        }
-
-        private bool CanRegisterShift(DateTime workDate, string shift)
-        {
-            int count = GetRegisteredStaffCount(workDate, shift);
-            return count < MAX_STAFF_PER_SHIFT;
         }
 
         public int GetRegisteredStaffCountForShift(DateTime workDate, string shift)
@@ -67,7 +62,7 @@ namespace PBL3.src.Application.Service
 
         public string QuickRegisterShift(int staffID, DateTime date, string shift)
         {
-            lock (_shiftLock)
+            lock (_shiftLock) // Khóa luồng an toàn
             {
                 DateTime start = GetStartOfWeek();
                 DateTime end = start.AddDays(6);
@@ -151,104 +146,107 @@ namespace PBL3.src.Application.Service
 
         public string ToggleShift(int staffID)
         {
-            DateTime now = DateTime.Now;
-            DateTime today = now.Date;
-
-            string currentShift = GetCurrentShift(now);
-
-            if (currentShift == "")
+            lock (_toggleLock) // Khóa lại, 2 nhân viên bấm cùng lúc không bị đè dữ liệu
             {
-                currentShift = GetUpcomingShiftForCheckIn(now, today, _conn, staffID);
+                DateTime now = DateTime.Now;
+                DateTime today = now.Date;
+
+                string currentShift = GetCurrentShift(now);
 
                 if (currentShift == "")
                 {
-                    return "❌ Hiện tại không nằm trong khung giờ của bất kỳ ca làm việc nào và không có ca sắp tới để check-in sớm!";
-                }
-            }
+                    currentShift = GetUpcomingShiftForCheckIn(now);
 
-            bool hasSchedule = _conn.WorkSchedules
-                .Any(s => s.staffID == staffID
-                       && s.workDate == today
-                       && s.shift == currentShift);
-
-            if (!hasSchedule)
-            {
-                return $"❌ Bạn chưa đăng ký lịch làm việc cho ca [{currentShift}] ngày hôm nay!";
-            }
-
-            var log = _conn.WorkShiftLogs.FirstOrDefault(l =>
-                l.staffID == staffID &&
-                l.workDate == today &&
-                l.shift == currentShift);
-
-            if (log == null)
-            {
-                DateTime start = GetShiftStart(currentShift);
-                int lateMinutes = (int)(now - start).TotalMinutes;
-                int penalty = 0;
-
-                if (lateMinutes > 10)
-                {
-                    penalty = (lateMinutes / 10) * 5000;
+                    if (currentShift == "")
+                    {
+                        return "❌ Hiện tại không nằm trong khung giờ của bất kỳ ca làm việc nào và không có ca sắp tới để check-in sớm!";
+                    }
                 }
 
-                log = new WorkShiftLog
-                {
-                    staffID = staffID,
-                    workDate = today,
-                    shift = currentShift,
-                    checkIn = now,
-                    penalty = penalty
-                };
+                bool hasSchedule = _conn.WorkSchedules
+                    .Any(s => s.staffID == staffID
+                           && s.workDate == today
+                           && s.shift == currentShift);
 
-                _conn.WorkShiftLogs.Add(log);
-                _conn.SaveChanges();
-
-                string resultMsg = $"✔ Check-in ca [{currentShift}] thành công lúc {now:HH:mm}!";
-                if (penalty > 0)
+                if (!hasSchedule)
                 {
-                    resultMsg += $"\n⚠ Lưu ý: Bạn đi trễ {lateMinutes} phút. Hệ thống ghi nhận mức phạt {penalty:N0}đ.";
-                }
-                else if (lateMinutes < 0)
-                {
-                    resultMsg += $"\n✨ Bạn check-in sớm {-lateMinutes} phút. Tuyệt vời!";
-                }
-                return resultMsg;
-            }
-            else if (log.checkOut == null)
-            {
-                DateTime start = GetShiftStart(currentShift);
-                DateTime end = GetShiftEnd(currentShift);
-
-                int earlyMinutes = (int)(end - now).TotalMinutes;
-                int extraPenalty = 0;
-
-                if (earlyMinutes > 15)
-                {
-                    extraPenalty = (earlyMinutes / 10) * 5000;
-                    log.penalty += extraPenalty;
+                    return $"❌ Bạn chưa đăng ký lịch làm việc cho ca [{currentShift}] ngày hôm nay!";
                 }
 
-                log.checkOut = now;
+                var log = _conn.WorkShiftLogs.FirstOrDefault(l =>
+                    l.staffID == staffID &&
+                    l.workDate == today &&
+                    l.shift == currentShift);
 
-                DateTime actualEnd = now > end ? end : now;
-                TimeSpan workDuration = actualEnd - start;
-                log.totalHours = workDuration.TotalHours;
-
-                _conn.SaveChanges();
-
-                string resultMsg = $"✔ Check-out ca [{currentShift}] thành công lúc {now:HH:mm}!";
-                resultMsg += $"\n⏳ Tổng thời gian làm việc: {log.totalHours:F2} giờ.";
-
-                if (extraPenalty > 0)
+                if (log == null)
                 {
-                    resultMsg += $"\n⚠ Lưu ý: Bạn về sớm {earlyMinutes} phút. Hệ thống ghi nhận thêm mức phạt {extraPenalty:N0}đ.";
+                    DateTime start = GetShiftStart(currentShift);
+                    int lateMinutes = (int)(now - start).TotalMinutes;
+                    int penalty = 0;
+
+                    if (lateMinutes > 10)
+                    {
+                        penalty = (lateMinutes / 10) * 5000;
+                    }
+
+                    log = new WorkShiftLog
+                    {
+                        staffID = staffID,
+                        workDate = today,
+                        shift = currentShift,
+                        checkIn = now,
+                        penalty = penalty
+                    };
+
+                    _conn.WorkShiftLogs.Add(log);
+                    _conn.SaveChanges();
+
+                    string resultMsg = $"✔ Check-in ca [{currentShift}] thành công lúc {now:HH:mm}!";
+                    if (penalty > 0)
+                    {
+                        resultMsg += $"\n⚠ Lưu ý: Bạn đi trễ {lateMinutes} phút. Hệ thống ghi nhận mức phạt {penalty:N0}đ.";
+                    }
+                    else if (lateMinutes < 0)
+                    {
+                        resultMsg += $"\n✨ Bạn check-in sớm {-lateMinutes} phút. Tuyệt vời!";
+                    }
+                    return resultMsg;
                 }
-                return resultMsg;
-            }
-            else
-            {
-                return $"✔ Bạn đã hoàn thành xuất sắc ca [{currentShift}] rồi. Hãy nghỉ ngơi nhé!";
+                else if (log.checkOut == null)
+                {
+                    DateTime start = GetShiftStart(currentShift);
+                    DateTime end = GetShiftEnd(currentShift);
+
+                    int earlyMinutes = (int)(end - now).TotalMinutes;
+                    int extraPenalty = 0;
+
+                    if (earlyMinutes > 15)
+                    {
+                        extraPenalty = (earlyMinutes / 10) * 5000;
+                        log.penalty += extraPenalty;
+                    }
+
+                    log.checkOut = now;
+
+                    DateTime actualEnd = now > end ? end : now;
+                    TimeSpan workDuration = actualEnd - start;
+                    log.totalHours = workDuration.TotalHours;
+
+                    _conn.SaveChanges();
+
+                    string resultMsg = $"✔ Check-out ca [{currentShift}] thành công lúc {now:HH:mm}!";
+                    resultMsg += $"\n⏳ Tổng thời gian làm việc: {log.totalHours:F2} giờ.";
+
+                    if (extraPenalty > 0)
+                    {
+                        resultMsg += $"\n⚠ Lưu ý: Bạn về sớm {earlyMinutes} phút. Hệ thống ghi nhận thêm mức phạt {extraPenalty:N0}đ.";
+                    }
+                    return resultMsg;
+                }
+                else
+                {
+                    return $"✔ Bạn đã hoàn thành xuất sắc ca [{currentShift}] rồi. Hãy nghỉ ngơi nhé!";
+                }
             }
         }
 
@@ -261,7 +259,7 @@ namespace PBL3.src.Application.Service
             return "";
         }
 
-        private string GetUpcomingShiftForCheckIn(DateTime now, DateTime today, MilkTeaDBContext conn, int staffID)
+        private string GetUpcomingShiftForCheckIn(DateTime now)
         {
             var t = now.TimeOfDay;
             if (t >= new TimeSpan(7, 0, 0) && t < new TimeSpan(8, 0, 0)) return "Morning";
@@ -321,7 +319,7 @@ namespace PBL3.src.Application.Service
             DateTime start = GetStartOfWeek();
             DateTime end = start.AddDays(6);
 
-            lock (_shiftLock) // ✅ Đồng bộ khóa luồng khi đăng ký lịch tuần loạt lớn
+            lock (_shiftLock)
             {
                 foreach (var entry in scheduleEntries)
                 {
@@ -535,6 +533,7 @@ namespace PBL3.src.Application.Service
 
             return true;
         }
+
         public List<Staff> GetAllStaffs()
         {
             return _conn.Staffs.Where(s => s.isAvailable).ToList();
@@ -552,6 +551,7 @@ namespace PBL3.src.Application.Service
         {
             return _conn.SalarySummaries.Any(s => s.staffID == staffID && s.month == month && s.year == year);
         }
+
         public bool DeleteStaff(int staffID)
         {
             try
@@ -563,13 +563,14 @@ namespace PBL3.src.Application.Service
                 }
 
                 var schedules = _conn.WorkSchedules.Where(s => s.staffID == staffID).ToList();
-                _conn.WorkSchedules.RemoveRange(schedules); 
+                _conn.WorkSchedules.RemoveRange(schedules);
 
                 var logs = _conn.WorkShiftLogs.Where(l => l.staffID == staffID).ToList();
                 _conn.WorkShiftLogs.RemoveRange(logs);
 
                 var salaries = _conn.SalarySummaries.Where(s => s.staffID == staffID).ToList();
                 _conn.SalarySummaries.RemoveRange(salaries);
+
                 staff.isAvailable = false;
                 _conn.SaveChanges();
                 return true;
@@ -587,7 +588,7 @@ namespace PBL3.src.Application.Service
                 var existingUser = _conn.Users.FirstOrDefault(u => u.Phone == phoneNumber && u.userID != staffID);
                 if (existingUser != null)
                 {
-                    return false; 
+                    return false;
                 }
 
                 var staff = _conn.Staffs.Find(staffID);
@@ -607,12 +608,18 @@ namespace PBL3.src.Application.Service
                 return false;
             }
         }
+
         public bool DeleteWorkSchedule(int scheduleId)
         {
             try
             {
                 var schedule = _conn.WorkSchedules.Find(scheduleId);
                 if (schedule == null)
+                {
+                    return false;
+                }
+
+                if (schedule.workDate.Date < DateTime.Now.Date)
                 {
                     return false;
                 }

@@ -8,7 +8,7 @@ namespace PBL3.src.Application
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            // Đăng ký TẤT CẢ các Service nghiệp vụ
+            //Đăng ký các Service nghiệp vụ
             services.AddTransient<IIngredientService, IngredientService>();
             services.AddTransient<IItemService, ItemService>();
             services.AddTransient<IOrderService, OrderService>();

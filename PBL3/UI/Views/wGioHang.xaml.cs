@@ -17,6 +17,7 @@ namespace PBL3.UI.Views
         public int ItemID { get; set; } 
         public string? Size { get; set; }
         public string? TenMon { get; set; }
+        public string Loai { get; set; }
         public string? MoTa { get; set; }
         public int GiaGoc { get; set; } 
 

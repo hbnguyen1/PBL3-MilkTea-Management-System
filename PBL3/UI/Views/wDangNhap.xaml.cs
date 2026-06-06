@@ -109,5 +109,23 @@ namespace PBL3.UI.Views
             registerWindow.Show();
             this.Close();
         }
+
+        private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                btnDangNhap_Click(null, null);
+                e.Handled = true;
+            }
+        }
+
+        private void PasswordBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                btnDangNhap_Click(null, null);
+                e.Handled = true;
+            }
+        }
     }
 }

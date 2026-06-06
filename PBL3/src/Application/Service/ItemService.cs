@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using PBL3.src.Application.Interface;
+using PBL3.src.Domain.Models;
+using PBL3.src.Infrastructure.Common;
+using PBL3.src.Infrastructure.Data;
+using PBL3.UI.Views;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using PBL3.src.Domain.Models;
-using PBL3.src.Application.Interface;
-using PBL3.src.Infrastructure.Data;
-using PBL3.src.Infrastructure.Common;
 
 namespace PBL3.src.Application.Service
 {
@@ -67,7 +68,7 @@ namespace PBL3.src.Application.Service
                         _conn.SaveChanges();
                     }
 
-                    // 3. Lưu công thức
+                    //Lưu công thức
                     foreach (var recipe in recipes)
                     {
                         recipe.itemID = realGeneratedItemId;
@@ -133,9 +134,9 @@ namespace PBL3.src.Application.Service
             return false;
         }
 
-        public bool isAvailable(int itemId, string size)
+        public bool isAvailable(Item i)
         {
-            var recipe = _conn.Recipes.Where(r => r.itemID == itemId && r.size == size).ToList();
+            var recipe = i.Recipes;
             if (recipe.Count == 0) return false;
             foreach (var item in recipe) { if (!_ingredientService.isAvailable(item.ingredientID, (int)item.quantityNeeded)) return false; }
             return true;
@@ -240,6 +241,86 @@ namespace PBL3.src.Application.Service
         public List<Recipe> GetRecipesByItem(int itemid, string size)
         {
             return _conn.Recipes.Where(r => r.itemID == itemid && r.size == size).ToList();
+        }
+        public bool HasEnoughIngredients(int newItemId, string newItemSize, IEnumerable<CartItem> currentCart)
+        {
+            //Lấy kho thực tế lên RAM
+            var virtualStock = _conn.Ingredients.ToDictionary(i => i.igID, i => i.igCount);
+
+            var allRecipe = _conn.Recipes.ToList();
+
+            //Trừ hao các nguyên liệu đang nằm trong giỏ hàng
+            foreach (var cartItem in currentCart)
+            {
+                var recipes = allRecipe.Where(r => r.itemID == cartItem.ItemID && r.size == cartItem.Size);
+                foreach (var r in recipes)
+                {
+                    if (virtualStock.ContainsKey(r.ingredientID))
+                    {
+                        virtualStock[r.ingredientID] -= (r.quantityNeeded * cartItem.SoLuong);
+                    }
+                }
+            }
+
+            //Kiểm tra xem lượng nguyên liệu còn lại có đủ size mà khách hàng đó chọn không
+            var newItemRecipes = allRecipe.Where(r => r.itemID == newItemId && r.size == newItemSize);
+
+            foreach (var r in newItemRecipes)
+            {
+                //Kho ảo không chứa nguyên liệu này, hoặc số lượng còn lại < mức cần thiết thì sẽ không đủ
+                if (!virtualStock.ContainsKey(r.ingredientID) || virtualStock[r.ingredientID] < r.quantityNeeded)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        public List<int> GetOutOfStockItemsVirtually(IEnumerable<CartItem> currentCart)
+        {
+            var outOfStockItemIds = new List<int>();
+            //Lấy kho ở database lên RAM để tạo 1 kho ảo (sử dụng Dictionary)
+            var virtualStock = _conn.Ingredients.ToDictionary(i => i.igID, i => i.igCount);
+
+            //Trừ các nguyên liệu đang nằm trong giỏ hàng
+            foreach (var cartItem in currentCart)
+            {
+                var recipes = _conn.Recipes.Where(r => r.itemID == cartItem.ItemID && r.size == cartItem.Size).ToList();
+                foreach (var r in recipes)
+                {
+                    if (virtualStock.ContainsKey(r.ingredientID))
+                    {
+                        virtualStock[r.ingredientID] -= (r.quantityNeeded * cartItem.SoLuong);
+                    }
+                }
+            }
+
+            //Quét lại toàn bộ menu xem món nào sẽ hết nguyên liệu do dùng chung nguyên liệu với các món đã được đặt
+            var allItems = _conn.Items.Where(i => i.isAvailable).ToList();
+            foreach (var item in allItems)
+            {
+                //Kiểm tra dựa trên công thức
+                var itemRecipes = _conn.Recipes.Where(r => r.itemID == item.itemID && r.size == "M").ToList();
+                bool isEnough = true;
+
+                foreach (var r in itemRecipes)
+                {
+                    //Nếu kho ảo không đủ nguyên liệu thì đánh dấu là không đủ
+                    if (!virtualStock.ContainsKey(r.ingredientID) || virtualStock[r.ingredientID] < r.quantityNeeded)
+                    {
+                        isEnough = false;
+                        break;
+                    }
+                }
+
+                //Nếu không đủ, cho id món này vào danh sách hết Hàng
+                if (!isEnough)
+                {
+                    outOfStockItemIds.Add(item.itemID);
+                }
+            }
+
+            return outOfStockItemIds;
         }
     }
 }

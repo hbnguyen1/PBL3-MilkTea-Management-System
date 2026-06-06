@@ -195,25 +195,28 @@ namespace PBL3.UI.Views
                             nameBorder.Child = staffText;
                             staffItemPanel.Children.Add(nameBorder);
 
-                            // Nút xoá
-                            WpfButton deleteBtn = new WpfButton
+
+                            if (dayDate.Date >= DateTime.Now.Date)
                             {
-                                Content = "✕",
-                                Tag = scheduleId,
-                                Width = 25,
-                                Height = 25,
-                                Margin = new Thickness(5, 0, 0, 0),
-                                Background = new SolidColorBrush(WpfColor.FromRgb(239, 68, 68)),
-                                Foreground = new SolidColorBrush(Colors.White),
-                                FontSize = 12,
-                                FontWeight = FontWeights.Bold,
-                                Cursor = System.Windows.Input.Cursors.Hand,
-                                Padding = new Thickness(0),
-                                VerticalAlignment = VerticalAlignment.Center
-                            };
-                            deleteBtn.Resources.Add("CornerRadius", new CornerRadius(4));
-                            deleteBtn.Click += BtnDeleteSchedule_Click;
-                            staffItemPanel.Children.Add(deleteBtn);
+                                WpfButton deleteBtn = new WpfButton
+                                {
+                                    Content = "✕",
+                                    Tag = scheduleId,
+                                    Width = 25,
+                                    Height = 25,
+                                    Margin = new Thickness(5, 0, 0, 0),
+                                    Background = new SolidColorBrush(WpfColor.FromRgb(239, 68, 68)),
+                                    Foreground = new SolidColorBrush(Colors.White),
+                                    FontSize = 12,
+                                    FontWeight = FontWeights.Bold,
+                                    Cursor = System.Windows.Input.Cursors.Hand,
+                                    Padding = new Thickness(0),
+                                    VerticalAlignment = VerticalAlignment.Center
+                                };
+                                deleteBtn.Resources.Add("CornerRadius", new CornerRadius(4));
+                                deleteBtn.Click += BtnDeleteSchedule_Click;
+                                staffItemPanel.Children.Add(deleteBtn);
+                            }
 
                             cellContent.Children.Add(staffItemPanel);
                         }
@@ -282,7 +285,7 @@ namespace PBL3.UI.Views
                         else
                         {
                             WpfMessageBox.Show(
-                                "❌ Xoá ca làm thất bại!",
+                                "❌ Không thể xoá ca làm! Ca làm này có thể đã qua hoặc không tồn tại.",
                                 "Lỗi",
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Error);

@@ -1,0 +1,325 @@
+﻿<UserControl x:Class="PBL3.UI.Views.ucBossQuanLyKho"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             UseLayoutRounding="True" 
+             SnapsToDevicePixels="True"
+             TextOptions.TextFormattingMode="Display"
+             Background="#F5F6F8">
+
+    <UserControl.Resources>
+        <Style x:Key="TabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#6B7280"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,15"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="3"/>
+                            </Grid.RowDefinitions>
+                            <ContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <Border x:Name="bottomLine" Grid.Row="1" Background="Transparent"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#1A1A1A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="TabButtonStyleActive" TargetType="Button" BasedOn="{StaticResource TabButtonStyle}">
+            <Setter Property="Foreground" Value="#2196F3"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="55"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Tab Header -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="25,0,0,0">
+                <Button x:Name="btnTabLichSu" Content="Lịch sử nhập kho" Style="{StaticResource TabButtonStyleActive}" Click="btnTabLichSu_Click" Foreground="#2196F3"/>
+                <Border Width="3" Height="20" Background="#2196F3" x:Name="underlineLichSu" VerticalAlignment="Center" Margin="0,0,0,3"/>
+                <Button x:Name="btnTabInHoaDon" Content="In hoá đơn nhập kho" Style="{StaticResource TabButtonStyle}" Click="btnTabInHoaDon_Click"/>
+                <Border Width="3" Height="20" Background="#2196F3" x:Name="underlineInHoaDon" VerticalAlignment="Center" Margin="0,0,0,3" Visibility="Collapsed"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1" Margin="25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Lịch sử nhập kho -->
+            <Border x:Name="pnLichSu" Grid.Row="0" Grid.RowSpan="2" Background="White" CornerRadius="12" BorderBrush="#E5E7EB" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.04" Color="#000000"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Margin="25">
+                        <TextBlock Text="Lịch sử nhập kho" FontSize="22" FontWeight="Heavy" Foreground="#1A1A1A"/>
+                        <TextBlock Text="Xem chi tiết tất cả các phiếu nhập kho." Foreground="#6B7280" FontSize="13" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Filter -->
+                    <Border Grid.Row="1" Margin="25,0,25,20" Padding="20" Background="#F9FAFB" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                                <TextBlock Text="Tìm kiếm" Foreground="#6B7280" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,6"/>
+                                <Border BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="6" Background="White">
+                                    <TextBox x:Name="txtTimKiem" Height="36" Background="Transparent" BorderThickness="0" Padding="12,0" VerticalContentAlignment="Center" TextChanged="txtTimKiem_TextChanged"/>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                                <TextBlock Text="Từ ngày" Foreground="#6B7280" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,6"/>
+                                <Border BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="6" Background="White">
+                                    <DatePicker x:Name="dtpTuNgay" Height="36" VerticalContentAlignment="Center" Padding="12,0" SelectedDateChanged="dtpTuNgay_SelectedDateChanged"/>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="0,0,20,0">
+                                <TextBlock Text="Đến ngày" Foreground="#6B7280" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,6"/>
+                                <Border BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="6" Background="White">
+                                    <DatePicker x:Name="dtpDenNgay" Height="36" VerticalContentAlignment="Center" Padding="12,0" SelectedDateChanged="dtpDenNgay_SelectedDateChanged"/>
+                                </Border>
+                            </StackPanel>
+
+                            <Button Grid.Column="3" Click="btnLamMoi_Click" Cursor="Hand" VerticalAlignment="Bottom">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="#10A37F" CornerRadius="6" Padding="15,8">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Làm mới" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- DataGrid -->
+                    <DataGrid x:Name="dgLichSuNhap" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True" 
+                              Background="Transparent" BorderThickness="0,1,0,0" BorderBrush="#E5E7EB" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F3F4F6"
+                              RowHeight="50" CanUserAddRows="False" Margin="0,0,0,25" MouseDoubleClick="dgLichSuNhap_MouseDoubleClick">
+
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#F8F9FA"/>
+                                <Setter Property="Foreground" Value="#6B7280"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Padding" Value="15,15"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="15,0"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                                                <ContentPresenter VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Mã phiếu" Binding="{Binding importID}" Width="80" FontWeight="Bold"/>
+                            <DataGridTextColumn Header="Ngày nhập" Binding="{Binding importDate, StringFormat='dd/MM/yyyy HH:mm'}" Width="140"/>
+                            <DataGridTextColumn Header="Số mục hàng" Binding="{Binding ImportDetails.Count}" Width="100"/>
+                            <DataGridTextColumn Header="Tổng chi phí" Binding="{Binding totalCost, StringFormat='{}{0:N0} đ'}" Width="130" Foreground="#4CAF50" FontWeight="SemiBold"/>
+                            <DataGridTextColumn Header="Nhân viên nhập" Binding="{Binding staffID}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- In hoá đơn nhập kho -->
+            <Border x:Name="pnInHoaDon" Grid.Row="0" Grid.RowSpan="2" Background="White" CornerRadius="12" BorderBrush="#E5E7EB" BorderThickness="1" Visibility="Collapsed">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.04" Color="#000000"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Margin="25">
+                        <TextBlock Text="In hoá đơn nhập kho" FontSize="22" FontWeight="Heavy" Foreground="#1A1A1A"/>
+                        <TextBlock Text="Chọn phiếu nhập để xem chi tiết và in hoá đơn." Foreground="#6B7280" FontSize="13" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Content Grid -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="6.5*"/>
+                            <ColumnDefinition Width="3.5*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Danh sách phiếu -->
+                        <DataGrid x:Name="dgDanhSachPhieu" Grid.Column="0" AutoGenerateColumns="False" IsReadOnly="True" 
+                                  Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="#E5E7EB" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F3F4F6"
+                                  RowHeight="45" CanUserAddRows="False" SelectionChanged="dgDanhSachPhieu_SelectionChanged" Margin="0,25,25,25">
+
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                    <Setter Property="Foreground" Value="#6B7280"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Padding" Value="15,15"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                                </Style>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Padding" Value="15,0"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridCell">
+                                                <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGrid.Resources>
+
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Mã phiếu" Binding="{Binding importID}" Width="70" FontWeight="Bold"/>
+                                <DataGridTextColumn Header="Ngày nhập" Binding="{Binding importDate, StringFormat='dd/MM/yyyy'}" Width="100"/>
+                                <DataGridTextColumn Header="Tổng tiền" Binding="{Binding totalCost, StringFormat='{}{0:N0} đ'}" Width="*" Foreground="#4CAF50"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Chi tiết phiếu -->
+                        <StackPanel Grid.Column="1" Margin="0,25,25,25">
+                            <TextBlock Text="Chi tiết phiếu nhập" FontSize="18" FontWeight="Heavy" Foreground="#1A1A1A" Margin="0,0,0,20"/>
+
+                            <Border Background="#F9FAFB" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#E5E7EB" BorderThickness="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Mã phiếu:" FontWeight="SemiBold" Foreground="#6B7280" Margin="0,0,10,8"/>
+                                    <TextBlock x:Name="lblMaPhieu" Grid.Row="0" Grid.Column="1" Text="-" FontWeight="Bold" Foreground="#1A1A1A" Margin="0,0,0,8"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Ngày nhập:" FontWeight="SemiBold" Foreground="#6B7280" Margin="0,0,10,8"/>
+                                    <TextBlock x:Name="lblNgayNhap" Grid.Row="1" Grid.Column="1" Text="-" Foreground="#1A1A1A" Margin="0,0,0,8"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Nhân viên:" FontWeight="SemiBold" Foreground="#6B7280" Margin="0,0,10,8"/>
+                                    <TextBlock x:Name="lblNhanVien" Grid.Row="2" Grid.Column="1" Text="-" Foreground="#1A1A1A" Margin="0,0,0,8"/>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Mục hàng:" FontWeight="SemiBold" Foreground="#6B7280" Margin="0,0,10,8"/>
+                                    <TextBlock x:Name="lblMucHang" Grid.Row="3" Grid.Column="1" Text="-" Foreground="#1A1A1A" Margin="0,0,0,8"/>
+
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Tổng tiền:" FontWeight="SemiBold" Foreground="#6B7280" Margin="0,0,10,0"/>
+                                    <TextBlock x:Name="lblTongTien" Grid.Row="4" Grid.Column="1" Text="-" FontWeight="Bold" Foreground="#4CAF50" FontSize="14"/>
+                                </Grid>
+                            </Border>
+
+                            <DataGrid x:Name="dgChiTietPhieu" AutoGenerateColumns="False" IsReadOnly="True" 
+                                      Background="Transparent" BorderThickness="0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F3F4F6"
+                                      RowHeight="35" CanUserAddRows="False" Margin="0,0,0,20">
+
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#F8F9FA"/>
+                                        <Setter Property="Foreground" Value="#6B7280"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="Padding" Value="10,10"/>
+                                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                        <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                                        <Setter Property="FontSize" Value="12"/>
+                                    </Style>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="Padding" Value="10,0"/>
+                                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                                                        <ContentPresenter VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </DataGrid.Resources>
+
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Nguyên liệu" Binding="{Binding Ingredient.igName}" Width="*"/>
+                                    <DataGridTextColumn Header="SL" Binding="{Binding quantityAdded}" Width="50"/>
+                                    <DataGridTextColumn Header="Giá" Binding="{Binding importPrice, StringFormat='{}{0:N0}'}" Width="70"/>
+                                    <DataGridTextColumn Header="Thành tiền" Binding="{Binding ThanhTien, StringFormat='{}{0:N0}'}" Width="80" Foreground="#4CAF50"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <Button x:Name="btnIn" Click="btnIn_Click" Cursor="Hand" Height="45">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="#2196F3" CornerRadius="8">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="&#xE749;" FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0,0,8,0" FontSize="16"/>
+                                                <TextBlock Text="IN HÓA ĐƠN" Foreground="White" FontWeight="Heavy" FontSize="14" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
