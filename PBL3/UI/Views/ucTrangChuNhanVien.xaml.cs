@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using PBL3.src.Application;
 using PBL3.src.Application.Interface;
+using PBL3.src.Application.State;
 
 namespace PBL3.UI.Views
 {
@@ -45,6 +46,7 @@ namespace PBL3.UI.Views
 
         private void Timer_Tick(object sender, EventArgs e)
         {
+            // Cập nhật giờ (không liên quan DB nên để ngoài try-catch)
             txtTime.Text = DateTime.Now.ToString("HH:mm:ss");
             txtDate.Text = DateTime.Now.ToString("dddd, dd/MM/yyyy");
 
@@ -52,33 +54,46 @@ namespace PBL3.UI.Views
             if (_reminderCheckCounter >= 30)
             {
                 _reminderCheckCounter = 0;
-                CheckAndShowCheckOutReminder();
+                CheckAndShowCheckOutReminder(); // Đã bỏ chữ await và Async
             }
         }
 
-        private void CheckAndShowCheckOutReminder()
+        private void CheckAndShowCheckOutReminder() // Đã bỏ async Task
         {
-            int staffId = GetCurrentStaffId();
-            if (staffId <= 0) return;
-
-            if (_staffService.ShouldShowCheckOutReminder(staffId))
+            try
             {
-                string reminder = _staffService.GetCheckOutReminder(staffId);
+                int staffId = GetCurrentStaffId();
+                if (staffId <= 0) return;
 
-                if (txtReminder != null && txtReminder.Text != reminder)
+                // Bỏ Task.Run đi để chạy thẳng trên luồng chính, triệt tiêu hoàn toàn lỗi xung đột DbContext
+                bool shouldShow = _staffService.ShouldShowCheckOutReminder(staffId);
+
+                if (shouldShow)
                 {
-                    txtReminder.Text = reminder;
-                    txtReminder.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.OrangeRed);
+                    string reminder = _staffService.GetCheckOutReminder(staffId);
 
-                    System.Windows.MessageBox.Show(reminder, "⏰ CẢNH BÁO HẾT CA", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    if (txtReminder != null && txtReminder.Text != reminder)
+                    {
+                        txtReminder.Text = reminder;
+                        txtReminder.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.OrangeRed);
+
+                        // TẠM DỪNG TIMER TRƯỚC KHI HIỆN BẢNG THÔNG BÁO
+                        _timer.Stop();
+                        System.Windows.MessageBox.Show(reminder, "⏰ CẢNH BÁO HẾT CA", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        _timer.Start(); // Người dùng bấm OK xong mới cho đếm giờ tiếp
+                    }
+                }
+                else
+                {
+                    if (txtReminder != null && !string.IsNullOrEmpty(txtReminder.Text))
+                    {
+                        txtReminder.Text = "";
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                if (txtReminder != null && !string.IsNullOrEmpty(txtReminder.Text))
-                {
-                    txtReminder.Text = "";
-                }
+                System.Diagnostics.Debug.WriteLine($"Lỗi check ca: {ex.Message}");
             }
         }
 

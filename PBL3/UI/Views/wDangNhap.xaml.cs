@@ -4,7 +4,7 @@ using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using PBL3.src.Domain.Models;
 using PBL3.src.Application.Interface;
-using PBL3.src.Application;
+using PBL3.src.Application.State;
 
 namespace PBL3.UI.Views
 {
@@ -108,6 +108,24 @@ namespace PBL3.UI.Views
             wDangKy registerWindow = Program.ServiceProvider.GetRequiredService<wDangKy>();
             registerWindow.Show();
             this.Close();
+        }
+
+        private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                btnDangNhap_Click(null, null);
+                e.Handled = true;
+            }
+        }
+
+        private void PasswordBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                btnDangNhap_Click(null, null);
+                e.Handled = true;
+            }
         }
     }
 }

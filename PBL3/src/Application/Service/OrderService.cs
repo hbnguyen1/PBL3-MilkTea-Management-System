@@ -1,12 +1,13 @@
 ﻿using PBL3.src.Application.Interface;
 using PBL3.src.Domain.Models;
-using PBL3.src.Infrastructure;
+using PBL3.src.Infrastructure.Common;
 using PBL3.src.Infrastructure.Data;
+using PBL3.UI.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PBL3.UI.Views;
+using System.Windows;
 
 namespace PBL3.src.Application.Service
 {
@@ -57,18 +58,12 @@ namespace PBL3.src.Application.Service
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback();
-
-                    Console.WriteLine("\n--- PHÁT HIỆN LỖI NGHIÊM TRỌNG ---");
-                    Console.WriteLine("Lỗi chung: " + ex.Message);
-
+                    string errorMessage = ex.Message;
                     if (ex.InnerException != null)
                     {
-                        Console.WriteLine("LỖI CHI TIẾT TỪ SQL SERVER: " + ex.InnerException.Message);
+                        errorMessage += "\nLỖI: " + ex.InnerException.Message;
                     }
-
-                    Console.WriteLine("----------------------------------\n");
-                    Logger.Error(ex.Message);
+                    System.Windows.MessageBox.Show(errorMessage, "Bắt quả tang lỗi SQL");
                     return false;
                 }
             }
@@ -113,7 +108,7 @@ namespace PBL3.src.Application.Service
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    Console.WriteLine("Lỗi tạo đơn: " + ex.Message);
+
                     return -1; // Thất bại trả về -1
                 }
             }

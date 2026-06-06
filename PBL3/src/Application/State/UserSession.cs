@@ -1,6 +1,6 @@
 ﻿using PBL3.src.Domain.Models;
 
-namespace PBL3.src.Application
+namespace PBL3.src.Application.State
 {
     public static class UserSession
     {

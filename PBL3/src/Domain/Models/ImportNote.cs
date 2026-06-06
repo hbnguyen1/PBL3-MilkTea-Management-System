@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Text;
 
 namespace PBL3.src.Domain.Models
 {
@@ -12,5 +10,6 @@ namespace PBL3.src.Domain.Models
         public required int staffID { get; set; } = 0;
         public required int totalCost { get; set; } = 0;
         public virtual ICollection<ImportDetail>  ImportDetails { get; set; } = new List<ImportDetail>();
+        public virtual Staff Staff { get; set;}
     }
 }

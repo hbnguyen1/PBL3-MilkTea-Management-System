@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace PBL3.src.Infrastructure
+namespace PBL3.src.Infrastructure.Common
 {
     internal class Logger
     {

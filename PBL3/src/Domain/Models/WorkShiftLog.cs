@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace PBL3.src.Domain.Models
@@ -9,8 +7,7 @@ namespace PBL3.src.Domain.Models
     public class WorkShiftLog
     {
 
-        [Key] public int logID { get; set; }
-        [ForeignKey(nameof(Staff))]
+        public int logID { get; set; }
         public int staffID { get; set; }
         public DateTime workDate { get; set; }
         public string shift { get; set; } = string.Empty;

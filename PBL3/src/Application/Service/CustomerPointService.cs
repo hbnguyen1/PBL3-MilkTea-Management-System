@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Linq;
 using PBL3.src.Application.Interface;
-using PBL3.src.Infrastructure;
+using PBL3.src.Infrastructure.Common;
 using PBL3.src.Infrastructure.Data;
 
 namespace PBL3.src.Application.Service
 {
     internal class CustomerPointService : ICustomerPointService
     {
-        private readonly MilkTeaDBContext _conn;
-        public CustomerPointService(MilkTeaDBContext conn)
+        private readonly MilkTeaDBContext _conn; //Pragmatic Clean Architecture
+        public CustomerPointService(MilkTeaDBContext conn) //Constructer tự động nhận kết nối với DB từ ServiceProvider
         {
             _conn = conn;
         }

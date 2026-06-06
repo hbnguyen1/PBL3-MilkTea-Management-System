@@ -5,11 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PBL3.src.Domain.Models
 {
-    [Table("RECIPE")]
     public class Recipe
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int recipeID { get; set; }
 
         public string size { get; set; } = string.Empty;

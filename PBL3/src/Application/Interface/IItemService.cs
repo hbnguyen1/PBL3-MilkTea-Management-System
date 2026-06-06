@@ -1,6 +1,7 @@
-﻿using System;
+﻿using PBL3.src.Domain.Models;
+using PBL3.UI.Views;
+using System;
 using System.Collections.Generic;
-using PBL3.src.Domain.Models;
 
 namespace PBL3.src.Application.Interface
 {
@@ -13,7 +14,7 @@ namespace PBL3.src.Application.Interface
         Item? GetItemById(int itemId);
         Item? GetItemSize(int itemId, string size);
         bool UpdateItem(int itemId, Item item);
-        bool isAvailable(int itemId, string size);
+        bool isAvailable(Item i);
         bool isAvailableWithCount(int itemId, string size, int quantity);
         List<Item> GetMenuByCategory(string category);
         List<Item> GetItemSizeAndPrice(int itemId);
@@ -21,5 +22,7 @@ namespace PBL3.src.Application.Interface
         List<Item> GetAllItems();
         void UpdateItemWithRecipe(int itemId, Item mItem, Item lItem, List<Recipe> recipes);
         List<Recipe> GetRecipesByItem(int itemid, string size);
+        bool HasEnoughIngredients(int newItemId, string newItemSize, IEnumerable<CartItem> currentCart);
+        List<int> GetOutOfStockItemsVirtually(IEnumerable<CartItem> currentCart);
     }
 }

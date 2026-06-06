@@ -10,6 +10,7 @@ namespace PBL3.UI.Views
         private ucBossTongQuan? _ucTongQuan;
         private ucQuanLyNhanVien? _ucNhanSu;
         private ucQuanLyCaLam? _ucQuanLyCaLam;
+        private ucBossQuanLyKho? _ucQuanLyKho;
         public wTrangChu_Boss()
         {
             InitializeComponent();
@@ -59,6 +60,16 @@ namespace PBL3.UI.Views
                 _ucQuanLyCaLam = new ucQuanLyCaLam();
             }
             MainContent.Content = _ucQuanLyCaLam;
+        }
+        private void btnQuanLyKho_Checked(object sender, RoutedEventArgs e)
+        {
+            if (MainContent == null) return;
+
+            if (_ucQuanLyKho == null)
+            {
+                _ucQuanLyKho = new ucBossQuanLyKho();
+            }
+            MainContent.Content = _ucQuanLyKho;
         }
     }
 }

@@ -2,56 +2,39 @@
 using PBL3.UI.Views;
 using System;
 using System.Windows;
-using PBL3.src.Application.Interface;
-using PBL3.src.Application.Service;
-using PBL3.src.Infrastructure.Data;
+using PBL3.src.Application;
+using PBL3.src.Infrastructure;
 
 namespace PBL3.UI
 {
     internal class Program
     {
-        //DI toàn cục để các UserControl có thể gọi
+        //Biến static khai báo để làm kho chứa các service
         public static IServiceProvider ServiceProvider { get; private set; }
 
-        [STAThread]
+        [STAThread] //Single Thread Apartment: Bắt buộc giao diện UI phải chạy trên 1 luồng duy nhất
         static void Main(string[] args)
         {
-            var services = new ServiceCollection();
+            
+            var services = new ServiceCollection(); //Tạo ra danh sách trống để đăng ký các Service
 
-            // --- 1. Đăng ký Database Context ---
-            services.AddDbContext<MilkTeaDBContext>();
+            //Gọi các gói DI đã được đóng gói sẵn
+            services.AddApplicationServices(); //Lấy các đăng ký Service ở tầng Appication nạp vào
+            services.AddInfrastructureServices(); //Lấy đăng ký Database Context ở tầng Infrastructure nạp vào
 
-            // --- 2. Đăng ký TẤT CẢ các Service ---
-            services.AddTransient<IIngredientService, IngredientService>();
-            services.AddTransient<IItemService, ItemService>();
-            services.AddTransient<IOrderService, OrderService>();
-            services.AddTransient<IStaffService, StaffService>();
-            services.AddTransient<IProfitService, ProfitService>();
-            services.AddTransient<IRevenueService, RevenueService>();
-            services.AddTransient<IRecipeService, RecipeService>();
-            services.AddTransient<IPasswordAuthenticator, UserAuthenticator>();
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IImportService, ImportService>();
-            services.AddTransient<IReportService, ReportService>();
-            services.AddTransient<ICustomerPointService, CustomerPointService>();
-            services.AddTransient<ICustomerService, CustomerService>();
-
-            // --- 3. Đăng ký các Cửa sổ (Window) ---
-            services.AddTransient<wDangNhap>();
+            //Đăng ký các Cửa sổ (Window) của tầng UI
+            services.AddTransient<wDangNhap>(); 
             services.AddTransient<wTrangChu_Boss>();
             services.AddTransient<wTrangChu_NhanVien>();
             services.AddTransient<wDangKy>();
             services.AddTransient<wThemNhanVien>();
 
-            // --- 4. Chốt danh sách và tạo Trung tâm phân phối ---
+            //Chốt danh sách và tạo Trung tâm phân phối ServiceProvider để cấp các Service cho các tầng khác có thể xin cấp phát
             ServiceProvider = services.BuildServiceProvider();
 
-            // --- 5. Khởi chạy ứng dụng ---
+            //Khởi chạy ứng dụng
             System.Windows.Application app = new System.Windows.Application();
-
-            // Lấy form Đăng nhập từ DI 
             var loginWindow = ServiceProvider.GetRequiredService<wDangNhap>();
-
             app.Run(loginWindow);
         }
     }

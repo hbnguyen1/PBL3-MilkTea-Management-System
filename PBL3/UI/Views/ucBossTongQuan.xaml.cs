@@ -93,7 +93,10 @@ namespace PBL3.UI.Views
 
                 VeBieuDoTheoNam(year);
             }
-            catch { }//catch { System.Windows.MessageBox.Show("Lỗi tải thống kê: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error); }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("Lỗi tải thống kê: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }//catch { System.Windows.MessageBox.Show("Lỗi tải thống kê: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error); }
 
         }
 

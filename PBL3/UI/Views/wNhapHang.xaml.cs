@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using PBL3.src.Domain.Models;
 using PBL3.src.Application.Interface;
-using PBL3.src.Application;
+using PBL3.src.Application.State;
 
 namespace PBL3.UI.Views
 {

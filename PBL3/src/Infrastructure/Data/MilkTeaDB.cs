@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using PBL3.src.Domain.Models;
+using System;
 
 namespace PBL3.src.Infrastructure.Data
 {
@@ -37,78 +38,15 @@ namespace PBL3.src.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //ÁNH XẠ TÊN BẢNG
-            modelBuilder.Entity<Users>().ToTable("USERS");
-            modelBuilder.Entity<Staff>().ToTable("STAFF");
-            modelBuilder.Entity<Admin>().ToTable("ADMIN");
-            modelBuilder.Entity<Customer>().ToTable("CUSTOMER");
-            modelBuilder.Entity<Item>().ToTable("ITEM");
-            modelBuilder.Entity<Recipe>().ToTable("RECIPE");
-            modelBuilder.Entity<Ingredient>().ToTable("INGREDIENT"); 
-            modelBuilder.Entity<ImportNote>().ToTable("IMPORT_NOTE");
-            modelBuilder.Entity<ImportDetail>().ToTable("IMPORT_DETAIL");
-            modelBuilder.Entity<Orders>().ToTable("ORDERS"); 
-            modelBuilder.Entity<OrderDetails>().ToTable("ORDERDETAILS");
+            // Cấu hình Kế thừa (Inheritance)
+            modelBuilder.Entity<Customer>().HasBaseType<Users>();
+            modelBuilder.Entity<Staff>().HasBaseType<Users>();
+            modelBuilder.Entity<Admin>().HasBaseType<Users>();
 
-            //CẤU HÌNH KHÓA CHÍNH (PRIMARY KEYS)
-            modelBuilder.Entity<Users>().HasKey(u => u.userID);
-            modelBuilder.Entity<Users>()
-                .Property(u => u.userID)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("userID");
-
-            // CẤU HÌNH KẾ THỪA (INHERITANCE CONFIGURATION)
-            // CẤU HÌNH KẾ THỪA (INHERITANCE CONFIGURATION)
-            modelBuilder.Entity<Customer>()
-                .HasBaseType<Users>(); 
-
-            modelBuilder.Entity<Staff>()
-                .HasBaseType<Users>(); 
-
-            modelBuilder.Entity<Admin>()
-                .HasBaseType<Users>(); 
-            modelBuilder.Entity<Ingredient>().HasKey(i => i.igID);
-            modelBuilder.Entity<Orders>().HasKey(o => o.orderID);
-            modelBuilder.Entity<ImportNote>().HasKey(i => i.importID);
-
-            // Khóa chính kép
-            modelBuilder.Entity<Item>().HasKey(i => new { i.itemID, i.size });
-            modelBuilder.Entity<OrderDetails>().HasKey(od => new { od.orderID, od.itemID, od.size });
-            modelBuilder.Entity<Recipe>().HasKey(r => r.recipeID);
-            modelBuilder.Entity<ImportDetail>().HasKey(id => new { id.importId, id.igId });
-
-            // CẤU HÌNH KHÓA NGOẠI (FOREIGN KEYS)
-
-            modelBuilder.Entity<Item>()
-            .HasMany(i => i.Recipes)
-            .WithOne()
-            .HasForeignKey(r => new { r.itemID, r.size });
-
-            modelBuilder.Entity<Recipe>()
-                .HasOne(r => r.Ingredient)
-                .WithMany()
-                .HasForeignKey(r => r.ingredientID);
-
-            modelBuilder.Entity<Recipe>()
-                .HasOne(r => r.Item)
-                .WithMany(i => i.Recipes)
-                .HasForeignKey(r => new { r.itemID, r.size })
-                .HasPrincipalKey(i => new { i.itemID, i.size }); 
-
-            modelBuilder.Entity<ImportDetail>()
-                .HasOne(d => d.ImportNote)
-                .WithMany(n => n.ImportDetails) // 1 phiếu nhập có nhiều chi tiết
-                .HasForeignKey(d => d.importId);
-
-
-            modelBuilder.Entity<ImportDetail>()
-                .HasOne(d => d.Ingredient)
-                .WithMany() 
-                .HasForeignKey(d => d.igId);
+            // Nạp các file cấu hình ở folder Configurations vào
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(MilkTeaDBContext).Assembly);
 
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<WorkShiftLog>().ToTable("WorkShiftLog");
-            modelBuilder.Entity<SalarySummary>().ToTable("SalarySummary");
         }
     }
 }

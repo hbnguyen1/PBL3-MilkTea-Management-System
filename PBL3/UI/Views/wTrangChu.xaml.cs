@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PBL3.src.Application.Interface;
+using PBL3.src.Domain.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;
-using PBL3.src.Domain.Models;
-using PBL3.src.Application.Interface;
+using System.Windows.Interop;
 
 namespace PBL3.UI.Views
 {
@@ -16,7 +17,7 @@ namespace PBL3.UI.Views
         private List<ProductViewModel>? allProducts;
 
         private string currentCategory = "Tất cả";
-        private bool isSortAscending = true;
+        private bool isSortAscending = false;
 
         private int _currentCustomerId;
         private double _currentDiscount = 0;
@@ -81,7 +82,7 @@ namespace PBL3.UI.Views
                 allProducts = new List<ProductViewModel>();
 
                 var dbItems = _itemService.GetAllItems()
-                                          .Where(i => i.isAvailable && i.size == "M")
+                                          .Where(i => i.isAvailable && i.size == "M") 
                                           .OrderBy(item => item.itemID)
                                           .ToList();
 
@@ -95,7 +96,8 @@ namespace PBL3.UI.Views
                         // Check if recipes exist for available sizes
                         bool hasRecipeM = item.Recipes != null && item.Recipes.Any(r => r.size == "M");
                         bool hasRecipeL = item.Recipes != null && item.Recipes.Any(r => r.size == "L");
-                        bool isAvailable = hasRecipeM || hasRecipeL;
+                        //bool isAvailable = hasRecipeM || hasRecipeL;
+                        bool isAvailable = _itemService.isAvailable(item);
 
                         var product = new ProductViewModel
                         {
@@ -106,7 +108,8 @@ namespace PBL3.UI.Views
                             Badge = isAvailable ? "SẴN SÀNG" : "TẠM HẾT",
                             ImagePath = item.ImagePath,
                             FullImagePath = item.FullImagePath,
-                            Category = item.itemType
+                            Category = item.itemType,
+                            isAvailable = item.isAvailable
                         };
 
                         allProducts.Add(product);
@@ -159,10 +162,10 @@ namespace PBL3.UI.Views
             {
                 filtered = allProducts.Where(p => p.Category != "Milk Tea" && p.Category != "Fruit Tea");
             }
-            else
+           else
             {
                 filtered = allProducts.Where(p => p.Category == category);
-            }
+            } 
 
             if (txtSearch != null)
             {
@@ -216,10 +219,7 @@ namespace PBL3.UI.Views
 
         private void CapNhatSoLuongGioHang()
         {
-            if (lblCartCount == null)
-            {
-                return;
-            }
+            if (lblCartCount == null) return;
 
             int totalCount = 0;
             foreach (var item in CartManager.GioHang)
@@ -227,12 +227,44 @@ namespace PBL3.UI.Views
                 totalCount += item.SoLuong;
             }
             lblCartCount.Text = $"{totalCount} Món";
+
+            // ==========================================================
+            // ÁP DỤNG "KHO ẢO" LÊN GIAO DIỆN (Ý TƯỞNG CỦA BẠN NẰM Ở ĐÂY)
+            // ==========================================================
+            if (allProducts != null && _itemService != null && icProducts != null)
+            {
+                // Lấy danh sách ID các món đã bị hết hàng (dựa theo kho ảo trên RAM)
+                var outOfStockIds = _itemService.GetOutOfStockItemsVirtually(CartManager.GioHang);
+
+                // Quét qua danh sách hiển thị
+                foreach (var p in allProducts)
+                {
+                    if (outOfStockIds.Contains(p.ItemID))
+                    {
+                        p.Badge = "TẠM HẾT"; // Gán nhãn tạm hết
+                    }
+                    else
+                    {
+                        p.Badge = "SẴN SÀNG"; // Trả lại trạng thái sẵn sàng
+                    }
+                }
+
+                // Lệnh thần thánh: Ép toàn bộ thẻ món ăn vẽ lại (Áp dụng luôn Style làm mờ bên XAML)
+                icProducts.Items.Refresh();
+            }
         }
 
         private void btnTangSoLuong_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.DataContext is CartItem item)
             {
+                var outOfStockIds = _itemService.GetOutOfStockItemsVirtually(CartManager.GioHang);
+
+                if (outOfStockIds.Contains(item.ItemID))
+                {
+                    System.Windows.MessageBox.Show($"Kho đã cạn nguyên liệu, không thể tăng thêm số lượng cho món '{item.TenMon}'!", "Hết nguyên liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return; // Khóa mõm, dừng hàm ngay lập tức
+                }
                 item.SoLuong++;
                 int index = CartManager.GioHang.IndexOf(item);
                 CartManager.GioHang.RemoveAt(index);
@@ -285,7 +317,7 @@ namespace PBL3.UI.Views
                     }
                 }
 
-                wChiTietMon detailWindow = new wChiTietMon(itemToEdit.ItemID, itemToEdit.TenMon ?? "", basePrice, imagePath);
+                wChiTietMon detailWindow = new wChiTietMon(itemToEdit.ItemID, itemToEdit.TenMon ?? "", itemToEdit.Loai  ,basePrice, imagePath);
 
                 detailWindow.LoadEditData(itemToEdit);
                 detailWindow.ShowDialog();
@@ -388,9 +420,24 @@ namespace PBL3.UI.Views
             System.Windows.Controls.Border clickedBorder = sender as System.Windows.Controls.Border;
             if (clickedBorder != null && clickedBorder.DataContext is ProductViewModel selectedProduct)
             {
+                //Kiểm tra Badge 
+                if (selectedProduct.Badge == "TẠM HẾT")
+                {
+                    System.Windows.MessageBox.Show("Rất tiếc, món này hiện đã hết nguyên liệu!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                //Kiểm tra nếu là TRỐNG (dùng cho khi không tìm thấy kết quả)
                 if (selectedProduct.Badge == "TRỐNG") return;
 
-                wChiTietMon detailWindow = new wChiTietMon(selectedProduct.ItemID, selectedProduct.Name ?? "", selectedProduct.Price ?? "", selectedProduct.FullImagePath ?? "");
+                // Nếu qua được các bước trên thì mới cho mở cửa sổ chi tiết
+                wChiTietMon detailWindow = new wChiTietMon(
+                    selectedProduct.ItemID,
+                    selectedProduct.Name ?? "",
+                    selectedProduct.Category ?? "",
+                    selectedProduct.Price ?? "",
+                    selectedProduct.FullImagePath ?? ""
+                );
                 detailWindow.ShowDialog();
 
                 CapNhatSoLuongGioHang();
@@ -455,5 +502,6 @@ namespace PBL3.UI.Views
         public string? ImagePath { get; set; }
         public string? FullImagePath { get; set; }
         public string? Category { get; set; }
+        public bool isAvailable { get; set; }
     }
 }

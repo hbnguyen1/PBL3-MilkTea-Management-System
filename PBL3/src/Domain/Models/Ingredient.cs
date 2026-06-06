@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PBL3.src.Domain.Models
+﻿namespace PBL3.src.Domain.Models
 {
     public class Ingredient
     {

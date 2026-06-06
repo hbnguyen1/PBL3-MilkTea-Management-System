@@ -35,10 +35,6 @@ namespace PBL3.src.Application.Service
                 return result;
             
         }
-
-        /// <summary>
-        /// Lấy danh sách các itemID của top 5 sản phẩm bán chạy nhất
-        /// </summary>
         public List<int> GetBestSellerItemIDs(int top = 5)
         {
                 var bestSellerIDs = (from od in _conn.OrderDetails
