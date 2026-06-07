@@ -303,19 +303,9 @@ namespace PBL3.UI.Views
         {
             if (sender is FrameworkElement fe && fe.DataContext is CartItem itemToEdit)
             {
-                string imagePath = "/Images/default.png";
+                string imagePath = itemToEdit.ImagePath ?? "/Images/default.png";
 
                 string basePrice = $"{itemToEdit.GiaGoc}đ";
-
-                if (allProducts != null)
-                {
-                    var sp = allProducts.FirstOrDefault(p => p.ItemID == itemToEdit.ItemID);
-                    if (sp != null)
-                    {
-                        imagePath = sp.ImagePath ?? "/Images/default.png";
-                        basePrice = sp.Price ?? $"{itemToEdit.GiaGoc}đ";
-                    }
-                }
 
                 wChiTietMon detailWindow = new wChiTietMon(itemToEdit.ItemID, itemToEdit.TenMon ?? "", itemToEdit.Loai  ,basePrice, imagePath);
 
