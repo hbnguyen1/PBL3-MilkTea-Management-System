@@ -279,13 +279,16 @@ namespace PBL3.src.Application.Service
         public List<int> GetOutOfStockItemsVirtually(IEnumerable<CartItem> currentCart)
         {
             var outOfStockItemIds = new List<int>();
-            //Lấy kho ở database lên RAM để tạo 1 kho ảo (sử dụng Dictionary)
+
+            //Lấy dữ liệu lên ram 1 lần duy nhất
             var virtualStock = _conn.Ingredients.ToDictionary(i => i.igID, i => i.igCount);
+            var allRecipes = _conn.Recipes.ToList();
+            var allItems = _conn.Items.Where(i => i.isAvailable).ToList();
 
             //Trừ các nguyên liệu đang nằm trong giỏ hàng
             foreach (var cartItem in currentCart)
             {
-                var recipes = _conn.Recipes.Where(r => r.itemID == cartItem.ItemID && r.size == cartItem.Size).ToList();
+                var recipes = allRecipes.Where(r => r.itemID == cartItem.ItemID && r.size == cartItem.Size);
                 foreach (var r in recipes)
                 {
                     if (virtualStock.ContainsKey(r.ingredientID))
@@ -295,12 +298,10 @@ namespace PBL3.src.Application.Service
                 }
             }
 
-            //Quét lại toàn bộ menu xem món nào sẽ hết nguyên liệu do dùng chung nguyên liệu với các món đã được đặt
-            var allItems = _conn.Items.Where(i => i.isAvailable).ToList();
+            //Quét lại toàn bộ menu xem món nào hết nguyên liệu
             foreach (var item in allItems)
             {
-                //Kiểm tra dựa trên công thức
-                var itemRecipes = _conn.Recipes.Where(r => r.itemID == item.itemID && r.size == "M").ToList();
+                var itemRecipes = allRecipes.Where(r => r.itemID == item.itemID && r.size == "M");
                 bool isEnough = true;
 
                 foreach (var r in itemRecipes)
