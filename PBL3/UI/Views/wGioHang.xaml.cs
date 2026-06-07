@@ -19,7 +19,8 @@ namespace PBL3.UI.Views
         public string? TenMon { get; set; }
         public string Loai { get; set; }
         public string? MoTa { get; set; }
-        public int GiaGoc { get; set; } 
+        public int GiaGoc { get; set; }
+        public string? ImagePath { get; set; }
 
         private int _soLuong = 1;
         public int SoLuong

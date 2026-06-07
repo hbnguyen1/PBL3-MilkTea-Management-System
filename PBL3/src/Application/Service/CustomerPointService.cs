@@ -13,7 +13,7 @@ namespace PBL3.src.Application.Service
         {
             _conn = conn;
         }
-        private const int MONEY_PER_POINT = 1000;
+        private const int MONEY_PER_POINT = 5000;
 
         public bool AddPoints(int customerId, int totalbill)
         {

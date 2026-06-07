@@ -16,7 +16,7 @@ namespace PBL3.UI.Views
         private CartItem? _editingItem = null;
         private readonly IItemService _itemService;
         private string _loaiMon;
-
+        private string _currentImagePath;
         public wChiTietMon(int itemId, string tenMon, string type, string gia, string imagePath)
         {
             InitializeComponent();
@@ -24,6 +24,7 @@ namespace PBL3.UI.Views
 
             _currentItemId = itemId;
             _loaiMon = type;
+            _currentImagePath = imagePath;
 
             lblTenMon.Text = tenMon;
 
@@ -238,6 +239,7 @@ namespace PBL3.UI.Views
                     Loai = loai,
                     MoTa = moTa,
                     GiaGoc = giaGoc,
+                    ImagePath = _currentImagePath,
                     SoLuong = 1
                 };
                 CartManager.GioHang.Add(newItem);
