@@ -163,7 +163,7 @@ namespace PBL3.UI.Views
             if (loai == "Topping")
             {
                 moTa = "Topping thêm";
-                size = "N/A"; //Topping không dùng size
+                size = "M"; //Topping không dùng size
             }
             else
             {
