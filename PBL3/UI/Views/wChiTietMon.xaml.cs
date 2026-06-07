@@ -62,6 +62,7 @@ namespace PBL3.UI.Views
                 bdGhichu.Visibility = Visibility.Collapsed;
                 txtDavl.Visibility = Visibility.Collapsed;
                 txtDuongvl.Visibility = Visibility.Collapsed;
+                txtSizeSelect.Visibility = Visibility.Collapsed;
             }
 
             LoadImage(imagePath);
